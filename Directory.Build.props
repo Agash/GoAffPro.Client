@@ -8,10 +8,10 @@
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 
     <!-- NuGet package metadata defaults -->
-    <Authors>Your Name</Authors>
+    <Authors>Agash</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/your-org/GoAffPro.Client</RepositoryUrl>
+    <RepositoryUrl>https://github.com/Agash/GoAffPro.Client</RepositoryUrl>
     <IsPackable>false</IsPackable>
 
     <!-- Deterministic builds -->

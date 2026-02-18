@@ -32,3 +32,6 @@ coverage/
 # OS
 .DS_Store
 Thumbs.db
+
+# Local development overrides
+examples/GoAffPro.Client.Example/appsettings.development.json

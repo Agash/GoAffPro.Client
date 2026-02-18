@@ -49,8 +49,6 @@ internal sealed partial class Worker(
                 LogOrderDetected(logger, args.Order.Id);
             detector.AffiliateDetected += (_, args) =>
                 LogAffiliateDetected(logger, args.Affiliate.Id);
-            detector.RewardDetected += (_, args) =>
-                LogRewardDetected(logger, args.Reward.Id);
 
             LogStartingDetector(logger);
             await detector.StartAsync(stoppingToken).ConfigureAwait(false);
@@ -78,9 +76,6 @@ internal sealed partial class Worker(
 
     [LoggerMessage(EventId = 5, Level = LogLevel.Information, Message = "Affiliate detected: {Id}")]
     private static partial void LogAffiliateDetected(ILogger logger, string id);
-
-    [LoggerMessage(EventId = 6, Level = LogLevel.Information, Message = "Reward detected: {Id}")]
-    private static partial void LogRewardDetected(ILogger logger, string id);
 
     [LoggerMessage(EventId = 7, Level = LogLevel.Information, Message = "Starting detector loop. Press Ctrl+C to stop.")]
     private static partial void LogStartingDetector(ILogger logger);

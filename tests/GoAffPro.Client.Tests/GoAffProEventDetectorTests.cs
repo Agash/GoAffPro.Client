@@ -32,32 +32,6 @@ public sealed class GoAffProEventDetectorTests
     }
 
     [Fact]
-    public async Task NewRewardsAsync_WhenFeedContainsRewardIds_EmitsRewards()
-    {
-        int rewardsCallCount = 0;
-        using var handler = new TestHttpMessageHandler((request, _) =>
-        {
-            if (request.RequestUri!.AbsolutePath.EndsWith("/user/feed/rewards", StringComparison.OrdinalIgnoreCase))
-            {
-                rewardsCallCount++;
-                return rewardsCallCount == 1
-                    ? TestHttpMessageHandler.JsonResponse("""{"rewards":[{"reward_id":"r-1"},{"reward_id":"r-2"}]}""")
-                    : TestHttpMessageHandler.JsonResponse("""{"rewards":[]}""");
-            }
-
-            return TestHttpMessageHandler.JsonResponse("""{"rewards":[]}""");
-        });
-
-        using var httpClient = new HttpClient(handler);
-        using var client = new GoAffProClient(httpClient, new GoAffProClientOptions { BaseUrl = new Uri("https://example.test/v1/", UriKind.Absolute) });
-        var detector = new GoAffProEventDetector(client, pollingInterval: TimeSpan.FromMilliseconds(5), pageSize: 100);
-
-        IReadOnlyList<RewardEvent> events = await TakeAsync(detector.NewRewardsAsync(), expectedCount: 2);
-
-        events.Select(static item => item.Id).Should().Equal("r-1", "r-2");
-    }
-
-    [Fact]
     public async Task NewAffiliatesAsync_WhenFeedContainsAffiliateIds_EmitsAffiliates()
     {
         int trafficCallCount = 0;
@@ -88,7 +62,7 @@ public sealed class GoAffProEventDetectorTests
     {
         int ordersCallCount = 0;
         int trafficCallCount = 0;
-        int rewardsCallCount = 0;
+        bool rewardsEndpointCalled = false;
 
         using var handler = new TestHttpMessageHandler((request, _) =>
         {
@@ -110,10 +84,8 @@ public sealed class GoAffProEventDetectorTests
 
             if (request.RequestUri.AbsolutePath.EndsWith("/user/feed/rewards", StringComparison.OrdinalIgnoreCase))
             {
-                rewardsCallCount++;
-                return rewardsCallCount == 1
-                    ? TestHttpMessageHandler.JsonResponse("""{"rewards":[{"reward_id":"r-1"}],"limit":1,"offset":0,"count":1}""")
-                    : TestHttpMessageHandler.JsonResponse("""{"rewards":[],"limit":0,"offset":0,"count":0}""");
+                rewardsEndpointCalled = true;
+                return TestHttpMessageHandler.JsonResponse("""{"error":"not found"}""", System.Net.HttpStatusCode.NotFound);
             }
 
             return TestHttpMessageHandler.JsonResponse("""{}""");
@@ -125,15 +97,13 @@ public sealed class GoAffProEventDetectorTests
 
         var orderIds = new List<string>();
         var affiliateIds = new List<string>();
-        var rewardIds = new List<string>();
         using CancellationTokenSource cancellationTokenSource = new(TimeSpan.FromSeconds(1));
 
         detector.OrderDetected += (_, args) => orderIds.Add(args.Order.Id);
         detector.AffiliateDetected += (_, args) => affiliateIds.Add(args.Affiliate.Id);
-        detector.RewardDetected += (_, args) => rewardIds.Add(args.Reward.Id);
 
         Task runTask = detector.StartAsync(cancellationTokenSource.Token);
-        while (orderIds.Count == 0 || affiliateIds.Count == 0 || rewardIds.Count == 0)
+        while (orderIds.Count == 0 || affiliateIds.Count == 0)
         {
             await Task.Delay(10);
             if (cancellationTokenSource.IsCancellationRequested)
@@ -143,11 +113,18 @@ public sealed class GoAffProEventDetectorTests
         }
 
         await cancellationTokenSource.CancelAsync();
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => runTask);
+        try
+        {
+            await runTask;
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected when cancellation is observed during Task.Delay.
+        }
 
         orderIds.Should().Contain("o-1");
         affiliateIds.Should().Contain("a-1");
-        rewardIds.Should().Contain("r-1");
+        rewardsEndpointCalled.Should().BeFalse();
     }
 
     private static async Task<IReadOnlyList<T>> TakeAsync<T>(IAsyncEnumerable<T> source, int expectedCount)

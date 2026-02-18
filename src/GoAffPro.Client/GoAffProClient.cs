@@ -147,25 +147,17 @@ public sealed class GoAffProClient : IGoAffProClient
             TryMapAffiliate);
     }
 
-    public async Task<IReadOnlyList<GoAffProReward>> GetRewardsAsync(
+    [Obsolete("Disabled because /user/feed/rewards currently returns HTTP 404 (observed on 2026-02-18).")]
+    public Task<IReadOnlyList<GoAffProReward>> GetRewardsAsync(
         int limit = 100,
         int offset = 0,
         CancellationToken cancellationToken = default)
     {
-        global::GoAffPro.Client.Generated.User.Response7 response = await ExecuteUserAsync(
-                () => User.UserFeedRewardsAsync(
-                    site_ids: null,
-                    start_time: null,
-                    end_time: null,
-                    since_id: null,
-                    limit: limit,
-                    offset: offset,
-                    cancellationToken))
-            .ConfigureAwait(false);
-
-        return MapFeedItems(
-            response.Rewards ?? Array.Empty<object>(),
-            TryMapReward);
+        // Temporarily disabled because the GoAffPro endpoint currently returns HTTP 404.
+        _ = limit;
+        _ = offset;
+        _ = cancellationToken;
+        return Task.FromResult<IReadOnlyList<GoAffProReward>>(Array.Empty<GoAffProReward>());
     }
 
     public void Dispose()
@@ -300,23 +292,6 @@ public sealed class GoAffProClient : IGoAffProClient
             Email: TryGetString(payload, "email"),
             CustomerId: TryGetString(payload, "customer_id"),
             RefCode: TryGetString(payload, "ref_code"),
-            CreatedAt: TryGetDateTimeOffset(payload, "created_at", "created"),
-            RawPayload: payload);
-    }
-
-    private static GoAffProReward? TryMapReward(JsonElement payload)
-    {
-        string? id = TryExtractId(payload, ["id", "reward_id", "order_id"]);
-        if (string.IsNullOrWhiteSpace(id))
-        {
-            return null;
-        }
-
-        return new GoAffProReward(
-            Id: id,
-            OrderId: TryGetString(payload, "order_id"),
-            Amount: TryGetDecimal(payload, "amount"),
-            Currency: TryGetString(payload, "currency"),
             CreatedAt: TryGetDateTimeOffset(payload, "created_at", "created"),
             RawPayload: payload);
     }

@@ -68,4 +68,31 @@ public sealed class GoAffProClientTests
         orders[0].Total.Should().Be(101.25m);
         orders[0].Commission.Should().Be(10.5m);
     }
+
+    [Fact]
+    public async Task GetRewardsAsync_WhenCalled_DoesNotHitEndpointAndReturnsEmpty()
+    {
+        bool rewardsEndpointCalled = false;
+        using var handler = new TestHttpMessageHandler((request, _) =>
+        {
+            if (request.RequestUri!.AbsolutePath.EndsWith("/user/feed/rewards", StringComparison.OrdinalIgnoreCase))
+            {
+                rewardsEndpointCalled = true;
+                return TestHttpMessageHandler.JsonResponse("""{"error":"not found"}""", HttpStatusCode.NotFound);
+            }
+
+            return TestHttpMessageHandler.JsonResponse("""{}""");
+        });
+
+        using var httpClient = new HttpClient(handler);
+        using var client = new GoAffProClient(httpClient, new GoAffProClientOptions { BaseUrl = new Uri("https://example.test/v1/", UriKind.Absolute) });
+
+        // Intentionally calling obsolete API to verify temporary disable behavior.
+#pragma warning disable CS0618
+        IReadOnlyList<global::GoAffPro.Client.Models.GoAffProReward> rewards = await client.GetRewardsAsync(limit: 10, offset: 0);
+#pragma warning restore CS0618
+
+        rewards.Should().BeEmpty();
+        rewardsEndpointCalled.Should().BeFalse();
+    }
 }

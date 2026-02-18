@@ -74,6 +74,8 @@ Feed wrapper methods return typed model records:
 - `GoAffProAffiliate`
 - `GoAffProReward`
 
+Note: `GetRewardsAsync` is temporarily disabled because `/user/feed/rewards` is currently returning `404` (observed on 2026-02-18). The method is marked obsolete and returns an empty list.
+
 Important rule: wrapper methods call generated clients; they do not issue ad-hoc endpoint-specific HTTP requests.
 
 ### 3.2 Error Model
@@ -97,6 +99,8 @@ All HTTP calls flow through Polly policies in `RetryPolicies.cs`:
   - `NewOrdersAsync`, `NewAffiliatesAsync`, `NewRewardsAsync`
   - `StartAsync` with `OrderDetected`, `AffiliateDetected`, `RewardDetected` events
     (event args expose typed models directly)
+
+Note: reward polling/event emission is temporarily disabled for the same `/user/feed/rewards` `404` issue.
 
 Persistence of seen IDs is caller responsibility.
 

@@ -10,7 +10,6 @@ public sealed class GoAffProEventDetector
     private readonly int _pageSize;
     private readonly HashSet<string> _seenAffiliateIds = [];
     private readonly HashSet<string> _seenOrderIds = [];
-    private readonly HashSet<string> _seenRewardIds = [];
 
     public GoAffProEventDetector(
         IGoAffProClient client,
@@ -32,10 +31,14 @@ public sealed class GoAffProEventDetector
 
     public event EventHandler<AffiliateDetectedEventArgs>? AffiliateDetected;
 
+    [Obsolete("Disabled because /user/feed/rewards currently returns HTTP 404 (observed on 2026-02-18).")]
     public event EventHandler<RewardDetectedEventArgs>? RewardDetected;
 
     public async Task StartAsync(CancellationToken cancellationToken = default)
     {
+        // Referenced intentionally so the temporarily-disabled event remains part of the public surface.
+        _ = RewardDetected;
+
         while (!cancellationToken.IsCancellationRequested)
         {
             IReadOnlyList<OrderEvent> orders = await PollOrdersAsync(cancellationToken).ConfigureAwait(false);
@@ -48,12 +51,6 @@ public sealed class GoAffProEventDetector
             foreach (AffiliateEvent affiliate in affiliates)
             {
                 AffiliateDetected?.Invoke(this, new AffiliateDetectedEventArgs(affiliate.Affiliate));
-            }
-
-            IReadOnlyList<RewardEvent> rewards = await PollRewardsAsync(cancellationToken).ConfigureAwait(false);
-            foreach (RewardEvent reward in rewards)
-            {
-                RewardDetected?.Invoke(this, new RewardDetectedEventArgs(reward.Reward));
             }
 
             await Task.Delay(_pollingInterval, cancellationToken).ConfigureAwait(false);
@@ -88,18 +85,12 @@ public sealed class GoAffProEventDetector
         }
     }
 
+    [Obsolete("Disabled because /user/feed/rewards currently returns HTTP 404 (observed on 2026-02-18).")]
     public async IAsyncEnumerable<RewardEvent> NewRewardsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            IReadOnlyList<RewardEvent> events = await PollRewardsAsync(cancellationToken).ConfigureAwait(false);
-            foreach (RewardEvent detectedEvent in events)
-            {
-                yield return detectedEvent;
-            }
-
-            await Task.Delay(_pollingInterval, cancellationToken).ConfigureAwait(false);
-        }
+        _ = cancellationToken;
+        await Task.CompletedTask.ConfigureAwait(false);
+        yield break;
     }
 
     private async Task<IReadOnlyList<OrderEvent>> PollOrdersAsync(CancellationToken cancellationToken)
@@ -114,13 +105,6 @@ public sealed class GoAffProEventDetector
         IReadOnlyList<GoAffProAffiliate> affiliates = await _client.GetAffiliatesAsync(_pageSize, offset: 0, cancellationToken).ConfigureAwait(false);
         List<GoAffProAffiliate> newAffiliates = FilterNewById(affiliates, _seenAffiliateIds, static affiliate => affiliate.Id);
         return newAffiliates.ConvertAll(static affiliate => new AffiliateEvent(affiliate));
-    }
-
-    private async Task<IReadOnlyList<RewardEvent>> PollRewardsAsync(CancellationToken cancellationToken)
-    {
-        IReadOnlyList<GoAffProReward> rewards = await _client.GetRewardsAsync(_pageSize, offset: 0, cancellationToken).ConfigureAwait(false);
-        List<GoAffProReward> newRewards = FilterNewById(rewards, _seenRewardIds, static reward => reward.Id);
-        return newRewards.ConvertAll(static reward => new RewardEvent(reward));
     }
 
     private static List<T> FilterNewById<T>(

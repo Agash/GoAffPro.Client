@@ -22,6 +22,7 @@ public interface IGoAffProClient : IDisposable, IAsyncDisposable
         int offset = 0,
         CancellationToken cancellationToken = default);
 
+    [Obsolete("Disabled because /user/feed/rewards currently returns HTTP 404 (observed on 2026-02-18).")]
     Task<IReadOnlyList<global::GoAffPro.Client.Models.GoAffProReward>> GetRewardsAsync(
         int limit = 100,
         int offset = 0,

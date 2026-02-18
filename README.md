@@ -37,7 +37,6 @@ The wrapper methods are built on top of generated clients:
 ```csharp
 var orders = await client.GetOrdersAsync(limit: 50);
 var affiliates = await client.GetAffiliatesAsync(limit: 50);
-var rewards = await client.GetRewardsAsync(limit: 50);
 ```
 
 Wrapper methods return typed models:
@@ -46,6 +45,8 @@ Wrapper methods return typed models:
 - `GoAffProReward`
 
 Each model includes strongly typed fields and `RawPayload` (`JsonElement`) for advanced scenarios.
+
+`GetRewardsAsync` is currently disabled because `/user/feed/rewards` is returning `404` (observed on 2026-02-18). The method is marked `[Obsolete]` and currently returns an empty collection.
 
 ### Access Generated Clients Directly
 
@@ -90,7 +91,6 @@ var detector = new GoAffProEventDetector(client, pollingInterval: TimeSpan.FromS
 
 detector.OrderDetected += (_, args) => Console.WriteLine($"Order: {args.Order.Id}");
 detector.AffiliateDetected += (_, args) => Console.WriteLine($"Affiliate: {args.Affiliate.Id}");
-detector.RewardDetected += (_, args) => Console.WriteLine($"Reward: {args.Reward.Id}");
 
 await detector.StartAsync(cancellationToken);
 ```

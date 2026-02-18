@@ -9,7 +9,11 @@
     <GoAffProSwaggerInitPath Condition="'$(GoAffProSwaggerInitPath)' == ''">$(MSBuildProjectDirectory)\..\..\openapi\swagger-ui-init.js</GoAffProSwaggerInitPath>
   </PropertyGroup>
 
-  <UsingTask TaskName="GoAffPro.Client.Generator.GoAffProClientGeneratorTask" AssemblyFile="$(GoAffProGeneratorAssembly)" />
+  <UsingTask
+    TaskName="GoAffPro.Client.Generator.GoAffProClientGeneratorTask"
+    AssemblyFile="$(GoAffProGeneratorAssembly)"
+    Runtime="NET"
+    Architecture="CurrentArchitecture" />
 
   <Target Name="PrepareGoAffProGeneratorTask" Condition="'$(DesignTimeBuild)' != 'true' and '$(TargetFramework)' != ''">
     <MakeDir Directories="$(GoAffProGeneratorTaskDirectory)" />

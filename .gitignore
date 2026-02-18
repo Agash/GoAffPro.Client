@@ -1,0 +1,34 @@
+# .NET build artifacts
+bin/
+obj/
+*.user
+*.suo
+.vs/
+.vscode/settings.json
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+.nuget/
+
+# Rider
+.idea/
+
+# Generated OpenAPI spec (regenerated at build time)
+openapi/goaffpro.openapi.json
+openapi/goaffpro-user.openapi.json
+openapi/goaffpro-public.openapi.json
+obj/GoAffPro.Client.Generator.hash
+
+# Generated code (tracked, but can be regenerated)
+# Uncomment to gitignore if you prefer not to commit generated code:
+# src/GoAffPro.Client/Generated/*.g.cs
+
+# Test results
+TestResults/
+coverage/
+
+# OS
+.DS_Store
+Thumbs.db

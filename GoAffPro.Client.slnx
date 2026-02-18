@@ -1,0 +1,17 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
+    <File Path="NuGet.config" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/GoAffPro.Client.Generator/GoAffPro.Client.Generator.csproj" />
+    <Project Path="src/GoAffPro.Client/GoAffPro.Client.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/GoAffPro.Client.IntegrationTests/GoAffPro.Client.IntegrationTests.csproj" />
+    <Project Path="tests/GoAffPro.Client.Tests/GoAffPro.Client.Tests.csproj" />
+  </Folder>
+</Solution>

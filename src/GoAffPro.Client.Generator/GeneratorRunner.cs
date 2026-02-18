@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -23,29 +24,27 @@ internal static class GeneratorRunner
     private const string UserClientFileName = "GoAffProUserClient.g.cs";
     private const string PublicClientFileName = "GoAffProPublicClient.g.cs";
     private const string HashFileName = "GoAffPro.Client.Generator.hash";
+    private const string LockFileName = "GoAffPro.Client.Generator.lock";
     private const string GeneratorCacheVersion = "3";
 
     public static async Task RunAsync(GeneratorOptions options, CancellationToken cancellationToken)
     {
-        using Semaphore semaphore = new(initialCount: 1, maximumCount: 1, name: "Global\\GoAffPro.Client.Generator");
-        bool lockTaken = semaphore.WaitOne(TimeSpan.FromMinutes(2));
-        if (!lockTaken)
-        {
-            throw new TimeoutException("Timed out waiting for GoAffPro generator lock.");
-        }
+        string projectDirectory = Path.GetFullPath(options.ProjectDirectory);
+        string repositoryRoot = Path.GetFullPath(Path.Combine(projectDirectory, "..", ".."));
+        string openApiDirectory = Path.Combine(repositoryRoot, "openapi");
+        string generatedDirectory = Path.Combine(projectDirectory, "Generated");
+        string intermediateDirectory = Path.Combine(projectDirectory, "obj");
+
+        Directory.CreateDirectory(openApiDirectory);
+        Directory.CreateDirectory(generatedDirectory);
+        Directory.CreateDirectory(intermediateDirectory);
+
+        string lockFilePath = Path.Combine(intermediateDirectory, LockFileName);
+        using FileStream generatorLock = await AcquireGeneratorLockAsync(lockFilePath, TimeSpan.FromMinutes(2), cancellationToken)
+            .ConfigureAwait(false);
 
         try
         {
-            string projectDirectory = Path.GetFullPath(options.ProjectDirectory);
-            string repositoryRoot = Path.GetFullPath(Path.Combine(projectDirectory, "..", ".."));
-            string openApiDirectory = Path.Combine(repositoryRoot, "openapi");
-            string generatedDirectory = Path.Combine(projectDirectory, "Generated");
-            string intermediateDirectory = Path.Combine(projectDirectory, "obj");
-
-            Directory.CreateDirectory(openApiDirectory);
-            Directory.CreateDirectory(generatedDirectory);
-            Directory.CreateDirectory(intermediateDirectory);
-
             (string swaggerUiInitContents, string swaggerSource) =
                 await LoadSwaggerUiInitContentsAsync(options, projectDirectory, cancellationToken).ConfigureAwait(false);
 
@@ -117,7 +116,26 @@ internal static class GeneratorRunner
         }
         finally
         {
-            semaphore.Release();
+            // Lock is released by disposing generatorLock.
+        }
+    }
+
+    private static async Task<FileStream> AcquireGeneratorLockAsync(string lockFilePath, TimeSpan timeout, CancellationToken cancellationToken)
+    {
+        Stopwatch stopwatch = Stopwatch.StartNew();
+
+        while (true)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            try
+            {
+                return new FileStream(lockFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+            }
+            catch (IOException) when (stopwatch.Elapsed < timeout)
+            {
+                await Task.Delay(150, cancellationToken).ConfigureAwait(false);
+            }
         }
     }
 

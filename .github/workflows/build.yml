@@ -81,6 +81,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      id-token: write
 
     steps:
     - name: Download NuGet package artifact
@@ -95,9 +96,15 @@ jobs:
     - name: Display package information
       run: Get-ChildItem "${{ env.NuGetDirectory }}" -Recurse -Include *.nupkg | ForEach-Object { $_.FullName }
 
+    - name: NuGet login (OIDC -> temp API key)
+      uses: NuGet/login@v1
+      id: login
+      with:
+        user: Agash
+
     - name: Publish NuGet package to NuGet.org
       run: |
         foreach($file in (Get-ChildItem "${{ env.NuGetDirectory }}" -Recurse -Include *.nupkg)) {
             Write-Host "Pushing package: $($file.FullName)"
-            dotnet nuget push $file --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+            dotnet nuget push $file --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
         }

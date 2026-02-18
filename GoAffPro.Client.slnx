@@ -7,11 +7,14 @@
     <File Path="NuGet.config" />
   </Folder>
   <Folder Name="/src/">
-    <Project Path="src/GoAffPro.Client.Generator/GoAffPro.Client.Generator.csproj" />
     <Project Path="src/GoAffPro.Client/GoAffPro.Client.csproj" />
+    <Project Path="src/GoAffPro.Client.Generator/GoAffPro.Client.Generator.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/GoAffPro.Client.IntegrationTests/GoAffPro.Client.IntegrationTests.csproj" />
     <Project Path="tests/GoAffPro.Client.Tests/GoAffPro.Client.Tests.csproj" />
+  </Folder>
+  <Folder Name="/examples/">
+    <Project Path="examples/GoAffPro.Client.Example/GoAffPro.Client.Example.csproj" />
   </Folder>
 </Solution>

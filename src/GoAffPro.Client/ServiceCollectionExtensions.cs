@@ -3,8 +3,17 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace GoAffPro.Client;
 
+/// <summary>
+/// Dependency injection extensions for registering <see cref="GoAffProClient"/>.
+/// </summary>
 public static class ServiceCollectionExtensions
 {
+    /// <summary>
+    /// Registers <see cref="GoAffProClient"/> and related dependencies in the service collection.
+    /// </summary>
+    /// <param name="services">Service collection to register into.</param>
+    /// <param name="configureOptions">Optional callback for configuring <see cref="GoAffProClientOptions"/>.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> for chaining.</returns>
     public static IServiceCollection AddGoAffProClient(
         this IServiceCollection services,
         Action<GoAffProClientOptions>? configureOptions = null)

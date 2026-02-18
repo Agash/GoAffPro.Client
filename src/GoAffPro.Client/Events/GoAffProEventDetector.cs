@@ -3,6 +3,12 @@ using GoAffPro.Client.Models;
 
 namespace GoAffPro.Client.Events;
 
+/// <summary>
+/// Polling-based event detector for GoAffPro feed endpoints.
+/// </summary>
+/// <remarks>
+/// The detector keeps in-memory seen ID sets and does not persist state.
+/// </remarks>
 public sealed class GoAffProEventDetector
 {
     private readonly IGoAffProClient _client;
@@ -11,6 +17,12 @@ public sealed class GoAffProEventDetector
     private readonly HashSet<string> _seenAffiliateIds = [];
     private readonly HashSet<string> _seenOrderIds = [];
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GoAffProEventDetector"/> class.
+    /// </summary>
+    /// <param name="client">Client used for feed polling operations.</param>
+    /// <param name="pollingInterval">Polling interval. Defaults to 30 seconds.</param>
+    /// <param name="pageSize">Number of feed records requested per poll. Must be greater than zero.</param>
     public GoAffProEventDetector(
         IGoAffProClient client,
         TimeSpan? pollingInterval = null,
@@ -27,13 +39,30 @@ public sealed class GoAffProEventDetector
         _pageSize = pageSize;
     }
 
+    /// <summary>
+    /// Raised when a new order item is detected.
+    /// </summary>
     public event EventHandler<OrderDetectedEventArgs>? OrderDetected;
 
+    /// <summary>
+    /// Raised when a new affiliate/traffic item is detected.
+    /// </summary>
     public event EventHandler<AffiliateDetectedEventArgs>? AffiliateDetected;
 
+    /// <summary>
+    /// Raised when a new reward item is detected.
+    /// </summary>
+    /// <remarks>
+    /// Currently disabled because <c>/user/feed/rewards</c> is returning HTTP 404
+    /// as observed on 2026-02-18.
+    /// </remarks>
     [Obsolete("Disabled because /user/feed/rewards currently returns HTTP 404 (observed on 2026-02-18).")]
     public event EventHandler<RewardDetectedEventArgs>? RewardDetected;
 
+    /// <summary>
+    /// Starts continuous polling and raises events when new items are found.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token used to stop polling.</param>
     public async Task StartAsync(CancellationToken cancellationToken = default)
     {
         // Referenced intentionally so the temporarily-disabled event remains part of the public surface.
@@ -57,6 +86,11 @@ public sealed class GoAffProEventDetector
         }
     }
 
+    /// <summary>
+    /// Streams newly detected order events.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token used to stop polling.</param>
+    /// <returns>An async stream of new order events.</returns>
     public async IAsyncEnumerable<OrderEvent> NewOrdersAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         while (!cancellationToken.IsCancellationRequested)
@@ -71,6 +105,11 @@ public sealed class GoAffProEventDetector
         }
     }
 
+    /// <summary>
+    /// Streams newly detected affiliate events.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token used to stop polling.</param>
+    /// <returns>An async stream of new affiliate events.</returns>
     public async IAsyncEnumerable<AffiliateEvent> NewAffiliatesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         while (!cancellationToken.IsCancellationRequested)
@@ -85,6 +124,15 @@ public sealed class GoAffProEventDetector
         }
     }
 
+    /// <summary>
+    /// Streams newly detected reward events.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token used to stop polling.</param>
+    /// <returns>An async stream of reward events.</returns>
+    /// <remarks>
+    /// Currently disabled because <c>/user/feed/rewards</c> is returning HTTP 404
+    /// as observed on 2026-02-18.
+    /// </remarks>
     [Obsolete("Disabled because /user/feed/rewards currently returns HTTP 404 (observed on 2026-02-18).")]
     public async IAsyncEnumerable<RewardEvent> NewRewardsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {

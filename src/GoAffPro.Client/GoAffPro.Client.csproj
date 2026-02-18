@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>true</IsPackable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageId>GoAffPro.Client</PackageId>
     <MinVerTagPrefix>v</MinVerTagPrefix>
     <Description>A modern .NET client for the GoAffPro Affiliate Marketing API with automatic code generation and event detection.</Description>

@@ -9,16 +9,29 @@ using Microsoft.Extensions.Http;
 
 namespace GoAffPro.Client;
 
+/// <summary>
+/// High-level GoAffPro API client that wraps generated NSwag clients and provides
+/// typed feed helpers for common workflows.
+/// </summary>
 public sealed class GoAffProClient : IGoAffProClient
 {
     private readonly bool _disposeHttpClient;
     private readonly HttpClient _httpClient;
 
+    /// <summary>
+    /// Initializes a new client instance with internally managed <see cref="HttpClient"/>.
+    /// </summary>
+    /// <param name="options">Runtime client options.</param>
     public GoAffProClient(GoAffProClientOptions options)
         : this(CreateHttpClient(ValidateOptions(options)), options, disposeHttpClient: true)
     {
     }
 
+    /// <summary>
+    /// Initializes a new client instance using an externally managed <see cref="HttpClient"/>.
+    /// </summary>
+    /// <param name="httpClient">Configured <see cref="HttpClient"/> instance.</param>
+    /// <param name="options">Runtime client options.</param>
     public GoAffProClient(HttpClient httpClient, GoAffProClientOptions options)
         : this(httpClient, ValidateOptions(options), disposeHttpClient: false)
     {
@@ -53,12 +66,22 @@ public sealed class GoAffProClient : IGoAffProClient
         }
     }
 
+    /// <inheritdoc />
     public global::GoAffPro.Client.Generated.User.GoAffProUserClient User { get; }
 
+    /// <inheritdoc />
     public global::GoAffPro.Client.Generated.Public.GoAffProPublicClient PublicApi { get; }
 
+    /// <inheritdoc />
     public string? BearerToken { get; private set; }
 
+    /// <summary>
+    /// Creates a new client and logs in immediately using the provided credentials.
+    /// </summary>
+    /// <param name="email">Affiliate account email.</param>
+    /// <param name="password">Affiliate account password.</param>
+    /// <param name="cancellationToken">Cancellation token for the login request.</param>
+    /// <returns>A logged-in client instance with bearer token applied.</returns>
     public static async Task<GoAffProClient> CreateLoggedInAsync(
         string email,
         string password,
@@ -69,6 +92,7 @@ public sealed class GoAffProClient : IGoAffProClient
         return client;
     }
 
+    /// <inheritdoc />
     public async Task<string> LoginAsync(string email, string password, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(email);
@@ -95,6 +119,7 @@ public sealed class GoAffProClient : IGoAffProClient
         return response.Access_token;
     }
 
+    /// <inheritdoc />
     public void SetBearerToken(string bearerToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(bearerToken);
@@ -103,6 +128,7 @@ public sealed class GoAffProClient : IGoAffProClient
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", bearerToken);
     }
 
+    /// <inheritdoc />
     public async Task<IReadOnlyList<GoAffProOrder>> GetOrdersAsync(
         int limit = 100,
         int offset = 0,
@@ -126,6 +152,7 @@ public sealed class GoAffProClient : IGoAffProClient
             TryMapOrder);
     }
 
+    /// <inheritdoc />
     public async Task<IReadOnlyList<GoAffProAffiliate>> GetAffiliatesAsync(
         int limit = 100,
         int offset = 0,
@@ -147,6 +174,7 @@ public sealed class GoAffProClient : IGoAffProClient
             TryMapAffiliate);
     }
 
+    /// <inheritdoc />
     [Obsolete("Disabled because /user/feed/rewards currently returns HTTP 404 (observed on 2026-02-18).")]
     public Task<IReadOnlyList<GoAffProReward>> GetRewardsAsync(
         int limit = 100,
@@ -160,6 +188,9 @@ public sealed class GoAffProClient : IGoAffProClient
         return Task.FromResult<IReadOnlyList<GoAffProReward>>(Array.Empty<GoAffProReward>());
     }
 
+    /// <summary>
+    /// Disposes resources owned by this client instance.
+    /// </summary>
     public void Dispose()
     {
         if (_disposeHttpClient)
@@ -168,6 +199,10 @@ public sealed class GoAffProClient : IGoAffProClient
         }
     }
 
+    /// <summary>
+    /// Asynchronously disposes resources owned by this client instance.
+    /// </summary>
+    /// <returns>A completed value task after disposal.</returns>
     public ValueTask DisposeAsync()
     {
         if (_disposeHttpClient)
@@ -269,13 +304,13 @@ public sealed class GoAffProClient : IGoAffProClient
         }
 
         return new GoAffProOrder(
-            Id: id,
-            Number: TryGetString(payload, "number"),
-            Total: TryGetDecimal(payload, "total"),
-            Commission: TryGetDecimal(payload, "commission"),
-            Currency: TryGetString(payload, "currency"),
-            CreatedAt: TryGetDateTimeOffset(payload, "created_at", "created"),
-            RawPayload: payload);
+            id: id,
+            number: TryGetString(payload, "number"),
+            total: TryGetDecimal(payload, "total"),
+            commission: TryGetDecimal(payload, "commission"),
+            currency: TryGetString(payload, "currency"),
+            createdAt: TryGetDateTimeOffset(payload, "created_at", "created"),
+            rawPayload: payload);
     }
 
     private static GoAffProAffiliate? TryMapAffiliate(JsonElement payload)
@@ -287,13 +322,13 @@ public sealed class GoAffProClient : IGoAffProClient
         }
 
         return new GoAffProAffiliate(
-            Id: id,
-            Name: TryGetString(payload, "name"),
-            Email: TryGetString(payload, "email"),
-            CustomerId: TryGetString(payload, "customer_id"),
-            RefCode: TryGetString(payload, "ref_code"),
-            CreatedAt: TryGetDateTimeOffset(payload, "created_at", "created"),
-            RawPayload: payload);
+            id: id,
+            name: TryGetString(payload, "name"),
+            email: TryGetString(payload, "email"),
+            customerId: TryGetString(payload, "customer_id"),
+            refCode: TryGetString(payload, "ref_code"),
+            createdAt: TryGetDateTimeOffset(payload, "created_at", "created"),
+            rawPayload: payload);
     }
 
     private static string? TryExtractId(JsonElement item, IReadOnlyCollection<string> candidates)

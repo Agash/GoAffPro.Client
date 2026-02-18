@@ -19,6 +19,7 @@ packages/
 openapi/goaffpro.openapi.json
 openapi/goaffpro-user.openapi.json
 openapi/goaffpro-public.openapi.json
+openapi/swagger-ui-init.js
 obj/GoAffPro.Client.Generator.hash
 
 # Generated code (tracked, but can be regenerated)
@@ -35,3 +36,8 @@ Thumbs.db
 
 # Local development overrides
 examples/GoAffPro.Client.Example/appsettings.development.json
+
+# Local LLM/notes docs (not published to GitHub)
+AGENTS.md
+ARCHITECTURE.md
+docs/

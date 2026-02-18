@@ -122,7 +122,8 @@ dotnet run --project examples/GoAffPro.Client.Example
 
 On build, `GoAffPro.Client.Generator`:
 
-1. Reads `openapi/swagger-ui-init.js` (or falls back to `https://api.goaffpro.com/docs/admin/swagger-ui-init.js`)
+1. Fetches `https://api.goaffpro.com/docs/admin/swagger-ui-init.js`
+   (or uses `openapi/swagger-ui-init.js` only if you provide a local override file)
 2. Extracts OpenAPI JSON
 3. Filters to `/user/*` and `/public/*`
 4. Normalizes schema gaps for generation

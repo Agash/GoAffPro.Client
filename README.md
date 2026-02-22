@@ -5,7 +5,7 @@ Async-first .NET client for the GoAffPro API with build-time NSwag generation an
 ## Targets
 
 - `net8.0`
-- `net10.0`
+- `net10.0` (working on native-AOT compatibility)
 
 ## Install
 
@@ -35,18 +35,28 @@ await using var loggedInClient = await GoAffProClient.CreateLoggedInAsync(
 The wrapper methods are built on top of generated clients:
 
 ```csharp
-var orders = await client.GetOrdersAsync(limit: 50);
-var affiliates = await client.GetAffiliatesAsync(limit: 50);
+// Fetch orders with optional time filtering
+var orders = await client.GetOrdersAsync(from: DateTimeOffset.UtcNow.AddDays(-1), limit: 50);
+
+// Fetch affiliates with time range
+var affiliates = await client.GetAffiliatesAsync(from: startDate, toDate: endDate, limit: 50);
+
+// Fetch payouts and products
+var payouts = await client.GetPayoutsAsync(limit: 50);
+var products = await client.GetProductsAsync(limit: 50);
 ```
 
 Wrapper methods return typed models:
-- `GoAffProOrder`
-- `GoAffProAffiliate`
-- `GoAffProReward`
+
+- `GoAffProOrder` (includes Subtotal, AffiliateId, Status)
+- `GoAffProAffiliate` (includes FirstName, LastName, Phone, Country, GroupId)
+- `GoAffProReward` (includes AffiliateId, Type, Metadata, Level, Status) - currently disabled
+- `GoAffProPayout`
+- `GoAffProProduct`
 
 Each model includes strongly typed fields and `RawPayload` (`JsonElement`) for advanced scenarios.
 
-`GetRewardsAsync` is currently disabled because `/user/feed/rewards` is returning `404` (observed on 2026-02-18). The method is marked `[Obsolete]` and currently returns an empty collection.
+`GetRewardsAsync` is currently disabled because `/user/feed/rewards` is returning `404` (observed on 2026-02-18). The method is marked `[Obsolete]` and returns an empty collection.
 
 ### Access Generated Clients Directly
 
@@ -67,7 +77,7 @@ var publicSites = await client.PublicApi.PublicSitesAsync(
 
 ## Event Detection
 
-`GoAffProEventDetector` supports both async streams and classic `.NET` events.
+`GoAffProEventDetector` supports both async streams and classic `.NET` events. It uses time-based filtering to fetch only new items since the last poll.
 
 ### Async Streams
 
@@ -75,6 +85,9 @@ var publicSites = await client.PublicApi.PublicSitesAsync(
 using GoAffPro.Client.Events;
 
 var detector = new GoAffProEventDetector(client, pollingInterval: TimeSpan.FromSeconds(30));
+
+// Optional: backfill historical data from a specific time
+detector.OrderStartTime = DateTimeOffset.UtcNow.AddDays(-7);
 
 await foreach (var order in detector.NewOrdersAsync(cancellationToken))
 {
@@ -94,6 +107,8 @@ detector.AffiliateDetected += (_, args) => Console.WriteLine($"Affiliate: {args.
 
 await detector.StartAsync(cancellationToken);
 ```
+
+The detector stores the last poll timestamp internally. Use `OrderStartTime` and `AffiliateStartTime` properties to backfill historical data on first run.
 
 ## Dependency Injection
 

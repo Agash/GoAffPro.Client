@@ -1,5 +1,5 @@
-using GoAffPro.Client.Events;
 using FluentAssertions;
+using GoAffPro.Client.Events;
 
 namespace GoAffPro.Client.Tests;
 
@@ -25,7 +25,7 @@ public sealed class GoAffProEventDetectorTests
                 else
                 {
                     secondCallTime = DateTimeOffset.UtcNow;
-                    var uri = request.RequestUri;
+                    Uri uri = request.RequestUri;
                     return TestHttpMessageHandler.JsonResponse("""{"orders":[]}""");
                 }
             }
@@ -41,9 +41,9 @@ public sealed class GoAffProEventDetectorTests
         await Task.Delay(10);
         IReadOnlyList<OrderEvent> secondBatch = await TakeAsync(detector.NewOrdersAsync(), expectedCount: 1);
 
-        firstBatch.Count.Should().Be(1);
-        firstBatch[0].Id.Should().Be("o-1");
-        secondBatch.Count.Should().Be(0);
+        _ = firstBatch.Count.Should().Be(1);
+        _ = firstBatch[0].Id.Should().Be("o-1");
+        _ = secondBatch.Count.Should().Be(0);
     }
 
     [Fact]
@@ -70,8 +70,8 @@ public sealed class GoAffProEventDetectorTests
 
         IReadOnlyList<AffiliateEvent> events = await TakeAsync(detector.NewAffiliatesAsync(), expectedCount: 1);
 
-        events.Count.Should().Be(1);
-        events[0].Id.Should().Be("a-1");
+        _ = events.Count.Should().Be(1);
+        _ = events[0].Id.Should().Be("a-1");
     }
 
     [Fact]
@@ -96,9 +96,9 @@ public sealed class GoAffProEventDetectorTests
         var detector = new GoAffProEventDetector(client, pollingInterval: TimeSpan.FromMilliseconds(5), pageSize: 100);
         detector.OrderStartTime = startTime;
 
-        await TakeAsync(detector.NewOrdersAsync(), expectedCount: 0);
+        _ = await TakeAsync(detector.NewOrdersAsync(), expectedCount: 0);
 
-        startTimeUsed.Should().BeTrue();
+        _ = startTimeUsed.Should().BeTrue();
     }
 
     [Fact]
@@ -159,8 +159,8 @@ public sealed class GoAffProEventDetectorTests
             // Expected when cancellation is observed during Task.Delay.
         }
 
-        orderIds.Should().Contain("o-1");
-        affiliateIds.Should().Contain("a-1");
+        _ = orderIds.Should().Contain("o-1");
+        _ = affiliateIds.Should().Contain("a-1");
     }
 
     private static async Task<IReadOnlyList<T>> TakeAsync<T>(IAsyncEnumerable<T> source, int expectedCount)

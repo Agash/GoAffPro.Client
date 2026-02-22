@@ -17,24 +17,24 @@ public sealed class GeneratedClientContractTests
         string actualSnapshot = BuildSnapshot(userClientPath, publicClientPath);
         string expectedSnapshot = File.ReadAllText(snapshotPath, Encoding.UTF8).Replace("\r\n", "\n", StringComparison.Ordinal);
 
-        actualSnapshot.Should().Be(expectedSnapshot);
+        _ = actualSnapshot.Should().Be(expectedSnapshot);
     }
 
     private static string BuildSnapshot(string userClientPath, string publicClientPath)
     {
         var builder = new StringBuilder();
         AppendSignatureBlock(builder, "GoAffProUserClient", userClientPath);
-        builder.AppendLine();
+        _ = builder.AppendLine();
         AppendSignatureBlock(builder, "GoAffProPublicClient", publicClientPath);
         return builder.ToString().Replace("\r\n", "\n", StringComparison.Ordinal);
     }
 
     private static void AppendSignatureBlock(StringBuilder builder, string name, string filePath)
     {
-        builder.Append('[').Append(name).AppendLine("]");
+        _ = builder.Append('[').Append(name).AppendLine("]");
         foreach (string signature in ExtractAsyncMethodSignatures(filePath))
         {
-            builder.AppendLine(signature);
+            _ = builder.AppendLine(signature);
         }
     }
 

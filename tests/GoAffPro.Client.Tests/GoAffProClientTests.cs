@@ -1,6 +1,6 @@
 using System.Net;
-using GoAffPro.Client.Exceptions;
 using FluentAssertions;
+using GoAffPro.Client.Exceptions;
 
 namespace GoAffPro.Client.Tests;
 
@@ -23,13 +23,13 @@ public sealed class GoAffProClientTests
 
         string token = await client.LoginAsync("demo@example.test", "secret");
 
-        token.Should().Be("abc123");
-        client.BearerToken.Should().Be("abc123");
-        observedRequest.Should().NotBeNull();
-        observedRequest!.Method.Should().Be(HttpMethod.Post);
-        observedRequest.RequestUri!.ToString().Should().Contain("user/login");
-        observedBody.Should().Contain("email=demo%40example.test");
-        observedBody.Should().Contain("password=secret");
+        _ = token.Should().Be("abc123");
+        _ = client.BearerToken.Should().Be("abc123");
+        _ = observedRequest.Should().NotBeNull();
+        _ = observedRequest!.Method.Should().Be(HttpMethod.Post);
+        _ = observedRequest.RequestUri!.ToString().Should().Contain("user/login");
+        _ = observedBody.Should().Contain("email=demo%40example.test");
+        _ = observedBody.Should().Contain("password=secret");
     }
 
     [Fact]
@@ -43,7 +43,7 @@ public sealed class GoAffProClientTests
 
         Func<Task> action = async () => await client.LoginAsync("demo", "wrong");
 
-        await action.Should().ThrowAsync<GoAffProApiException>();
+        _ = await action.Should().ThrowAsync<GoAffProApiException>();
     }
 
     [Fact]
@@ -51,12 +51,9 @@ public sealed class GoAffProClientTests
     {
         using var handler = new TestHttpMessageHandler((request, _) =>
         {
-            if (request.RequestUri!.AbsolutePath.EndsWith("/user/feed/orders", StringComparison.OrdinalIgnoreCase))
-            {
-                return TestHttpMessageHandler.JsonResponse("""{"orders":[{"id":"o-1","total":101.25,"commission":"10.5"},{"order_id":"o-2","subtotal":90,"affiliate_id":"5","status":"approved"}],"limit":2,"offset":0,"count":2}""");
-            }
-
-            return TestHttpMessageHandler.JsonResponse("""{}""");
+            return request.RequestUri!.AbsolutePath.EndsWith("/user/feed/orders", StringComparison.OrdinalIgnoreCase)
+                ? TestHttpMessageHandler.JsonResponse("""{"orders":[{"id":"o-1","total":101.25,"commission":"10.5"},{"order_id":"o-2","subtotal":90,"affiliate_id":"5","status":"approved"}],"limit":2,"offset":0,"count":2}""")
+                : TestHttpMessageHandler.JsonResponse("""{}""");
         });
 
         using var httpClient = new HttpClient(handler);
@@ -64,12 +61,12 @@ public sealed class GoAffProClientTests
 
         IReadOnlyList<global::GoAffPro.Client.Models.GoAffProOrder> orders = await client.GetOrdersAsync(limit: 10, offset: 0);
 
-        orders.Select(static order => order.Id).Should().Equal("o-1", "o-2");
-        orders[0].Total.Should().Be(101.25m);
-        orders[0].Commission.Should().Be(10.5m);
-        orders[1].Subtotal.Should().Be(90m);
-        orders[1].AffiliateId.Should().Be("5");
-        orders[1].Status.Should().Be("approved");
+        _ = orders.Select(static order => order.Id).Should().Equal("o-1", "o-2");
+        _ = orders[0].Total.Should().Be(101.25m);
+        _ = orders[0].Commission.Should().Be(10.5m);
+        _ = orders[1].Subtotal.Should().Be(90m);
+        _ = orders[1].AffiliateId.Should().Be("5");
+        _ = orders[1].Status.Should().Be("approved");
     }
 
     [Fact]
@@ -95,8 +92,8 @@ public sealed class GoAffProClientTests
         IReadOnlyList<global::GoAffPro.Client.Models.GoAffProReward> rewards = await client.GetRewardsAsync(limit: 10, offset: 0);
 #pragma warning restore CS0618
 
-        rewards.Should().BeEmpty();
-        rewardsEndpointCalled.Should().BeFalse();
+        _ = rewards.Should().BeEmpty();
+        _ = rewardsEndpointCalled.Should().BeFalse();
     }
 
     [Fact]
@@ -114,11 +111,11 @@ public sealed class GoAffProClientTests
 
         var from = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
         var to = new DateTimeOffset(2026, 1, 31, 23, 59, 59, TimeSpan.Zero);
-        await client.GetOrdersAsync(from: from, toDate: to, limit: 50);
+        _ = await client.GetOrdersAsync(from: from, toDate: to, limit: 50);
 
-        observedUri.Should().NotBeNull();
-        observedUri!.Query.Should().Contain("created_at_min=");
-        observedUri.Query.Should().Contain("created_at_max=");
+        _ = observedUri.Should().NotBeNull();
+        _ = observedUri!.Query.Should().Contain("created_at_min=");
+        _ = observedUri.Query.Should().Contain("created_at_max=");
     }
 
     [Fact]
@@ -136,11 +133,11 @@ public sealed class GoAffProClientTests
 
         var from = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
         var to = new DateTimeOffset(2026, 1, 31, 23, 59, 59, TimeSpan.Zero);
-        await client.GetAffiliatesAsync(from: from, toDate: to, limit: 50);
+        _ = await client.GetAffiliatesAsync(from: from, toDate: to, limit: 50);
 
-        observedUri.Should().NotBeNull();
-        observedUri!.Query.Should().Contain("start_time=");
-        observedUri.Query.Should().Contain("end_time=");
+        _ = observedUri.Should().NotBeNull();
+        _ = observedUri!.Query.Should().Contain("start_time=");
+        _ = observedUri.Query.Should().Contain("end_time=");
     }
 
     [Fact]
@@ -148,12 +145,9 @@ public sealed class GoAffProClientTests
     {
         using var handler = new TestHttpMessageHandler((request, _) =>
         {
-            if (request.RequestUri!.AbsolutePath.EndsWith("/user/feed/payouts", StringComparison.OrdinalIgnoreCase))
-            {
-                return TestHttpMessageHandler.JsonResponse("""{"payouts":[{"id":"p-1","amount":100,"status":"paid"},{"id":"p-2","affiliate_id":"5","amount":50.50,"status":"pending"}]}""");
-            }
-
-            return TestHttpMessageHandler.JsonResponse("""{}""");
+            return request.RequestUri!.AbsolutePath.EndsWith("/user/feed/payouts", StringComparison.OrdinalIgnoreCase)
+                ? TestHttpMessageHandler.JsonResponse("""{"payouts":[{"id":"p-1","amount":100,"status":"paid"},{"id":"p-2","affiliate_id":"5","amount":50.50,"status":"pending"}]}""")
+                : TestHttpMessageHandler.JsonResponse("""{}""");
         });
 
         using var httpClient = new HttpClient(handler);
@@ -161,12 +155,12 @@ public sealed class GoAffProClientTests
 
         IReadOnlyList<global::GoAffPro.Client.Models.GoAffProPayout> payouts = await client.GetPayoutsAsync(limit: 10, offset: 0);
 
-        payouts.Count.Should().Be(2);
-        payouts[0].Id.Should().Be("p-1");
-        payouts[0].Amount.Should().Be(100m);
-        payouts[0].Status.Should().Be("paid");
-        payouts[1].AffiliateId.Should().Be("5");
-        payouts[1].Amount.Should().Be(50.50m);
+        _ = payouts.Count.Should().Be(2);
+        _ = payouts[0].Id.Should().Be("p-1");
+        _ = payouts[0].Amount.Should().Be(100m);
+        _ = payouts[0].Status.Should().Be("paid");
+        _ = payouts[1].AffiliateId.Should().Be("5");
+        _ = payouts[1].Amount.Should().Be(50.50m);
     }
 
     [Fact]
@@ -174,12 +168,9 @@ public sealed class GoAffProClientTests
     {
         using var handler = new TestHttpMessageHandler((request, _) =>
         {
-            if (request.RequestUri!.AbsolutePath.EndsWith("/user/feed/products", StringComparison.OrdinalIgnoreCase))
-            {
-                return TestHttpMessageHandler.JsonResponse("""{"products":[{"id":"prod-1","name":"Widget","price":29.99},{"id":"prod-2","name":"Gadget","price":49.99,"sale_price":39.99}]}""");
-            }
-
-            return TestHttpMessageHandler.JsonResponse("""{}""");
+            return request.RequestUri!.AbsolutePath.EndsWith("/user/feed/products", StringComparison.OrdinalIgnoreCase)
+                ? TestHttpMessageHandler.JsonResponse("""{"products":[{"id":"prod-1","name":"Widget","price":29.99},{"id":"prod-2","name":"Gadget","price":49.99,"sale_price":39.99}]}""")
+                : TestHttpMessageHandler.JsonResponse("""{}""");
         });
 
         using var httpClient = new HttpClient(handler);
@@ -187,10 +178,10 @@ public sealed class GoAffProClientTests
 
         IReadOnlyList<global::GoAffPro.Client.Models.GoAffProProduct> products = await client.GetProductsAsync(limit: 10, offset: 0);
 
-        products.Count.Should().Be(2);
-        products[0].Id.Should().Be("prod-1");
-        products[0].Name.Should().Be("Widget");
-        products[0].Price.Should().Be(29.99m);
-        products[1].SalePrice.Should().Be(39.99m);
+        _ = products.Count.Should().Be(2);
+        _ = products[0].Id.Should().Be("prod-1");
+        _ = products[0].Name.Should().Be("Widget");
+        _ = products[0].Price.Should().Be(29.99m);
+        _ = products[1].SalePrice.Should().Be(39.99m);
     }
 }

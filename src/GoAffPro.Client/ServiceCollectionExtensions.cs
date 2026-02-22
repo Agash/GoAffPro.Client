@@ -22,9 +22,9 @@ public static class ServiceCollectionExtensions
 
         GoAffProClientOptions options = new();
         configureOptions?.Invoke(options);
-        services.AddSingleton(options);
+        _ = services.AddSingleton(options);
 
-        services
+        _ = services
             .AddHttpClient<GoAffProClient>(
                 static (serviceProvider, httpClient) =>
                 {
@@ -35,7 +35,7 @@ public static class ServiceCollectionExtensions
             .AddPolicyHandler(RetryPolicies.CreateTransientRetryPolicy())
             .AddPolicyHandler(RetryPolicies.CreateCircuitBreakerPolicy());
 
-        services.AddTransient<IGoAffProClient>(static serviceProvider => serviceProvider.GetRequiredService<GoAffProClient>());
+        _ = services.AddTransient<IGoAffProClient>(static serviceProvider => serviceProvider.GetRequiredService<GoAffProClient>());
         return services;
     }
 }

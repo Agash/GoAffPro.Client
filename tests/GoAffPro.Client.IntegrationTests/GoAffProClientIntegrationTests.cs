@@ -1,5 +1,3 @@
-using GoAffPro.Client;
-
 namespace GoAffPro.Client.IntegrationTests;
 
 public sealed class GoAffProClientIntegrationTests

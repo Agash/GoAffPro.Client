@@ -1,6 +1,6 @@
+using System.Globalization;
 using System.Net;
 using System.Net.Http.Headers;
-using System.Globalization;
 using System.Text.Json;
 using GoAffPro.Client.Exceptions;
 using GoAffPro.Client.Models;
@@ -88,7 +88,7 @@ public sealed class GoAffProClient : IGoAffProClient
         CancellationToken cancellationToken = default)
     {
         GoAffProClient client = new(new GoAffProClientOptions());
-        await client.LoginAsync(email, password, cancellationToken).ConfigureAwait(false);
+        _ = await client.LoginAsync(email, password, cancellationToken).ConfigureAwait(false);
         return client;
     }
 
@@ -283,9 +283,11 @@ public sealed class GoAffProClient : IGoAffProClient
         };
 #pragma warning restore CA2000
 
-        HttpClient client = new(policyHandler, disposeHandler: true);
-        client.BaseAddress = BuildBaseUri(options.BaseUrl);
-        client.Timeout = options.Timeout;
+        HttpClient client = new(policyHandler, disposeHandler: true)
+        {
+            BaseAddress = BuildBaseUri(options.BaseUrl),
+            Timeout = options.Timeout
+        };
         return client;
     }
 
@@ -346,39 +348,28 @@ public sealed class GoAffProClient : IGoAffProClient
 
     private static object[] ExtractPayoutItems(object response)
     {
-        if (response is JsonElement jsonElement && jsonElement.ValueKind == JsonValueKind.Object)
-        {
-            if (jsonElement.TryGetProperty("payouts", out JsonElement payouts))
-            {
-                return JsonSerializer.Deserialize<object[]>(payouts.GetRawText()) ?? [];
-            }
-            return [];
-        }
-        return [];
+        return response is JsonElement jsonElement && jsonElement.ValueKind == JsonValueKind.Object
+            ? jsonElement.TryGetProperty("payouts", out JsonElement payouts)
+                ? JsonSerializer.Deserialize<object[]>(payouts.GetRawText()) ?? []
+                : []
+            : [];
     }
 
     private static object[] ExtractProductItems(object response)
     {
-        if (response is JsonElement jsonElement && jsonElement.ValueKind == JsonValueKind.Object)
-        {
-            if (jsonElement.TryGetProperty("products", out JsonElement products))
-            {
-                return JsonSerializer.Deserialize<object[]>(products.GetRawText()) ?? [];
-            }
-            return [];
-        }
-        return [];
+        return response is JsonElement jsonElement && jsonElement.ValueKind == JsonValueKind.Object
+            ? jsonElement.TryGetProperty("products", out JsonElement products)
+                ? JsonSerializer.Deserialize<object[]>(products.GetRawText()) ?? []
+                : []
+            : [];
     }
 
     private static GoAffProOrder? TryMapOrder(JsonElement payload)
     {
         string? id = TryExtractId(payload, ["id", "order_id"]);
-        if (string.IsNullOrWhiteSpace(id))
-        {
-            return null;
-        }
-
-        return new GoAffProOrder(
+        return string.IsNullOrWhiteSpace(id)
+            ? null
+            : new GoAffProOrder(
             id: id,
             number: TryGetString(payload, "number"),
             total: TryGetDecimal(payload, "total"),
@@ -394,12 +385,9 @@ public sealed class GoAffProClient : IGoAffProClient
     private static GoAffProAffiliate? TryMapAffiliate(JsonElement payload)
     {
         string? id = TryExtractId(payload, ["affiliate_id", "id", "customer_id"]);
-        if (string.IsNullOrWhiteSpace(id))
-        {
-            return null;
-        }
-
-        return new GoAffProAffiliate(
+        return string.IsNullOrWhiteSpace(id)
+            ? null
+            : new GoAffProAffiliate(
             id: id,
             name: TryGetString(payload, "name"),
             firstName: TryGetString(payload, "first_name"),
@@ -417,12 +405,9 @@ public sealed class GoAffProClient : IGoAffProClient
     private static GoAffProReward? TryMapReward(JsonElement payload)
     {
         string? id = TryExtractId(payload, ["id", "reward_id"]);
-        if (string.IsNullOrWhiteSpace(id))
-        {
-            return null;
-        }
-
-        return new GoAffProReward(
+        return string.IsNullOrWhiteSpace(id)
+            ? null
+            : new GoAffProReward(
             id: id,
             affiliateId: TryGetString(payload, "affiliate_id"),
             orderId: TryGetString(payload, "order_id"),
@@ -439,12 +424,9 @@ public sealed class GoAffProClient : IGoAffProClient
     private static GoAffProPayout? TryMapPayout(JsonElement payload)
     {
         string? id = TryExtractId(payload, ["id", "payout_id"]);
-        if (string.IsNullOrWhiteSpace(id))
-        {
-            return null;
-        }
-
-        return new GoAffProPayout(
+        return string.IsNullOrWhiteSpace(id)
+            ? null
+            : new GoAffProPayout(
             id: id,
             affiliateId: TryGetString(payload, "affiliate_id"),
             amount: TryGetDecimal(payload, "amount"),
@@ -459,12 +441,9 @@ public sealed class GoAffProClient : IGoAffProClient
     private static GoAffProProduct? TryMapProduct(JsonElement payload)
     {
         string? id = TryExtractId(payload, ["id", "product_id"]);
-        if (string.IsNullOrWhiteSpace(id))
-        {
-            return null;
-        }
-
-        return new GoAffProProduct(
+        return string.IsNullOrWhiteSpace(id)
+            ? null
+            : new GoAffProProduct(
             id: id,
             name: TryGetString(payload, "name"),
             description: TryGetString(payload, "description"),
@@ -511,59 +490,38 @@ public sealed class GoAffProClient : IGoAffProClient
 
     private static string? TryGetString(JsonElement item, string propertyName)
     {
-        if (!TryGetProperty(item, propertyName, out JsonElement value))
-        {
-            return null;
-        }
-
-        return value.ValueKind switch
-        {
-            JsonValueKind.String => value.GetString(),
-            JsonValueKind.Number or JsonValueKind.True or JsonValueKind.False => value.ToString(),
-            _ => null,
-        };
+        return !TryGetProperty(item, propertyName, out JsonElement value)
+            ? null
+            : value.ValueKind switch
+            {
+                JsonValueKind.String => value.GetString(),
+                JsonValueKind.Number or JsonValueKind.True or JsonValueKind.False => value.ToString(),
+                _ => null,
+            };
     }
 
     private static decimal? TryGetDecimal(JsonElement item, string propertyName)
     {
-        if (!TryGetProperty(item, propertyName, out JsonElement value))
-        {
-            return null;
-        }
-
-        if (value.ValueKind == JsonValueKind.Number && value.TryGetDecimal(out decimal decimalValue))
-        {
-            return decimalValue;
-        }
-
-        if (value.ValueKind == JsonValueKind.String
-            && decimal.TryParse(value.GetString(), NumberStyles.Float, CultureInfo.InvariantCulture, out decimal parsed))
-        {
-            return parsed;
-        }
-
-        return null;
+        return !TryGetProperty(item, propertyName, out JsonElement value)
+            ? null
+            : value.ValueKind == JsonValueKind.Number && value.TryGetDecimal(out decimal decimalValue)
+            ? decimalValue
+            : value.ValueKind == JsonValueKind.String
+            && decimal.TryParse(value.GetString(), NumberStyles.Float, CultureInfo.InvariantCulture, out decimal parsed)
+            ? parsed
+            : null;
     }
 
     private static int? TryGetInt32(JsonElement item, string propertyName)
     {
-        if (!TryGetProperty(item, propertyName, out JsonElement value))
-        {
-            return null;
-        }
-
-        if (value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out int intValue))
-        {
-            return intValue;
-        }
-
-        if (value.ValueKind == JsonValueKind.String
-            && int.TryParse(value.GetString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsed))
-        {
-            return parsed;
-        }
-
-        return null;
+        return !TryGetProperty(item, propertyName, out JsonElement value)
+            ? null
+            : value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out int intValue)
+            ? intValue
+            : value.ValueKind == JsonValueKind.String
+            && int.TryParse(value.GetString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsed)
+            ? parsed
+            : null;
     }
 
     private static DateTimeOffset? TryGetDateTimeOffset(JsonElement item, params string[] propertyNames)

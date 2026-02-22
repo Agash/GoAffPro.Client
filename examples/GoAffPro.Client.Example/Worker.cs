@@ -30,7 +30,7 @@ internal sealed partial class Worker(
                     return;
                 }
 
-                await client.LoginAsync(_options.Email, _options.Password, stoppingToken).ConfigureAwait(false);
+                _ = await client.LoginAsync(_options.Email, _options.Password, stoppingToken).ConfigureAwait(false);
                 LogAuthenticated(logger);
             }
 

@@ -38,11 +38,15 @@ public interface IGoAffProClient : IDisposable, IAsyncDisposable
     /// <summary>
     /// Fetches order feed items from <c>/user/feed/orders</c>.
     /// </summary>
+    /// <param name="from">Filter orders created on or after this timestamp.</param>
+    /// <param name="toDate">Filter orders created on or before this timestamp.</param>
     /// <param name="limit">Maximum number of records to request.</param>
     /// <param name="offset">Offset into the feed result set.</param>
     /// <param name="cancellationToken">Cancellation token for the HTTP request.</param>
     /// <returns>Mapped order feed records.</returns>
     Task<IReadOnlyList<global::GoAffPro.Client.Models.GoAffProOrder>> GetOrdersAsync(
+        DateTimeOffset? from = null,
+        DateTimeOffset? toDate = null,
         int limit = 100,
         int offset = 0,
         CancellationToken cancellationToken = default);
@@ -50,11 +54,15 @@ public interface IGoAffProClient : IDisposable, IAsyncDisposable
     /// <summary>
     /// Fetches traffic/affiliate feed items from <c>/user/feed/traffic</c>.
     /// </summary>
+    /// <param name="from">Filter traffic created on or after this timestamp.</param>
+    /// <param name="toDate">Filter traffic created on or before this timestamp.</param>
     /// <param name="limit">Maximum number of records to request.</param>
     /// <param name="offset">Offset into the feed result set.</param>
     /// <param name="cancellationToken">Cancellation token for the HTTP request.</param>
     /// <returns>Mapped affiliate feed records.</returns>
     Task<IReadOnlyList<global::GoAffPro.Client.Models.GoAffProAffiliate>> GetAffiliatesAsync(
+        DateTimeOffset? from = null,
+        DateTimeOffset? toDate = null,
         int limit = 100,
         int offset = 0,
         CancellationToken cancellationToken = default);
@@ -62,6 +70,8 @@ public interface IGoAffProClient : IDisposable, IAsyncDisposable
     /// <summary>
     /// Fetches reward feed items from <c>/user/feed/rewards</c>.
     /// </summary>
+    /// <param name="from">Filter rewards created on or after this timestamp.</param>
+    /// <param name="toDate">Filter rewards created on or before this timestamp.</param>
     /// <param name="limit">Maximum number of records to request.</param>
     /// <param name="offset">Offset into the feed result set.</param>
     /// <param name="cancellationToken">Cancellation token for the HTTP request.</param>
@@ -72,6 +82,36 @@ public interface IGoAffProClient : IDisposable, IAsyncDisposable
     /// </remarks>
     [Obsolete("Disabled because /user/feed/rewards currently returns HTTP 404 (observed on 2026-02-18).")]
     Task<IReadOnlyList<global::GoAffPro.Client.Models.GoAffProReward>> GetRewardsAsync(
+        DateTimeOffset? from = null,
+        DateTimeOffset? toDate = null,
+        int limit = 100,
+        int offset = 0,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Fetches payout feed items from <c>/user/feed/payouts</c>.
+    /// </summary>
+    /// <param name="from">Filter payouts created on or after this timestamp.</param>
+    /// <param name="toDate">Filter payouts created on or before this timestamp.</param>
+    /// <param name="limit">Maximum number of records to request.</param>
+    /// <param name="offset">Offset into the feed result set.</param>
+    /// <param name="cancellationToken">Cancellation token for the HTTP request.</param>
+    /// <returns>Mapped payout feed records.</returns>
+    Task<IReadOnlyList<global::GoAffPro.Client.Models.GoAffProPayout>> GetPayoutsAsync(
+        DateTimeOffset? from = null,
+        DateTimeOffset? toDate = null,
+        int limit = 100,
+        int offset = 0,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Fetches product feed items from <c>/user/feed/products</c>.
+    /// </summary>
+    /// <param name="limit">Maximum number of records to request.</param>
+    /// <param name="offset">Offset into the feed result set.</param>
+    /// <param name="cancellationToken">Cancellation token for the HTTP request.</param>
+    /// <returns>Mapped product feed records.</returns>
+    Task<IReadOnlyList<global::GoAffPro.Client.Models.GoAffProProduct>> GetProductsAsync(
         int limit = 100,
         int offset = 0,
         CancellationToken cancellationToken = default);

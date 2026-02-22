@@ -130,6 +130,8 @@ public sealed class GoAffProClient : IGoAffProClient
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<GoAffProOrder>> GetOrdersAsync(
+        DateTimeOffset? from = null,
+        DateTimeOffset? toDate = null,
         int limit = 100,
         int offset = 0,
         CancellationToken cancellationToken = default)
@@ -139,8 +141,8 @@ public sealed class GoAffProClient : IGoAffProClient
                     site_ids: null,
                     since_id: null,
                     max_id: null,
-                    created_at_max: null,
-                    created_at_min: null,
+                    created_at_max: toDate?.ToString("o"),
+                    created_at_min: from?.ToString("o"),
                     fields: [],
                     limit: limit,
                     offset: offset,
@@ -154,6 +156,8 @@ public sealed class GoAffProClient : IGoAffProClient
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<GoAffProAffiliate>> GetAffiliatesAsync(
+        DateTimeOffset? from = null,
+        DateTimeOffset? toDate = null,
         int limit = 100,
         int offset = 0,
         CancellationToken cancellationToken = default)
@@ -161,8 +165,8 @@ public sealed class GoAffProClient : IGoAffProClient
         global::GoAffPro.Client.Generated.User.Response8 response = await ExecuteUserAsync(
                 () => User.UserFeedTrafficAsync(
                     site_ids: null,
-                    start_time: null,
-                    end_time: null,
+                    start_time: from?.ToString("o"),
+                    end_time: toDate?.ToString("o"),
                     since_id: null,
                     limit: limit,
                     offset: offset,
@@ -177,15 +181,60 @@ public sealed class GoAffProClient : IGoAffProClient
     /// <inheritdoc />
     [Obsolete("Disabled because /user/feed/rewards currently returns HTTP 404 (observed on 2026-02-18).")]
     public Task<IReadOnlyList<GoAffProReward>> GetRewardsAsync(
+        DateTimeOffset? from = null,
+        DateTimeOffset? toDate = null,
         int limit = 100,
         int offset = 0,
         CancellationToken cancellationToken = default)
     {
-        // Temporarily disabled because the GoAffPro endpoint currently returns HTTP 404.
+        _ = from;
+        _ = toDate;
         _ = limit;
         _ = offset;
         _ = cancellationToken;
         return Task.FromResult<IReadOnlyList<GoAffProReward>>(Array.Empty<GoAffProReward>());
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<GoAffProPayout>> GetPayoutsAsync(
+        DateTimeOffset? from = null,
+        DateTimeOffset? toDate = null,
+        int limit = 100,
+        int offset = 0,
+        CancellationToken cancellationToken = default)
+    {
+        object response = await ExecuteUserAsync(
+                () => User.UserFeedPayoutsAsync(
+                    site_ids: null,
+                    start_time: from?.ToString("o"),
+                    end_time: toDate?.ToString("o"),
+                    since_id: null,
+                    limit: limit,
+                    offset: offset,
+                    cancellationToken))
+            .ConfigureAwait(false);
+
+        return MapFeedItems(
+            ExtractPayoutItems(response),
+            TryMapPayout);
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<GoAffProProduct>> GetProductsAsync(
+        int limit = 100,
+        int offset = 0,
+        CancellationToken cancellationToken = default)
+    {
+        object response = await ExecuteUserAsync(
+                () => User.UserFeedProductsAsync(
+                    limit: limit,
+                    offset: offset,
+                    cancellationToken: cancellationToken))
+            .ConfigureAwait(false);
+
+        return MapFeedItems(
+            ExtractProductItems(response),
+            TryMapProduct);
     }
 
     /// <summary>
@@ -295,6 +344,32 @@ public sealed class GoAffProClient : IGoAffProClient
         return results;
     }
 
+    private static object[] ExtractPayoutItems(object response)
+    {
+        if (response is JsonElement jsonElement && jsonElement.ValueKind == JsonValueKind.Object)
+        {
+            if (jsonElement.TryGetProperty("payouts", out JsonElement payouts))
+            {
+                return JsonSerializer.Deserialize<object[]>(payouts.GetRawText()) ?? [];
+            }
+            return [];
+        }
+        return [];
+    }
+
+    private static object[] ExtractProductItems(object response)
+    {
+        if (response is JsonElement jsonElement && jsonElement.ValueKind == JsonValueKind.Object)
+        {
+            if (jsonElement.TryGetProperty("products", out JsonElement products))
+            {
+                return JsonSerializer.Deserialize<object[]>(products.GetRawText()) ?? [];
+            }
+            return [];
+        }
+        return [];
+    }
+
     private static GoAffProOrder? TryMapOrder(JsonElement payload)
     {
         string? id = TryExtractId(payload, ["id", "order_id"]);
@@ -307,7 +382,10 @@ public sealed class GoAffProClient : IGoAffProClient
             id: id,
             number: TryGetString(payload, "number"),
             total: TryGetDecimal(payload, "total"),
+            subtotal: TryGetDecimal(payload, "subtotal"),
+            affiliateId: TryGetString(payload, "affiliate_id"),
             commission: TryGetDecimal(payload, "commission"),
+            status: TryGetString(payload, "status"),
             currency: TryGetString(payload, "currency"),
             createdAt: TryGetDateTimeOffset(payload, "created_at", "created"),
             rawPayload: payload);
@@ -324,10 +402,79 @@ public sealed class GoAffProClient : IGoAffProClient
         return new GoAffProAffiliate(
             id: id,
             name: TryGetString(payload, "name"),
+            firstName: TryGetString(payload, "first_name"),
+            lastName: TryGetString(payload, "last_name"),
             email: TryGetString(payload, "email"),
             customerId: TryGetString(payload, "customer_id"),
             refCode: TryGetString(payload, "ref_code"),
+            phone: TryGetString(payload, "phone"),
+            country: TryGetString(payload, "country"),
+            groupId: TryGetInt32(payload, "group_id"),
             createdAt: TryGetDateTimeOffset(payload, "created_at", "created"),
+            rawPayload: payload);
+    }
+
+    private static GoAffProReward? TryMapReward(JsonElement payload)
+    {
+        string? id = TryExtractId(payload, ["id", "reward_id"]);
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            return null;
+        }
+
+        return new GoAffProReward(
+            id: id,
+            affiliateId: TryGetString(payload, "affiliate_id"),
+            orderId: TryGetString(payload, "order_id"),
+            type: TryGetString(payload, "type"),
+            metadata: TryGetString(payload, "metadata"),
+            level: TryGetInt32(payload, "level"),
+            amount: TryGetDecimal(payload, "amount"),
+            status: TryGetString(payload, "status"),
+            currency: TryGetString(payload, "currency"),
+            createdAt: TryGetDateTimeOffset(payload, "created_at", "created"),
+            rawPayload: payload);
+    }
+
+    private static GoAffProPayout? TryMapPayout(JsonElement payload)
+    {
+        string? id = TryExtractId(payload, ["id", "payout_id"]);
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            return null;
+        }
+
+        return new GoAffProPayout(
+            id: id,
+            affiliateId: TryGetString(payload, "affiliate_id"),
+            amount: TryGetDecimal(payload, "amount"),
+            status: TryGetString(payload, "status"),
+            paymentMethod: TryGetString(payload, "payment_method"),
+            transactionId: TryGetString(payload, "transaction_id"),
+            currency: TryGetString(payload, "currency"),
+            createdAt: TryGetDateTimeOffset(payload, "created_at", "created"),
+            rawPayload: payload);
+    }
+
+    private static GoAffProProduct? TryMapProduct(JsonElement payload)
+    {
+        string? id = TryExtractId(payload, ["id", "product_id"]);
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            return null;
+        }
+
+        return new GoAffProProduct(
+            id: id,
+            name: TryGetString(payload, "name"),
+            description: TryGetString(payload, "description"),
+            price: TryGetDecimal(payload, "price"),
+            salePrice: TryGetDecimal(payload, "sale_price"),
+            imageUrl: TryGetString(payload, "image_url"),
+            productUrl: TryGetString(payload, "product_url"),
+            category: TryGetString(payload, "category"),
+            sku: TryGetString(payload, "sku"),
+            currency: TryGetString(payload, "currency"),
             rawPayload: payload);
     }
 
@@ -391,6 +538,27 @@ public sealed class GoAffProClient : IGoAffProClient
 
         if (value.ValueKind == JsonValueKind.String
             && decimal.TryParse(value.GetString(), NumberStyles.Float, CultureInfo.InvariantCulture, out decimal parsed))
+        {
+            return parsed;
+        }
+
+        return null;
+    }
+
+    private static int? TryGetInt32(JsonElement item, string propertyName)
+    {
+        if (!TryGetProperty(item, propertyName, out JsonElement value))
+        {
+            return null;
+        }
+
+        if (value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out int intValue))
+        {
+            return intValue;
+        }
+
+        if (value.ValueKind == JsonValueKind.String
+            && int.TryParse(value.GetString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsed))
         {
             return parsed;
         }

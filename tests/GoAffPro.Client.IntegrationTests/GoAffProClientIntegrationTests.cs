@@ -20,7 +20,7 @@ public sealed class GoAffProClientIntegrationTests
         });
 
         IReadOnlyList<global::GoAffPro.Client.Models.GoAffProOrder> orders =
-            await client.GetOrdersAsync(limit: 5, offset: 0, CancellationToken.None);
+            await client.GetOrdersAsync(limit: 5, cancellationToken: CancellationToken.None);
 
         Assert.NotNull(orders);
     }

@@ -12,25 +12,40 @@ public sealed record GoAffProAffiliate
     /// </summary>
     /// <param name="id">Unique affiliate identifier from the feed payload.</param>
     /// <param name="name">Affiliate display name, if present.</param>
+    /// <param name="firstName">Affiliate first name.</param>
+    /// <param name="lastName">Affiliate last name.</param>
     /// <param name="email">Affiliate email address, if present.</param>
     /// <param name="customerId">Customer identifier associated with the affiliate event.</param>
     /// <param name="refCode">Referral code tied to the affiliate, if present.</param>
+    /// <param name="phone">Affiliate phone number.</param>
+    /// <param name="country">Affiliate country.</param>
+    /// <param name="groupId">The group the affiliate is part of.</param>
     /// <param name="createdAt">Timestamp associated with the traffic event.</param>
     /// <param name="rawPayload">Original JSON payload returned by the feed endpoint.</param>
     public GoAffProAffiliate(
         string id,
         string? name,
+        string? firstName,
+        string? lastName,
         string? email,
         string? customerId,
         string? refCode,
+        string? phone,
+        string? country,
+        int? groupId,
         DateTimeOffset? createdAt,
         JsonElement rawPayload)
     {
         Id = id;
         Name = name;
+        FirstName = firstName;
+        LastName = lastName;
         Email = email;
         CustomerId = customerId;
         RefCode = refCode;
+        Phone = phone;
+        Country = country;
+        GroupId = groupId;
         CreatedAt = createdAt;
         RawPayload = rawPayload;
     }
@@ -46,6 +61,16 @@ public sealed record GoAffProAffiliate
     public string? Name { get; init; }
 
     /// <summary>
+    /// Affiliate first name.
+    /// </summary>
+    public string? FirstName { get; init; }
+
+    /// <summary>
+    /// Affiliate last name.
+    /// </summary>
+    public string? LastName { get; init; }
+
+    /// <summary>
     /// Affiliate email address when provided by the API.
     /// </summary>
     public string? Email { get; init; }
@@ -59,6 +84,21 @@ public sealed record GoAffProAffiliate
     /// Referral code associated with the affiliate.
     /// </summary>
     public string? RefCode { get; init; }
+
+    /// <summary>
+    /// Affiliate phone number.
+    /// </summary>
+    public string? Phone { get; init; }
+
+    /// <summary>
+    /// Affiliate country.
+    /// </summary>
+    public string? Country { get; init; }
+
+    /// <summary>
+    /// The group the affiliate is part of. If the affiliate is not a part of any group, this field is empty.
+    /// </summary>
+    public int? GroupId { get; init; }
 
     /// <summary>
     /// Timestamp associated with this feed item.

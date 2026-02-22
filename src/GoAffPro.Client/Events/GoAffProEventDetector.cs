@@ -7,15 +7,16 @@ namespace GoAffPro.Client.Events;
 /// Polling-based event detector for GoAffPro feed endpoints.
 /// </summary>
 /// <remarks>
-/// The detector keeps in-memory seen ID sets and does not persist state.
+/// Uses time-based filtering to fetch only new items since the last poll.
+/// The caller is responsible for any persistence of timestamps if needed across application restarts.
 /// </remarks>
 public sealed class GoAffProEventDetector
 {
     private readonly IGoAffProClient _client;
     private readonly TimeSpan _pollingInterval;
     private readonly int _pageSize;
-    private readonly HashSet<string> _seenAffiliateIds = [];
-    private readonly HashSet<string> _seenOrderIds = [];
+    private DateTimeOffset _lastOrderPoll = DateTimeOffset.UtcNow;
+    private DateTimeOffset _lastAffiliatePoll = DateTimeOffset.UtcNow;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GoAffProEventDetector"/> class.
@@ -38,6 +39,22 @@ public sealed class GoAffProEventDetector
         _pollingInterval = pollingInterval ?? TimeSpan.FromSeconds(30);
         _pageSize = pageSize;
     }
+
+    /// <summary>
+    /// Gets or sets the starting timestamp for order polling.
+    /// </summary>
+    /// <remarks>
+    /// Set this before starting to backfill historical orders.
+    /// </remarks>
+    public DateTimeOffset? OrderStartTime { get; set; }
+
+    /// <summary>
+    /// Gets or sets the starting timestamp for affiliate polling.
+    /// </summary>
+    /// <remarks>
+    /// Set this before starting to backfill historical affiliates.
+    /// </remarks>
+    public DateTimeOffset? AffiliateStartTime { get; set; }
 
     /// <summary>
     /// Raised when a new order item is detected.
@@ -143,34 +160,29 @@ public sealed class GoAffProEventDetector
 
     private async Task<IReadOnlyList<OrderEvent>> PollOrdersAsync(CancellationToken cancellationToken)
     {
-        IReadOnlyList<GoAffProOrder> orders = await _client.GetOrdersAsync(_pageSize, offset: 0, cancellationToken).ConfigureAwait(false);
-        List<GoAffProOrder> newOrders = FilterNewById(orders, _seenOrderIds, static order => order.Id);
-        return newOrders.ConvertAll(static order => new OrderEvent(order));
+        DateTimeOffset from = OrderStartTime ?? _lastOrderPoll;
+        DateTimeOffset to = DateTimeOffset.UtcNow;
+
+        IReadOnlyList<GoAffProOrder> orders = await _client
+            .GetOrdersAsync(from: from, toDate: to, limit: _pageSize, cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+
+        _lastOrderPoll = to;
+
+        return orders.Select(order => new OrderEvent(order)).ToList();
     }
 
     private async Task<IReadOnlyList<AffiliateEvent>> PollAffiliatesAsync(CancellationToken cancellationToken)
     {
-        IReadOnlyList<GoAffProAffiliate> affiliates = await _client.GetAffiliatesAsync(_pageSize, offset: 0, cancellationToken).ConfigureAwait(false);
-        List<GoAffProAffiliate> newAffiliates = FilterNewById(affiliates, _seenAffiliateIds, static affiliate => affiliate.Id);
-        return newAffiliates.ConvertAll(static affiliate => new AffiliateEvent(affiliate));
-    }
+        DateTimeOffset from = AffiliateStartTime ?? _lastAffiliatePoll;
+        DateTimeOffset to = DateTimeOffset.UtcNow;
 
-    private static List<T> FilterNewById<T>(
-        IReadOnlyList<T> events,
-        HashSet<string> seenIds,
-        Func<T, string> idSelector)
-    {
-        var newEvents = new List<T>();
-        foreach (T detectedEvent in events)
-        {
-            if (!seenIds.Add(idSelector(detectedEvent)))
-            {
-                continue;
-            }
+        IReadOnlyList<GoAffProAffiliate> affiliates = await _client
+            .GetAffiliatesAsync(from: from, toDate: to, limit: _pageSize, cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
 
-            newEvents.Add(detectedEvent);
-        }
+        _lastAffiliatePoll = to;
 
-        return newEvents;
+        return affiliates.Select(affiliate => new AffiliateEvent(affiliate)).ToList();
     }
 }

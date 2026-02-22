@@ -53,7 +53,7 @@ public sealed class GoAffProClientTests
         {
             if (request.RequestUri!.AbsolutePath.EndsWith("/user/feed/orders", StringComparison.OrdinalIgnoreCase))
             {
-                return TestHttpMessageHandler.JsonResponse("""{"orders":[{"id":"o-1","total":101.25,"commission":"10.5"},{"order_id":"o-2"}],"limit":2,"offset":0,"count":2}""");
+                return TestHttpMessageHandler.JsonResponse("""{"orders":[{"id":"o-1","total":101.25,"commission":"10.5"},{"order_id":"o-2","subtotal":90,"affiliate_id":"5","status":"approved"}],"limit":2,"offset":0,"count":2}""");
             }
 
             return TestHttpMessageHandler.JsonResponse("""{}""");
@@ -67,6 +67,9 @@ public sealed class GoAffProClientTests
         orders.Select(static order => order.Id).Should().Equal("o-1", "o-2");
         orders[0].Total.Should().Be(101.25m);
         orders[0].Commission.Should().Be(10.5m);
+        orders[1].Subtotal.Should().Be(90m);
+        orders[1].AffiliateId.Should().Be("5");
+        orders[1].Status.Should().Be("approved");
     }
 
     [Fact]
@@ -94,5 +97,100 @@ public sealed class GoAffProClientTests
 
         rewards.Should().BeEmpty();
         rewardsEndpointCalled.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task GetOrdersAsync_WithTimeFilters_PassesParametersToRequest()
+    {
+        Uri? observedUri = null;
+        using var handler = new TestHttpMessageHandler((request, _) =>
+        {
+            observedUri = request.RequestUri;
+            return TestHttpMessageHandler.JsonResponse("""{"orders":[]}""");
+        });
+
+        using var httpClient = new HttpClient(handler);
+        using var client = new GoAffProClient(httpClient, new GoAffProClientOptions { BaseUrl = new Uri("https://example.test/v1/", UriKind.Absolute) });
+
+        var from = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var to = new DateTimeOffset(2026, 1, 31, 23, 59, 59, TimeSpan.Zero);
+        await client.GetOrdersAsync(from: from, toDate: to, limit: 50);
+
+        observedUri.Should().NotBeNull();
+        observedUri!.Query.Should().Contain("created_at_min=");
+        observedUri.Query.Should().Contain("created_at_max=");
+    }
+
+    [Fact]
+    public async Task GetAffiliatesAsync_WithTimeFilters_PassesParametersToRequest()
+    {
+        Uri? observedUri = null;
+        using var handler = new TestHttpMessageHandler((request, _) =>
+        {
+            observedUri = request.RequestUri;
+            return TestHttpMessageHandler.JsonResponse("""{"traffic":[]}""");
+        });
+
+        using var httpClient = new HttpClient(handler);
+        using var client = new GoAffProClient(httpClient, new GoAffProClientOptions { BaseUrl = new Uri("https://example.test/v1/", UriKind.Absolute) });
+
+        var from = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var to = new DateTimeOffset(2026, 1, 31, 23, 59, 59, TimeSpan.Zero);
+        await client.GetAffiliatesAsync(from: from, toDate: to, limit: 50);
+
+        observedUri.Should().NotBeNull();
+        observedUri!.Query.Should().Contain("start_time=");
+        observedUri.Query.Should().Contain("end_time=");
+    }
+
+    [Fact]
+    public async Task GetPayoutsAsync_WhenCalled_ReturnsMappedPayouts()
+    {
+        using var handler = new TestHttpMessageHandler((request, _) =>
+        {
+            if (request.RequestUri!.AbsolutePath.EndsWith("/user/feed/payouts", StringComparison.OrdinalIgnoreCase))
+            {
+                return TestHttpMessageHandler.JsonResponse("""{"payouts":[{"id":"p-1","amount":100,"status":"paid"},{"id":"p-2","affiliate_id":"5","amount":50.50,"status":"pending"}]}""");
+            }
+
+            return TestHttpMessageHandler.JsonResponse("""{}""");
+        });
+
+        using var httpClient = new HttpClient(handler);
+        using var client = new GoAffProClient(httpClient, new GoAffProClientOptions { BaseUrl = new Uri("https://example.test/v1/", UriKind.Absolute) });
+
+        IReadOnlyList<global::GoAffPro.Client.Models.GoAffProPayout> payouts = await client.GetPayoutsAsync(limit: 10, offset: 0);
+
+        payouts.Count.Should().Be(2);
+        payouts[0].Id.Should().Be("p-1");
+        payouts[0].Amount.Should().Be(100m);
+        payouts[0].Status.Should().Be("paid");
+        payouts[1].AffiliateId.Should().Be("5");
+        payouts[1].Amount.Should().Be(50.50m);
+    }
+
+    [Fact]
+    public async Task GetProductsAsync_WhenCalled_ReturnsMappedProducts()
+    {
+        using var handler = new TestHttpMessageHandler((request, _) =>
+        {
+            if (request.RequestUri!.AbsolutePath.EndsWith("/user/feed/products", StringComparison.OrdinalIgnoreCase))
+            {
+                return TestHttpMessageHandler.JsonResponse("""{"products":[{"id":"prod-1","name":"Widget","price":29.99},{"id":"prod-2","name":"Gadget","price":49.99,"sale_price":39.99}]}""");
+            }
+
+            return TestHttpMessageHandler.JsonResponse("""{}""");
+        });
+
+        using var httpClient = new HttpClient(handler);
+        using var client = new GoAffProClient(httpClient, new GoAffProClientOptions { BaseUrl = new Uri("https://example.test/v1/", UriKind.Absolute) });
+
+        IReadOnlyList<global::GoAffPro.Client.Models.GoAffProProduct> products = await client.GetProductsAsync(limit: 10, offset: 0);
+
+        products.Count.Should().Be(2);
+        products[0].Id.Should().Be("prod-1");
+        products[0].Name.Should().Be("Widget");
+        products[0].Price.Should().Be(29.99m);
+        products[1].SalePrice.Should().Be(39.99m);
     }
 }

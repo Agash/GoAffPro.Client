@@ -13,7 +13,10 @@ public sealed record GoAffProOrder
     /// <param name="id">GoAffPro order identifier.</param>
     /// <param name="number">Store-facing order number, when provided by the API.</param>
     /// <param name="total">Order total from the source store.</param>
+    /// <param name="subtotal">The amount on which commission is calculated.</param>
+    /// <param name="affiliateId">ID of the affiliate who brought the order.</param>
     /// <param name="commission">Commission amount attributed to the affiliate for this order.</param>
+    /// <param name="status">Order approval status.</param>
     /// <param name="currency">Currency code associated with the order amounts.</param>
     /// <param name="createdAt">Timestamp when the order was created.</param>
     /// <param name="rawPayload">Original JSON payload returned by the feed endpoint.</param>
@@ -21,7 +24,10 @@ public sealed record GoAffProOrder
         string id,
         string? number,
         decimal? total,
+        decimal? subtotal,
+        string? affiliateId,
         decimal? commission,
+        string? status,
         string? currency,
         DateTimeOffset? createdAt,
         JsonElement rawPayload)
@@ -29,7 +35,10 @@ public sealed record GoAffProOrder
         Id = id;
         Number = number;
         Total = total;
+        Subtotal = subtotal;
+        AffiliateId = affiliateId;
         Commission = commission;
+        Status = status;
         Currency = currency;
         CreatedAt = createdAt;
         RawPayload = rawPayload;
@@ -51,9 +60,24 @@ public sealed record GoAffProOrder
     public decimal? Total { get; init; }
 
     /// <summary>
+    /// The amount on which commission is calculated.
+    /// </summary>
+    public decimal? Subtotal { get; init; }
+
+    /// <summary>
+    /// ID of the affiliate who brought the order.
+    /// </summary>
+    public string? AffiliateId { get; init; }
+
+    /// <summary>
     /// Commission amount attributed to the affiliate.
     /// </summary>
     public decimal? Commission { get; init; }
+
+    /// <summary>
+    /// Order approval status (e.g., "approved" or "rejected").
+    /// </summary>
+    public string? Status { get; init; }
 
     /// <summary>
     /// Currency code associated with monetary values in this order.

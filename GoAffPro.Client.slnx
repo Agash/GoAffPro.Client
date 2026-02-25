@@ -7,8 +7,8 @@
     <File Path="NuGet.config" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="src/GoAffPro.Client.Generated/GoAffPro.Client.Generated.csproj" />
     <Project Path="src/GoAffPro.Client/GoAffPro.Client.csproj" />
-    <Project Path="src/GoAffPro.Client.Generator/GoAffPro.Client.Generator.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/GoAffPro.Client.IntegrationTests/GoAffPro.Client.IntegrationTests.csproj" />

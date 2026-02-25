@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net9.0;net10.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RunKiotaOnBuild Condition="'$(RunKiotaOnBuild)' == ''">true</RunKiotaOnBuild>
+    <GoAffProOpenApiSpecPath Condition="'$(GoAffProOpenApiSpecPath)' == ''">$(MSBuildProjectDirectory)\..\..\openapi\goaffpro-canonical.yaml</GoAffProOpenApiSpecPath>
+    <GoAffProRepoRoot>$(MSBuildProjectDirectory)\..\..\</GoAffProRepoRoot>
+    <GeneratedOutputDir>$(MSBuildProjectDirectory)\Generated</GeneratedOutputDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Kiota.Abstractions" />
+    <PackageReference Include="Microsoft.Kiota.Http.HttpClientLibrary" />
+    <PackageReference Include="Microsoft.Kiota.Serialization.Form" />
+    <PackageReference Include="Microsoft.Kiota.Serialization.Json" />
+    <PackageReference Include="Microsoft.Kiota.Serialization.Multipart" />
+    <PackageReference Include="Microsoft.Kiota.Serialization.Text" />
+  </ItemGroup>
+
+  <Target Name="GenerateKiotaClient"
+          BeforeTargets="BeforeBuild"
+          Condition="'$(RunKiotaOnBuild)' == 'true' and '$(DesignTimeBuild)' != 'true' and '$(TargetFramework)' == 'net9.0'"
+          Inputs="$(GoAffProOpenApiSpecPath);$(GoAffProRepoRoot)dotnet-tools.json"
+          Outputs="$(GeneratedOutputDir)\GoAffProApiClient.cs">
+    <Exec Command="dotnet tool restore"
+          WorkingDirectory="$(GoAffProRepoRoot)"
+          ConsoleToMSBuild="true" />
+
+    <RemoveDir Directories="$(GeneratedOutputDir)" Condition="Exists('$(GeneratedOutputDir)')" />
+
+    <Exec Command="dotnet tool run kiota generate --language CSharp --class-name GoAffProApiClient --namespace-name GoAffPro.Client.Generated --openapi &quot;$(GoAffProOpenApiSpecPath)&quot; --output &quot;$(GeneratedOutputDir)&quot;"
+          WorkingDirectory="$(GoAffProRepoRoot)"
+          ConsoleToMSBuild="true" />
+  </Target>
+
+</Project>

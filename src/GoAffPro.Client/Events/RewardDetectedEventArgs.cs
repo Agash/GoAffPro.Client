@@ -1,9 +1,9 @@
-using GoAffPro.Client.Models;
+using GoAffPro.Client.Generated.Models;
 
 namespace GoAffPro.Client.Events;
 
 /// <summary>
-/// Event arguments for <see cref="GoAffProEventDetector.RewardDetected"/>.
+/// Event arguments for <see cref="GoAffProClient.RewardDetected"/>.
 /// </summary>
 /// <remarks>
 /// Reward feed detection is currently disabled because <c>/user/feed/rewards</c>
@@ -15,7 +15,7 @@ public sealed class RewardDetectedEventArgs : EventArgs
     /// Initializes a new instance of the <see cref="RewardDetectedEventArgs"/> class.
     /// </summary>
     /// <param name="reward">Detected reward payload.</param>
-    public RewardDetectedEventArgs(GoAffProReward reward)
+    public RewardDetectedEventArgs(UserRewardFeedItem reward)
     {
         Reward = reward;
     }
@@ -23,5 +23,5 @@ public sealed class RewardDetectedEventArgs : EventArgs
     /// <summary>
     /// Gets the detected reward payload.
     /// </summary>
-    public GoAffProReward Reward { get; }
+    public UserRewardFeedItem Reward { get; }
 }

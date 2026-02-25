@@ -1,9 +1,9 @@
-using GoAffPro.Client.Models;
+using GoAffPro.Client.Generated.Models;
 
 namespace GoAffPro.Client.Events;
 
 /// <summary>
-/// Event arguments for <see cref="GoAffProEventDetector.OrderDetected"/>.
+/// Event arguments for <see cref="GoAffProClient.OrderDetected"/>.
 /// </summary>
 public sealed class OrderDetectedEventArgs : EventArgs
 {
@@ -11,7 +11,7 @@ public sealed class OrderDetectedEventArgs : EventArgs
     /// Initializes a new instance of the <see cref="OrderDetectedEventArgs"/> class.
     /// </summary>
     /// <param name="order">Detected order payload.</param>
-    public OrderDetectedEventArgs(GoAffProOrder order)
+    public OrderDetectedEventArgs(UserOrderFeedItem order)
     {
         Order = order;
     }
@@ -19,5 +19,5 @@ public sealed class OrderDetectedEventArgs : EventArgs
     /// <summary>
     /// Gets the detected order payload.
     /// </summary>
-    public GoAffProOrder Order { get; }
+    public UserOrderFeedItem Order { get; }
 }

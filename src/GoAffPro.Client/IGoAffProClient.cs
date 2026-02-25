@@ -48,15 +48,15 @@ public interface IGoAffProClient : IDisposable, IAsyncDisposable
     /// </summary>
     event EventHandler<PayoutDetectedEventArgs>? PayoutDetected;
 
-    /// <summary>
-    /// Raised when a new product item is detected in observer mode.
-    /// </summary>
-    event EventHandler<ProductDetectedEventArgs>? ProductDetected;
+    ///// <summary>
+    ///// Raised when a new product item is detected in observer mode.
+    ///// </summary>
+    //event EventHandler<ProductDetectedEventArgs>? ProductDetected;
 
-    /// <summary>
-    /// Raised when a new transaction item is detected in observer mode.
-    /// </summary>
-    event EventHandler<TransactionDetectedEventArgs>? TransactionDetected;
+    ///// <summary>
+    ///// Raised when a new transaction item is detected in observer mode.
+    ///// </summary>
+    //event EventHandler<TransactionDetectedEventArgs>? TransactionDetected;
 
     /// <summary>
     /// Raised when a new reward item is detected.

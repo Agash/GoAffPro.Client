@@ -4,6 +4,7 @@ using System.Net.Http.Headers;
 using GoAffPro.Client.Events;
 using GoAffPro.Client.Exceptions;
 using GoAffPro.Client.Generated.Models;
+using GoAffPro.Client.Generated.User.Feed.Orders;
 using GoAffPro.Client.Policies;
 using Microsoft.Extensions.Http;
 using Microsoft.Kiota.Abstractions;
@@ -17,6 +18,21 @@ namespace GoAffPro.Client;
 /// </summary>
 public sealed class GoAffProClient : IGoAffProClient
 {
+    private static readonly GetFieldsQueryParameterType[] _orderObserverFields =
+    [
+        GetFieldsQueryParameterType.Id,
+        GetFieldsQueryParameterType.Number,
+        GetFieldsQueryParameterType.Total,
+        GetFieldsQueryParameterType.Subtotal,
+        GetFieldsQueryParameterType.Line_items,
+        GetFieldsQueryParameterType.Commission,
+        GetFieldsQueryParameterType.Created_at,
+        GetFieldsQueryParameterType.Currency,
+        GetFieldsQueryParameterType.Site_id,
+        GetFieldsQueryParameterType.Sub_id,
+        GetFieldsQueryParameterType.Conversion_details,
+    ];
+
     private readonly bool _disposeHttpClient;
     private readonly HttpClient _httpClient;
     private readonly IRequestAdapter _requestAdapter;
@@ -92,11 +108,11 @@ public sealed class GoAffProClient : IGoAffProClient
     /// <inheritdoc />
     public event EventHandler<PayoutDetectedEventArgs>? PayoutDetected;
 
-    /// <inheritdoc />
-    public event EventHandler<ProductDetectedEventArgs>? ProductDetected;
+    ///// <inheritdoc />
+    //public event EventHandler<ProductDetectedEventArgs>? ProductDetected;
 
-    /// <inheritdoc />
-    public event EventHandler<TransactionDetectedEventArgs>? TransactionDetected;
+    ///// <inheritdoc />
+    //public event EventHandler<TransactionDetectedEventArgs>? TransactionDetected;
 
     /// <inheritdoc />
     [Obsolete("Disabled because /user/feed/rewards currently returns HTTP 404 (observed on 2026-02-18).")]
@@ -171,8 +187,8 @@ public sealed class GoAffProClient : IGoAffProClient
         DateTimeOffset lastOrderPoll = OrderObserverStartTime ?? DateTimeOffset.UtcNow;
         DateTimeOffset lastAffiliatePoll = AffiliateObserverStartTime ?? DateTimeOffset.UtcNow;
         DateTimeOffset lastPayoutPoll = PayoutObserverStartTime ?? DateTimeOffset.UtcNow;
-        int? lastProductId = null;
-        int? lastTransactionId = null;
+        //int? lastProductId = null;
+        //int? lastTransactionId = null;
 
         while (!cancellationToken.IsCancellationRequested)
         {
@@ -203,27 +219,29 @@ public sealed class GoAffProClient : IGoAffProClient
                 PayoutDetected?.Invoke(this, new PayoutDetectedEventArgs(payout));
             }
 
-            (IReadOnlyList<UserProductFeedItem> products, int? nextProductId) = await PollProductsAsync(
-                lastProductId,
-                validatedPageSize,
-                cancellationToken).ConfigureAwait(false);
-            lastProductId = nextProductId;
 
-            foreach (UserProductFeedItem product in products)
-            {
-                ProductDetected?.Invoke(this, new ProductDetectedEventArgs(product));
-            }
+            // DEACTIVATED SINCE API IS BROKEN
+            //(IReadOnlyList<UserProductFeedItem> products, int? nextProductId) = await PollProductsAsync(
+            //    lastProductId,
+            //    validatedPageSize,
+            //    cancellationToken).ConfigureAwait(false);
+            //lastProductId = nextProductId;
 
-            (IReadOnlyList<UserTransactionItem> transactions, int? nextTransactionId) = await PollTransactionsAsync(
-                lastTransactionId,
-                validatedPageSize,
-                cancellationToken).ConfigureAwait(false);
-            lastTransactionId = nextTransactionId;
+            //foreach (UserProductFeedItem product in products)
+            //{
+            //    ProductDetected?.Invoke(this, new ProductDetectedEventArgs(product));
+            //}
 
-            foreach (UserTransactionItem transaction in transactions)
-            {
-                TransactionDetected?.Invoke(this, new TransactionDetectedEventArgs(transaction));
-            }
+            //(IReadOnlyList<UserTransactionItem> transactions, int? nextTransactionId) = await PollTransactionsAsync(
+            //    lastTransactionId,
+            //    validatedPageSize,
+            //    cancellationToken).ConfigureAwait(false);
+            //lastTransactionId = nextTransactionId;
+
+            //foreach (UserTransactionItem transaction in transactions)
+            //{
+            //    TransactionDetected?.Invoke(this, new TransactionDetectedEventArgs(transaction));
+            //}
 
             await Task.Delay(interval, cancellationToken).ConfigureAwait(false);
         }
@@ -425,6 +443,7 @@ public sealed class GoAffProClient : IGoAffProClient
             {
                 config.QueryParameters.CreatedAtMin = from.ToString("o");
                 config.QueryParameters.CreatedAtMax = to.ToString("o");
+                config.QueryParameters.FieldsAsGetFieldsQueryParameterType = _orderObserverFields;
                 config.QueryParameters.Limit = pageSize;
                 config.QueryParameters.Offset = 0;
             }, cancellationToken).ConfigureAwait(false)

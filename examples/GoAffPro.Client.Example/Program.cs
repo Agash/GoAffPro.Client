@@ -478,10 +478,11 @@ internal sealed class ObserverController(IGoAffProClient client) : IAsyncDisposa
             WriteLiveEvent("affiliate", args.Affiliate.AffiliateId?.String ?? args.Affiliate.Id?.String ?? args.Affiliate.CustomerId?.String ?? "<unknown>");
         client.PayoutDetected += (_, args) =>
             WriteLiveEvent("payout", args.Payout.Id?.String ?? args.Payout.PayoutId?.String ?? "<unknown>");
-        client.ProductDetected += (_, args) =>
-            WriteLiveEvent("product", args.Product.ProductId?.String ?? args.Product.Id?.String ?? "<unknown>");
-        client.TransactionDetected += (_, args) =>
-            WriteLiveEvent("transaction", args.Transaction.TxId?.ToString(CultureInfo.InvariantCulture) ?? args.Transaction.Id ?? "<unknown>");
+
+        //client.ProductDetected += (_, args) =>
+        //    WriteLiveEvent("product", args.Product.ProductId?.String ?? args.Product.Id?.String ?? "<unknown>");
+        //client.TransactionDetected += (_, args) =>
+        //    WriteLiveEvent("transaction", args.Transaction.TxId?.ToString(CultureInfo.InvariantCulture) ?? args.Transaction.Id ?? "<unknown>");
 
         _cts = new CancellationTokenSource();
         _task = Task.Run(async () =>

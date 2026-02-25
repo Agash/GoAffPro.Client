@@ -6,7 +6,7 @@ namespace GoAffPro.Client.Tests;
 public sealed class GoAffProEventDetectorTests
 {
     [Fact]
-    public async Task NewOrdersAsync_TracksLastPollTime()
+    public async Task NewOrdersAsync_TracksLastPollTimeAsync()
     {
         int ordersCallCount = 0;
 
@@ -36,7 +36,7 @@ public sealed class GoAffProEventDetectorTests
     }
 
     [Fact]
-    public async Task NewAffiliatesAsync_TracksLastPollTime()
+    public async Task NewAffiliatesAsync_TracksLastPollTimeAsync()
     {
         int trafficCallCount = 0;
 
@@ -63,7 +63,7 @@ public sealed class GoAffProEventDetectorTests
     }
 
     [Fact]
-    public async Task NewOrdersAsync_WithStartTime_UsesStartTimeForFirstPoll()
+    public async Task NewOrdersAsync_WithStartTime_UsesStartTimeForFirstPollAsync()
     {
         bool startTimeUsed = false;
         var startTime = new DateTimeOffset(2026, 1, 15, 10, 0, 0, TimeSpan.Zero);
@@ -89,7 +89,32 @@ public sealed class GoAffProEventDetectorTests
     }
 
     [Fact]
-    public async Task NewPayoutsAsync_TracksLastPollTime()
+    public async Task NewOrdersAsync_SendsRequiredFieldsQueryAsync()
+    {
+        string? query = null;
+
+        using var handler = new TestHttpMessageHandler((request, _) =>
+        {
+            if (request.RequestUri!.AbsolutePath.EndsWith("/user/feed/orders", StringComparison.OrdinalIgnoreCase))
+            {
+                query = request.RequestUri.Query;
+                return TestHttpMessageHandler.JsonResponse("""{"orders":[],"count":0,"limit":100,"offset":0}""");
+            }
+
+            return TestHttpMessageHandler.JsonResponse("""{"orders":[],"count":0,"limit":100,"offset":0}""");
+        });
+
+        using var httpClient = new HttpClient(handler);
+        using var client = new GoAffProClient(httpClient, new GoAffProClientOptions { BaseUrl = new Uri("https://example.test/v1/", UriKind.Absolute) });
+
+        _ = await TakeAsync(client.NewOrdersAsync(pollingInterval: TimeSpan.FromMilliseconds(5), pageSize: 100), expectedCount: 0);
+
+        _ = query.Should().NotBeNull();
+        _ = query.Should().Contain("fields=id,number,total,subtotal,line_items,commission,created_at,currency,site_id,sub_id,conversion_details");
+    }
+
+    [Fact]
+    public async Task NewPayoutsAsync_TracksLastPollTimeAsync()
     {
         int payoutsCallCount = 0;
 
@@ -119,7 +144,7 @@ public sealed class GoAffProEventDetectorTests
     }
 
     [Fact]
-    public async Task NewProductsAsync_DetectsIdsAboveInitialBaseline()
+    public async Task NewProductsAsync_DetectsIdsAboveInitialBaselineAsync()
     {
         int productsCallCount = 0;
 
@@ -148,7 +173,7 @@ public sealed class GoAffProEventDetectorTests
     }
 
     [Fact]
-    public async Task NewTransactionsAsync_DetectsIdsAboveInitialBaseline()
+    public async Task NewTransactionsAsync_DetectsIdsAboveInitialBaselineAsync()
     {
         int transactionsCallCount = 0;
 
@@ -177,7 +202,7 @@ public sealed class GoAffProEventDetectorTests
     }
 
     [Fact]
-    public async Task StartEventObserverAsync_WhenNewEventsAreDetected_RaisesEventHandlers()
+    public async Task StartEventObserverAsync_WhenNewEventsAreDetected_RaisesEventHandlersAsync()
     {
         int ordersCallCount = 0;
         int trafficCallCount = 0;
@@ -243,20 +268,21 @@ public sealed class GoAffProEventDetectorTests
         client.OrderDetected += (_, args) => orderIds.Add(args.Order.Id?.String ?? args.Order.OrderId?.String ?? string.Empty);
         client.AffiliateDetected += (_, args) => affiliateIds.Add(args.Affiliate.AffiliateId?.String ?? args.Affiliate.Id?.String ?? string.Empty);
         client.PayoutDetected += (_, args) => payoutIds.Add(args.Payout.Id?.String ?? args.Payout.PayoutId?.String ?? string.Empty);
-        client.ProductDetected += (_, args) =>
-        {
-            if (args.Product.Id?.Integer is int productId)
-            {
-                productIds.Add(productId);
-            }
-        };
-        client.TransactionDetected += (_, args) =>
-        {
-            if (args.Transaction.TxId is int txId)
-            {
-                transactionIds.Add(txId);
-            }
-        };
+
+        //client.ProductDetected += (_, args) =>
+        //{
+        //    if (args.Product.Id?.Integer is int productId)
+        //    {
+        //        productIds.Add(productId);
+        //    }
+        //};
+        //client.TransactionDetected += (_, args) =>
+        //{
+        //    if (args.Transaction.TxId is int txId)
+        //    {
+        //        transactionIds.Add(txId);
+        //    }
+        //};
 
         Task runTask = client.StartEventObserverAsync(
             pollingInterval: TimeSpan.FromMilliseconds(5),

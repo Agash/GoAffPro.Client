@@ -1,6 +1,6 @@
 # GoAffPro.Client
 
-Async-first .NET client for the GoAffPro API with build-time NSwag generation and polling/event-based change detection.
+Async-first .NET client for the GoAffPro API with build-time Kiota generation and polling/event-based change detection.
 
 ## Targets
 
@@ -30,54 +30,34 @@ await using var loggedInClient = await GoAffProClient.CreateLoggedInAsync(
     password: "password123");
 ```
 
-### Wrapper Methods (DX Layer)
+### Wrapper Surface
 
-The wrapper methods are built on top of generated clients:
+`GoAffProClient` intentionally keeps a minimal wrapper surface:
 
-```csharp
-// Fetch orders with optional time filtering
-var orders = await client.GetOrdersAsync(from: DateTimeOffset.UtcNow.AddDays(-1), limit: 50);
-
-// Fetch affiliates with time range
-var affiliates = await client.GetAffiliatesAsync(from: startDate, toDate: endDate, limit: 50);
-
-// Fetch payouts and products
-var payouts = await client.GetPayoutsAsync(limit: 50);
-var products = await client.GetProductsAsync(limit: 50);
-```
-
-Wrapper methods return typed models:
-
-- `GoAffProOrder` (includes Subtotal, AffiliateId, Status)
-- `GoAffProAffiliate` (includes FirstName, LastName, Phone, Country, GroupId)
-- `GoAffProReward` (includes AffiliateId, Type, Metadata, Level, Status) - currently disabled
-- `GoAffProPayout`
-- `GoAffProProduct`
-
-Each model includes strongly typed fields and `RawPayload` (`JsonElement`) for advanced scenarios.
-
-`GetRewardsAsync` is currently disabled because `/user/feed/rewards` is returning `404` (observed on 2026-02-18). The method is marked `[Obsolete]` and returns an empty collection.
+- auth helpers: `LoginAsync`, `SetBearerToken`
+- generated client access: `User` and `PublicApi`
+- polling detector: `GoAffProEventDetector`
 
 ### Access Generated Clients Directly
 
 ```csharp
-var loginResponse = await client.User.UserLoginAsync(new GoAffPro.Client.Generated.User.Body
+var loginResponse = await client.User.User.Login.PostAsync(new GoAffPro.Client.Generated.User.User.Login.LoginPostRequestBody
 {
     Email = "affiliate@example.com",
     Password = "password123",
 });
 
-var publicSites = await client.PublicApi.PublicSitesAsync(
-    site_ids: null,
-    currency: null,
-    keyword: null,
-    limit: 20,
-    offset: 0);
+var publicSites = await client.PublicApi.Public.Sites.GetAsync(config =>
+{
+    config.QueryParameters.Limit = 20;
+    config.QueryParameters.Offset = 0;
+});
 ```
 
 ## Event Detection
 
 `GoAffProEventDetector` supports both async streams and classic `.NET` events. It uses time-based filtering to fetch only new items since the last poll.
+Detected payloads are propagated as generated Kiota feed item types.
 
 ### Async Streams
 
@@ -135,18 +115,15 @@ dotnet run --project examples/GoAffPro.Client.Example
 
 ## Build-Time Generation
 
-On build, `GoAffPro.Client.Generator`:
+On build, `GoAffPro.Client.Generated`:
 
-1. Fetches `https://api.goaffpro.com/docs/admin/swagger-ui-init.js`
-   (or uses `openapi/swagger-ui-init.js` only if you provide a local override file)
-2. Extracts OpenAPI JSON
-3. Filters to `/user/*` and `/public/*`
-4. Normalizes schema gaps for generation
-5. Generates:
-   - `src/GoAffPro.Client/Generated/GoAffProUserClient.g.cs`
-   - `src/GoAffPro.Client/Generated/GoAffProPublicClient.g.cs`
+1. Loads the local canonical spec `openapi/goaffpro-canonical.yaml`
+2. Runs Kiota generation for `/user/*` and `/public/*`
+3. Writes generated files under:
+   - `src/GoAffPro.Client.Generated/Generated/User`
+   - `src/GoAffPro.Client.Generated/Generated/Public`
 
-Do not edit `*.g.cs` manually.
+Generated output is implementation detail for the wrapper package. Do not manually edit files under `Generated/`.
 
 ## Testing
 

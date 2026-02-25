@@ -1,0 +1,2 @@
+Warning: KiotaBuilder Discriminator UserTrafficFeedResponse is not inherited from CountLimitOffsetEnvelope.
+Warning: KiotaBuilder Discriminator UserPayoutFeedResponse is not inherited from CountLimitOffsetEnvelope.

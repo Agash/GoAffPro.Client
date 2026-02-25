@@ -1,22 +1,25 @@
 using System.Globalization;
 using System.Net;
 using System.Net.Http.Headers;
-using System.Text.Json;
+using GoAffPro.Client.Events;
 using GoAffPro.Client.Exceptions;
-using GoAffPro.Client.Models;
+using GoAffPro.Client.Generated.Models;
 using GoAffPro.Client.Policies;
 using Microsoft.Extensions.Http;
+using Microsoft.Kiota.Abstractions;
+using Microsoft.Kiota.Abstractions.Authentication;
+using Microsoft.Kiota.Http.HttpClientLibrary;
 
 namespace GoAffPro.Client;
 
 /// <summary>
-/// High-level GoAffPro API client that wraps generated NSwag clients and provides
-/// typed feed helpers for common workflows.
+/// High-level GoAffPro API client exposing generated Kiota API surface and observer loops.
 /// </summary>
 public sealed class GoAffProClient : IGoAffProClient
 {
     private readonly bool _disposeHttpClient;
     private readonly HttpClient _httpClient;
+    private readonly IRequestAdapter _requestAdapter;
 
     /// <summary>
     /// Initializes a new client instance with internally managed <see cref="HttpClient"/>.
@@ -51,14 +54,13 @@ public sealed class GoAffProClient : IGoAffProClient
         string baseUrl = _httpClient.BaseAddress?.ToString()
                          ?? throw new InvalidOperationException("HttpClient.BaseAddress was not initialized.");
 
-        User = new global::GoAffPro.Client.Generated.User.GoAffProUserClient(_httpClient)
+        IAuthenticationProvider authenticationProvider = new AnonymousAuthenticationProvider();
+        _requestAdapter = new HttpClientRequestAdapter(authenticationProvider, httpClient: _httpClient)
         {
-            BaseUrl = baseUrl,
+            BaseUrl = baseUrl.TrimEnd('/'),
         };
-        PublicApi = new global::GoAffPro.Client.Generated.Public.GoAffProPublicClient(_httpClient)
-        {
-            BaseUrl = baseUrl,
-        };
+
+        Api = new global::GoAffPro.Client.Generated.GoAffProApiClient(_requestAdapter);
 
         if (!string.IsNullOrWhiteSpace(options.BearerToken))
         {
@@ -67,13 +69,38 @@ public sealed class GoAffProClient : IGoAffProClient
     }
 
     /// <inheritdoc />
-    public global::GoAffPro.Client.Generated.User.GoAffProUserClient User { get; }
-
-    /// <inheritdoc />
-    public global::GoAffPro.Client.Generated.Public.GoAffProPublicClient PublicApi { get; }
+    public global::GoAffPro.Client.Generated.GoAffProApiClient Api { get; }
 
     /// <inheritdoc />
     public string? BearerToken { get; private set; }
+
+    /// <inheritdoc />
+    public DateTimeOffset? OrderObserverStartTime { get; set; }
+
+    /// <inheritdoc />
+    public DateTimeOffset? AffiliateObserverStartTime { get; set; }
+
+    /// <inheritdoc />
+    public DateTimeOffset? PayoutObserverStartTime { get; set; }
+
+    /// <inheritdoc />
+    public event EventHandler<OrderDetectedEventArgs>? OrderDetected;
+
+    /// <inheritdoc />
+    public event EventHandler<AffiliateDetectedEventArgs>? AffiliateDetected;
+
+    /// <inheritdoc />
+    public event EventHandler<PayoutDetectedEventArgs>? PayoutDetected;
+
+    /// <inheritdoc />
+    public event EventHandler<ProductDetectedEventArgs>? ProductDetected;
+
+    /// <inheritdoc />
+    public event EventHandler<TransactionDetectedEventArgs>? TransactionDetected;
+
+    /// <inheritdoc />
+    [Obsolete("Disabled because /user/feed/rewards currently returns HTTP 404 (observed on 2026-02-18).")]
+    public event EventHandler<RewardDetectedEventArgs>? RewardDetected;
 
     /// <summary>
     /// Creates a new client and logs in immediately using the provided credentials.
@@ -98,25 +125,26 @@ public sealed class GoAffProClient : IGoAffProClient
         ArgumentException.ThrowIfNullOrWhiteSpace(email);
         ArgumentException.ThrowIfNullOrWhiteSpace(password);
 
-        var request = new global::GoAffPro.Client.Generated.User.Body
+        var request = new global::GoAffPro.Client.Generated.User.Login.LoginPostRequestBody
         {
             Email = email,
             Password = password,
         };
 
-        global::GoAffPro.Client.Generated.User.Response response = await ExecuteUserAsync(
-                () => User.UserLoginAsync(request, cancellationToken))
+        LoginResponse response = await ExecuteUserAsync(
+                async () => await Api.User.Login.PostAsync(request, cancellationToken: cancellationToken).ConfigureAwait(false)
+                      ?? new LoginResponse())
             .ConfigureAwait(false);
 
-        if (string.IsNullOrWhiteSpace(response.Access_token))
+        if (string.IsNullOrWhiteSpace(response.AccessToken))
         {
             throw new GoAffProApiException(
                 message: "GoAffPro login response does not contain an access token.",
                 statusCode: HttpStatusCode.OK);
         }
 
-        SetBearerToken(response.Access_token);
-        return response.Access_token;
+        SetBearerToken(response.AccessToken);
+        return response.AccessToken;
     }
 
     /// <inheritdoc />
@@ -129,112 +157,215 @@ public sealed class GoAffProClient : IGoAffProClient
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<GoAffProOrder>> GetOrdersAsync(
-        DateTimeOffset? from = null,
-        DateTimeOffset? toDate = null,
-        int limit = 100,
-        int offset = 0,
+    public async Task StartEventObserverAsync(
+        TimeSpan? pollingInterval = null,
+        int pageSize = 100,
         CancellationToken cancellationToken = default)
     {
-        global::GoAffPro.Client.Generated.User.Response6 response = await ExecuteUserAsync(
-                () => User.UserFeedOrdersAsync(
-                    site_ids: null,
-                    since_id: null,
-                    max_id: null,
-                    created_at_max: toDate?.ToString("o"),
-                    created_at_min: from?.ToString("o"),
-                    fields: [],
-                    limit: limit,
-                    offset: offset,
-                    cancellationToken))
-            .ConfigureAwait(false);
+        int validatedPageSize = ValidatePageSize(pageSize);
+        TimeSpan interval = pollingInterval ?? TimeSpan.FromSeconds(30);
 
-        return MapFeedItems(
-            response.Orders ?? Array.Empty<object>(),
-            TryMapOrder);
+        // Referenced intentionally so the temporarily-disabled event remains part of the public surface.
+        _ = RewardDetected;
+
+        DateTimeOffset lastOrderPoll = OrderObserverStartTime ?? DateTimeOffset.UtcNow;
+        DateTimeOffset lastAffiliatePoll = AffiliateObserverStartTime ?? DateTimeOffset.UtcNow;
+        DateTimeOffset lastPayoutPoll = PayoutObserverStartTime ?? DateTimeOffset.UtcNow;
+        int? lastProductId = null;
+        int? lastTransactionId = null;
+
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            DateTimeOffset orderTo = DateTimeOffset.UtcNow;
+            IReadOnlyList<UserOrderFeedItem> orders = await PollOrdersAsync(lastOrderPoll, orderTo, validatedPageSize, cancellationToken).ConfigureAwait(false);
+            lastOrderPoll = orderTo;
+
+            foreach (UserOrderFeedItem order in orders)
+            {
+                OrderDetected?.Invoke(this, new OrderDetectedEventArgs(order));
+            }
+
+            DateTimeOffset affiliateTo = DateTimeOffset.UtcNow;
+            IReadOnlyList<UserTrafficFeedItem> affiliates = await PollAffiliatesAsync(lastAffiliatePoll, affiliateTo, validatedPageSize, cancellationToken).ConfigureAwait(false);
+            lastAffiliatePoll = affiliateTo;
+
+            foreach (UserTrafficFeedItem affiliate in affiliates)
+            {
+                AffiliateDetected?.Invoke(this, new AffiliateDetectedEventArgs(affiliate));
+            }
+
+            DateTimeOffset payoutTo = DateTimeOffset.UtcNow;
+            IReadOnlyList<UserPayoutFeedItem> payouts = await PollPayoutsAsync(lastPayoutPoll, payoutTo, validatedPageSize, cancellationToken).ConfigureAwait(false);
+            lastPayoutPoll = payoutTo;
+
+            foreach (UserPayoutFeedItem payout in payouts)
+            {
+                PayoutDetected?.Invoke(this, new PayoutDetectedEventArgs(payout));
+            }
+
+            (IReadOnlyList<UserProductFeedItem> products, int? nextProductId) = await PollProductsAsync(
+                lastProductId,
+                validatedPageSize,
+                cancellationToken).ConfigureAwait(false);
+            lastProductId = nextProductId;
+
+            foreach (UserProductFeedItem product in products)
+            {
+                ProductDetected?.Invoke(this, new ProductDetectedEventArgs(product));
+            }
+
+            (IReadOnlyList<UserTransactionItem> transactions, int? nextTransactionId) = await PollTransactionsAsync(
+                lastTransactionId,
+                validatedPageSize,
+                cancellationToken).ConfigureAwait(false);
+            lastTransactionId = nextTransactionId;
+
+            foreach (UserTransactionItem transaction in transactions)
+            {
+                TransactionDetected?.Invoke(this, new TransactionDetectedEventArgs(transaction));
+            }
+
+            await Task.Delay(interval, cancellationToken).ConfigureAwait(false);
+        }
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<GoAffProAffiliate>> GetAffiliatesAsync(
-        DateTimeOffset? from = null,
-        DateTimeOffset? toDate = null,
-        int limit = 100,
-        int offset = 0,
-        CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<UserOrderFeedItem> NewOrdersAsync(
+        TimeSpan? pollingInterval = null,
+        int pageSize = 100,
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        global::GoAffPro.Client.Generated.User.Response8 response = await ExecuteUserAsync(
-                () => User.UserFeedTrafficAsync(
-                    site_ids: null,
-                    start_time: from?.ToString("o"),
-                    end_time: toDate?.ToString("o"),
-                    since_id: null,
-                    limit: limit,
-                    offset: offset,
-                    cancellationToken))
-            .ConfigureAwait(false);
+        int validatedPageSize = ValidatePageSize(pageSize);
+        TimeSpan interval = pollingInterval ?? TimeSpan.FromSeconds(30);
 
-        return MapFeedItems(
-            response.Traffic ?? Array.Empty<object>(),
-            TryMapAffiliate);
+        DateTimeOffset lastPoll = OrderObserverStartTime ?? DateTimeOffset.UtcNow;
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            DateTimeOffset to = DateTimeOffset.UtcNow;
+            IReadOnlyList<UserOrderFeedItem> orders = await PollOrdersAsync(lastPoll, to, validatedPageSize, cancellationToken).ConfigureAwait(false);
+            lastPoll = to;
+
+            foreach (UserOrderFeedItem order in orders)
+            {
+                yield return order;
+            }
+
+            await Task.Delay(interval, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<UserTrafficFeedItem> NewAffiliatesAsync(
+        TimeSpan? pollingInterval = null,
+        int pageSize = 100,
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        int validatedPageSize = ValidatePageSize(pageSize);
+        TimeSpan interval = pollingInterval ?? TimeSpan.FromSeconds(30);
+
+        DateTimeOffset lastPoll = AffiliateObserverStartTime ?? DateTimeOffset.UtcNow;
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            DateTimeOffset to = DateTimeOffset.UtcNow;
+            IReadOnlyList<UserTrafficFeedItem> affiliates = await PollAffiliatesAsync(lastPoll, to, validatedPageSize, cancellationToken).ConfigureAwait(false);
+            lastPoll = to;
+
+            foreach (UserTrafficFeedItem affiliate in affiliates)
+            {
+                yield return affiliate;
+            }
+
+            await Task.Delay(interval, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<UserPayoutFeedItem> NewPayoutsAsync(
+        TimeSpan? pollingInterval = null,
+        int pageSize = 100,
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        int validatedPageSize = ValidatePageSize(pageSize);
+        TimeSpan interval = pollingInterval ?? TimeSpan.FromSeconds(30);
+
+        DateTimeOffset lastPoll = PayoutObserverStartTime ?? DateTimeOffset.UtcNow;
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            DateTimeOffset to = DateTimeOffset.UtcNow;
+            IReadOnlyList<UserPayoutFeedItem> payouts = await PollPayoutsAsync(lastPoll, to, validatedPageSize, cancellationToken).ConfigureAwait(false);
+            lastPoll = to;
+
+            foreach (UserPayoutFeedItem payout in payouts)
+            {
+                yield return payout;
+            }
+
+            await Task.Delay(interval, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<UserProductFeedItem> NewProductsAsync(
+        TimeSpan? pollingInterval = null,
+        int pageSize = 100,
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        int validatedPageSize = ValidatePageSize(pageSize);
+        TimeSpan interval = pollingInterval ?? TimeSpan.FromSeconds(30);
+        int? lastProductId = null;
+
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            (IReadOnlyList<UserProductFeedItem> products, int? nextProductId) = await PollProductsAsync(
+                lastProductId,
+                validatedPageSize,
+                cancellationToken).ConfigureAwait(false);
+            lastProductId = nextProductId;
+
+            foreach (UserProductFeedItem product in products)
+            {
+                yield return product;
+            }
+
+            await Task.Delay(interval, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<UserTransactionItem> NewTransactionsAsync(
+        TimeSpan? pollingInterval = null,
+        int pageSize = 100,
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        int validatedPageSize = ValidatePageSize(pageSize);
+        TimeSpan interval = pollingInterval ?? TimeSpan.FromSeconds(30);
+        int? lastTransactionId = null;
+
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            (IReadOnlyList<UserTransactionItem> transactions, int? nextTransactionId) = await PollTransactionsAsync(
+                lastTransactionId,
+                validatedPageSize,
+                cancellationToken).ConfigureAwait(false);
+            lastTransactionId = nextTransactionId;
+
+            foreach (UserTransactionItem transaction in transactions)
+            {
+                yield return transaction;
+            }
+
+            await Task.Delay(interval, cancellationToken).ConfigureAwait(false);
+        }
     }
 
     /// <inheritdoc />
     [Obsolete("Disabled because /user/feed/rewards currently returns HTTP 404 (observed on 2026-02-18).")]
-    public Task<IReadOnlyList<GoAffProReward>> GetRewardsAsync(
-        DateTimeOffset? from = null,
-        DateTimeOffset? toDate = null,
-        int limit = 100,
-        int offset = 0,
-        CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<UserRewardFeedItem> NewRewardsAsync(
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        _ = from;
-        _ = toDate;
-        _ = limit;
-        _ = offset;
         _ = cancellationToken;
-        return Task.FromResult<IReadOnlyList<GoAffProReward>>(Array.Empty<GoAffProReward>());
-    }
-
-    /// <inheritdoc />
-    public async Task<IReadOnlyList<GoAffProPayout>> GetPayoutsAsync(
-        DateTimeOffset? from = null,
-        DateTimeOffset? toDate = null,
-        int limit = 100,
-        int offset = 0,
-        CancellationToken cancellationToken = default)
-    {
-        object response = await ExecuteUserAsync(
-                () => User.UserFeedPayoutsAsync(
-                    site_ids: null,
-                    start_time: from?.ToString("o"),
-                    end_time: toDate?.ToString("o"),
-                    since_id: null,
-                    limit: limit,
-                    offset: offset,
-                    cancellationToken))
-            .ConfigureAwait(false);
-
-        return MapFeedItems(
-            ExtractPayoutItems(response),
-            TryMapPayout);
-    }
-
-    /// <inheritdoc />
-    public async Task<IReadOnlyList<GoAffProProduct>> GetProductsAsync(
-        int limit = 100,
-        int offset = 0,
-        CancellationToken cancellationToken = default)
-    {
-        object response = await ExecuteUserAsync(
-                () => User.UserFeedProductsAsync(
-                    limit: limit,
-                    offset: offset,
-                    cancellationToken: cancellationToken))
-            .ConfigureAwait(false);
-
-        return MapFeedItems(
-            ExtractProductItems(response),
-            TryMapProduct);
+        await Task.CompletedTask.ConfigureAwait(false);
+        yield break;
     }
 
     /// <summary>
@@ -244,6 +375,11 @@ public sealed class GoAffProClient : IGoAffProClient
     {
         if (_disposeHttpClient)
         {
+            if (_requestAdapter is IDisposable disposableAdapter)
+            {
+                disposableAdapter.Dispose();
+            }
+
             _httpClient.Dispose();
         }
     }
@@ -256,6 +392,11 @@ public sealed class GoAffProClient : IGoAffProClient
     {
         if (_disposeHttpClient)
         {
+            if (_requestAdapter is IDisposable disposableAdapter)
+            {
+                disposableAdapter.Dispose();
+            }
+
             _httpClient.Dispose();
         }
 
@@ -271,6 +412,159 @@ public sealed class GoAffProClient : IGoAffProClient
         }
 
         return new Uri(normalized, UriKind.Absolute);
+    }
+
+    private async Task<IReadOnlyList<UserOrderFeedItem>> PollOrdersAsync(
+        DateTimeOffset from,
+        DateTimeOffset to,
+        int pageSize,
+        CancellationToken cancellationToken)
+    {
+        UserOrderFeedResponse response = await ExecuteUserAsync(async () =>
+            await Api.User.Feed.Orders.GetAsync(config =>
+            {
+                config.QueryParameters.CreatedAtMin = from.ToString("o");
+                config.QueryParameters.CreatedAtMax = to.ToString("o");
+                config.QueryParameters.Limit = pageSize;
+                config.QueryParameters.Offset = 0;
+            }, cancellationToken).ConfigureAwait(false)
+            ?? new UserOrderFeedResponse()).ConfigureAwait(false);
+
+        return response.Orders is null || response.Orders.Count == 0 ? [] : (IReadOnlyList<UserOrderFeedItem>)response.Orders;
+    }
+
+    private async Task<IReadOnlyList<UserTrafficFeedItem>> PollAffiliatesAsync(
+        DateTimeOffset from,
+        DateTimeOffset to,
+        int pageSize,
+        CancellationToken cancellationToken)
+    {
+        UserTrafficFeedResponse response = await ExecuteUserAsync(async () =>
+            await Api.User.Feed.Traffic.GetAsync(config =>
+            {
+                config.QueryParameters.StartTime = from.ToString("o");
+                config.QueryParameters.EndTime = to.ToString("o");
+                config.QueryParameters.Limit = pageSize;
+                config.QueryParameters.Offset = 0;
+            }, cancellationToken).ConfigureAwait(false)
+            ?? new UserTrafficFeedResponse()).ConfigureAwait(false);
+
+        return response.Traffic is null || response.Traffic.Count == 0 ? [] : (IReadOnlyList<UserTrafficFeedItem>)response.Traffic;
+    }
+
+    private async Task<IReadOnlyList<UserPayoutFeedItem>> PollPayoutsAsync(
+        DateTimeOffset from,
+        DateTimeOffset to,
+        int pageSize,
+        CancellationToken cancellationToken)
+    {
+        UserPayoutFeedResponse response = await ExecuteUserAsync(async () =>
+            await Api.User.Feed.Payouts.GetAsync(config =>
+            {
+                config.QueryParameters.StartTime = from.ToString("o");
+                config.QueryParameters.EndTime = to.ToString("o");
+                config.QueryParameters.Limit = pageSize;
+                config.QueryParameters.Offset = 0;
+            }, cancellationToken).ConfigureAwait(false)
+            ?? new UserPayoutFeedResponse()).ConfigureAwait(false);
+
+        return response.Payouts is null || response.Payouts.Count == 0 ? [] : (IReadOnlyList<UserPayoutFeedItem>)response.Payouts;
+    }
+
+    private async Task<(IReadOnlyList<UserProductFeedItem> Products, int? NextProductId)> PollProductsAsync(
+        int? lastProductId,
+        int pageSize,
+        CancellationToken cancellationToken)
+    {
+        UserProductFeedResponse response = await ExecuteUserAsync(async () =>
+            await Api.User.Feed.Products.GetAsync(config =>
+            {
+                config.QueryParameters.Limit = pageSize;
+                config.QueryParameters.Offset = 0;
+            }, cancellationToken).ConfigureAwait(false)
+            ?? new UserProductFeedResponse()).ConfigureAwait(false);
+
+        if (response.Products is null || response.Products.Count == 0)
+        {
+            return ([], lastProductId);
+        }
+
+        int? maxProductId = response.Products
+            .Select(item => ToInt(item.ProductId) ?? ToInt(item.Id))
+            .Where(static value => value.HasValue)
+            .Select(static value => value!.Value)
+            .DefaultIfEmpty(lastProductId ?? int.MinValue)
+            .Max();
+
+        if (!lastProductId.HasValue)
+        {
+            return ([], maxProductId == int.MinValue ? null : maxProductId);
+        }
+
+        var products = response.Products
+            .Where(item =>
+            {
+                int? id = ToInt(item.ProductId) ?? ToInt(item.Id);
+                return id.HasValue && id.Value > lastProductId.Value;
+            })
+            .OrderBy(item => (ToInt(item.ProductId) ?? ToInt(item.Id)) ?? int.MinValue)
+            .ToList();
+
+        int? next = maxProductId == int.MinValue ? lastProductId : maxProductId;
+        return (products, next);
+    }
+
+    private async Task<(IReadOnlyList<UserTransactionItem> Transactions, int? NextTransactionId)> PollTransactionsAsync(
+        int? lastTransactionId,
+        int pageSize,
+        CancellationToken cancellationToken)
+    {
+        UserTransactionFeedResponse response = await ExecuteUserAsync(async () =>
+            await Api.User.Feed.Transactions.GetAsync(config =>
+            {
+                config.QueryParameters.Limit = pageSize;
+                config.QueryParameters.Offset = 0;
+            }, cancellationToken).ConfigureAwait(false)
+            ?? new UserTransactionFeedResponse()).ConfigureAwait(false);
+
+        if (response.Transactions is null || response.Transactions.Count == 0)
+        {
+            return ([], lastTransactionId);
+        }
+
+        int? maxTransactionId = response.Transactions
+            .Select(item => item.TxId)
+            .Where(static value => value.HasValue)
+            .Select(static value => value!.Value)
+            .DefaultIfEmpty(lastTransactionId ?? int.MinValue)
+            .Max();
+
+        if (!lastTransactionId.HasValue)
+        {
+            return ([], maxTransactionId == int.MinValue ? null : maxTransactionId);
+        }
+
+        var transactions = response.Transactions
+            .Where(item => item.TxId.HasValue && item.TxId.Value > lastTransactionId.Value)
+            .OrderBy(item => item.TxId ?? int.MinValue)
+            .ToList();
+
+        int? next = maxTransactionId == int.MinValue ? lastTransactionId : maxTransactionId;
+        return (transactions, next);
+    }
+
+    private static int? ToInt(UserProductFeedItem.UserProductFeedItem_product_id? value)
+    {
+        return value?.Integer.HasValue == true
+            ? value.Integer.Value
+            : int.TryParse(value?.String, NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsed) ? parsed : null;
+    }
+
+    private static int? ToInt(UserProductFeedItem.UserProductFeedItem_id? value)
+    {
+        return value?.Integer.HasValue == true
+            ? value.Integer.Value
+            : int.TryParse(value?.String, NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsed) ? parsed : null;
     }
 
     private static HttpClient CreateHttpClient(GoAffProClientOptions options)
@@ -297,281 +591,36 @@ public sealed class GoAffProClient : IGoAffProClient
         return options;
     }
 
+    private static int ValidatePageSize(int pageSize)
+    {
+        return pageSize <= 0
+            ? throw new ArgumentOutOfRangeException(nameof(pageSize), pageSize, "Page size must be greater than zero.")
+            : pageSize;
+    }
+
     private static async Task<T> ExecuteUserAsync<T>(Func<Task<T>> action)
     {
         try
         {
             return await action().ConfigureAwait(false);
         }
-        catch (global::GoAffPro.Client.Generated.User.GoAffProUserClientApiException exception)
+        catch (ApiException exception)
         {
             throw ConvertUserException(exception);
         }
     }
 
-    private static GoAffProApiException ConvertUserException(global::GoAffPro.Client.Generated.User.GoAffProUserClientApiException exception)
+    private static GoAffProApiException ConvertUserException(ApiException exception)
     {
-        HttpStatusCode statusCode = Enum.IsDefined(typeof(HttpStatusCode), exception.StatusCode)
-            ? (HttpStatusCode)exception.StatusCode
+        int statusCodeValue = exception.ResponseStatusCode;
+        HttpStatusCode statusCode = Enum.IsDefined(typeof(HttpStatusCode), statusCodeValue)
+            ? (HttpStatusCode)statusCodeValue
             : HttpStatusCode.InternalServerError;
 
         return new GoAffProApiException(
             message: exception.Message,
             statusCode: statusCode,
-            responseBody: exception.Response,
+            responseBody: null,
             innerException: exception);
-    }
-
-    private static List<TModel> MapFeedItems<TModel>(
-        IEnumerable<object> items,
-        Func<JsonElement, TModel?> map)
-        where TModel : class
-    {
-        var results = new List<TModel>();
-        foreach (object item in items)
-        {
-            JsonElement payload = item is JsonElement jsonElement
-                ? jsonElement.Clone()
-                : JsonSerializer.SerializeToElement(item);
-
-            TModel? mapped = map(payload);
-            if (mapped is null)
-            {
-                continue;
-            }
-
-            results.Add(mapped);
-        }
-
-        return results;
-    }
-
-    private static object[] ExtractPayoutItems(object response)
-    {
-        return response is JsonElement jsonElement && jsonElement.ValueKind == JsonValueKind.Object
-            ? jsonElement.TryGetProperty("payouts", out JsonElement payouts)
-                ? JsonSerializer.Deserialize<object[]>(payouts.GetRawText()) ?? []
-                : []
-            : [];
-    }
-
-    private static object[] ExtractProductItems(object response)
-    {
-        return response is JsonElement jsonElement && jsonElement.ValueKind == JsonValueKind.Object
-            ? jsonElement.TryGetProperty("products", out JsonElement products)
-                ? JsonSerializer.Deserialize<object[]>(products.GetRawText()) ?? []
-                : []
-            : [];
-    }
-
-    private static GoAffProOrder? TryMapOrder(JsonElement payload)
-    {
-        string? id = TryExtractId(payload, ["id", "order_id"]);
-        return string.IsNullOrWhiteSpace(id)
-            ? null
-            : new GoAffProOrder(
-            id: id,
-            number: TryGetString(payload, "number"),
-            total: TryGetDecimal(payload, "total"),
-            subtotal: TryGetDecimal(payload, "subtotal"),
-            affiliateId: TryGetString(payload, "affiliate_id"),
-            commission: TryGetDecimal(payload, "commission"),
-            status: TryGetString(payload, "status"),
-            currency: TryGetString(payload, "currency"),
-            createdAt: TryGetDateTimeOffset(payload, "created_at", "created"),
-            rawPayload: payload);
-    }
-
-    private static GoAffProAffiliate? TryMapAffiliate(JsonElement payload)
-    {
-        string? id = TryExtractId(payload, ["affiliate_id", "id", "customer_id"]);
-        return string.IsNullOrWhiteSpace(id)
-            ? null
-            : new GoAffProAffiliate(
-            id: id,
-            name: TryGetString(payload, "name"),
-            firstName: TryGetString(payload, "first_name"),
-            lastName: TryGetString(payload, "last_name"),
-            email: TryGetString(payload, "email"),
-            customerId: TryGetString(payload, "customer_id"),
-            refCode: TryGetString(payload, "ref_code"),
-            phone: TryGetString(payload, "phone"),
-            country: TryGetString(payload, "country"),
-            groupId: TryGetInt32(payload, "group_id"),
-            createdAt: TryGetDateTimeOffset(payload, "created_at", "created"),
-            rawPayload: payload);
-    }
-
-    private static GoAffProReward? TryMapReward(JsonElement payload)
-    {
-        string? id = TryExtractId(payload, ["id", "reward_id"]);
-        return string.IsNullOrWhiteSpace(id)
-            ? null
-            : new GoAffProReward(
-            id: id,
-            affiliateId: TryGetString(payload, "affiliate_id"),
-            orderId: TryGetString(payload, "order_id"),
-            type: TryGetString(payload, "type"),
-            metadata: TryGetString(payload, "metadata"),
-            level: TryGetInt32(payload, "level"),
-            amount: TryGetDecimal(payload, "amount"),
-            status: TryGetString(payload, "status"),
-            currency: TryGetString(payload, "currency"),
-            createdAt: TryGetDateTimeOffset(payload, "created_at", "created"),
-            rawPayload: payload);
-    }
-
-    private static GoAffProPayout? TryMapPayout(JsonElement payload)
-    {
-        string? id = TryExtractId(payload, ["id", "payout_id"]);
-        return string.IsNullOrWhiteSpace(id)
-            ? null
-            : new GoAffProPayout(
-            id: id,
-            affiliateId: TryGetString(payload, "affiliate_id"),
-            amount: TryGetDecimal(payload, "amount"),
-            status: TryGetString(payload, "status"),
-            paymentMethod: TryGetString(payload, "payment_method"),
-            transactionId: TryGetString(payload, "transaction_id"),
-            currency: TryGetString(payload, "currency"),
-            createdAt: TryGetDateTimeOffset(payload, "created_at", "created"),
-            rawPayload: payload);
-    }
-
-    private static GoAffProProduct? TryMapProduct(JsonElement payload)
-    {
-        string? id = TryExtractId(payload, ["id", "product_id"]);
-        return string.IsNullOrWhiteSpace(id)
-            ? null
-            : new GoAffProProduct(
-            id: id,
-            name: TryGetString(payload, "name"),
-            description: TryGetString(payload, "description"),
-            price: TryGetDecimal(payload, "price"),
-            salePrice: TryGetDecimal(payload, "sale_price"),
-            imageUrl: TryGetString(payload, "image_url"),
-            productUrl: TryGetString(payload, "product_url"),
-            category: TryGetString(payload, "category"),
-            sku: TryGetString(payload, "sku"),
-            currency: TryGetString(payload, "currency"),
-            rawPayload: payload);
-    }
-
-    private static string? TryExtractId(JsonElement item, IReadOnlyCollection<string> candidates)
-    {
-        if (item.ValueKind != JsonValueKind.Object)
-        {
-            return null;
-        }
-
-        foreach (string candidate in candidates)
-        {
-            if (!TryGetProperty(item, candidate, out JsonElement value))
-            {
-                continue;
-            }
-
-            if (value.ValueKind == JsonValueKind.String)
-            {
-                string? stringValue = value.GetString();
-                if (!string.IsNullOrWhiteSpace(stringValue))
-                {
-                    return stringValue;
-                }
-            }
-            else if (value.ValueKind is JsonValueKind.Number or JsonValueKind.True or JsonValueKind.False)
-            {
-                return value.ToString();
-            }
-        }
-
-        return null;
-    }
-
-    private static string? TryGetString(JsonElement item, string propertyName)
-    {
-        return !TryGetProperty(item, propertyName, out JsonElement value)
-            ? null
-            : value.ValueKind switch
-            {
-                JsonValueKind.String => value.GetString(),
-                JsonValueKind.Number or JsonValueKind.True or JsonValueKind.False => value.ToString(),
-                _ => null,
-            };
-    }
-
-    private static decimal? TryGetDecimal(JsonElement item, string propertyName)
-    {
-        return !TryGetProperty(item, propertyName, out JsonElement value)
-            ? null
-            : value.ValueKind == JsonValueKind.Number && value.TryGetDecimal(out decimal decimalValue)
-            ? decimalValue
-            : value.ValueKind == JsonValueKind.String
-            && decimal.TryParse(value.GetString(), NumberStyles.Float, CultureInfo.InvariantCulture, out decimal parsed)
-            ? parsed
-            : null;
-    }
-
-    private static int? TryGetInt32(JsonElement item, string propertyName)
-    {
-        return !TryGetProperty(item, propertyName, out JsonElement value)
-            ? null
-            : value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out int intValue)
-            ? intValue
-            : value.ValueKind == JsonValueKind.String
-            && int.TryParse(value.GetString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsed)
-            ? parsed
-            : null;
-    }
-
-    private static DateTimeOffset? TryGetDateTimeOffset(JsonElement item, params string[] propertyNames)
-    {
-        foreach (string propertyName in propertyNames)
-        {
-            if (!TryGetProperty(item, propertyName, out JsonElement value))
-            {
-                continue;
-            }
-
-            if (value.ValueKind == JsonValueKind.String
-                && DateTimeOffset.TryParse(value.GetString(), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTimeOffset parsed))
-            {
-                return parsed;
-            }
-
-            if (value.ValueKind == JsonValueKind.Number && value.TryGetInt64(out long unix))
-            {
-                // GoAffPro can return unix timestamp values in seconds.
-                return DateTimeOffset.FromUnixTimeSeconds(unix);
-            }
-        }
-
-        return null;
-    }
-
-    private static bool TryGetProperty(JsonElement item, string propertyName, out JsonElement value)
-    {
-        if (item.ValueKind != JsonValueKind.Object)
-        {
-            value = default;
-            return false;
-        }
-
-        if (item.TryGetProperty(propertyName, out value))
-        {
-            return true;
-        }
-
-        foreach (JsonProperty property in item.EnumerateObject())
-        {
-            if (string.Equals(property.Name, propertyName, StringComparison.OrdinalIgnoreCase))
-            {
-                value = property.Value;
-                return true;
-            }
-        }
-
-        value = default;
-        return false;
     }
 }

@@ -44,6 +44,13 @@ dotnet_naming_style.end_in_async.capitalization = pascal_case
 generated_code = true
 dotnet_analyzer_diagnostic.severity = none
 
+[src/GoAffPro.Client.Generated/Generated/**/*.cs]
+generated_code = true
+dotnet_analyzer_diagnostic.severity = none
+dotnet_diagnostic.CS1591.severity = none
+dotnet_diagnostic.CA1707.severity = none
+dotnet_diagnostic.CA1716.severity = none
+
 [*.json]
 indent_size = 2
 

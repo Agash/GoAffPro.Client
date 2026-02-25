@@ -137,12 +137,10 @@ dotnet run --project examples/GoAffPro.Client.Example
 
 On build, `GoAffPro.Client.Generator`:
 
-1. Fetches `https://api.goaffpro.com/docs/admin/swagger-ui-init.js`
-   (or uses `openapi/swagger-ui-init.js` only if you provide a local override file)
-2. Extracts OpenAPI JSON
-3. Filters to `/user/*` and `/public/*`
-4. Normalizes schema gaps for generation
-5. Generates:
+1. Loads local canonical spec `openapi/goaffpro-canonical.json` by default
+   (or uses a configured `GoAffProSwaggerInitPath`; supports both full OpenAPI `.json` and `swagger-ui-init.js`)
+2. If `swagger-ui-init.js` is used, extracts embedded OpenAPI JSON and applies legacy normalization
+3. Generates:
    - `src/GoAffPro.Client/Generated/GoAffProUserClient.g.cs`
    - `src/GoAffPro.Client/Generated/GoAffProPublicClient.g.cs`
 

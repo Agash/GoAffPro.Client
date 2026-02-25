@@ -6,7 +6,7 @@
     <GoAffProGeneratorTaskNonce Condition="'$(GoAffProGeneratorTaskNonce)' == ''">$([System.Guid]::NewGuid().ToString('N'))</GoAffProGeneratorTaskNonce>
     <GoAffProGeneratorTaskDirectory Condition="'$(GoAffProGeneratorTaskDirectory)' == ''">$(MSBuildProjectDirectory)\obj\$(Configuration)\$(TargetFramework)\GoAffProGeneratorTask\$(GoAffProGeneratorTaskNonce)\</GoAffProGeneratorTaskDirectory>
     <GoAffProGeneratorAssembly Condition="'$(GoAffProGeneratorAssembly)' == ''">$(GoAffProGeneratorTaskDirectory)GoAffPro.Client.Generator.dll</GoAffProGeneratorAssembly>
-    <GoAffProSwaggerInitPath Condition="'$(GoAffProSwaggerInitPath)' == ''">$(MSBuildProjectDirectory)\..\..\openapi\swagger-ui-init.js</GoAffProSwaggerInitPath>
+    <GoAffProSwaggerInitPath Condition="'$(GoAffProSwaggerInitPath)' == ''">$(MSBuildProjectDirectory)\..\..\openapi\goaffpro-canonical.json</GoAffProSwaggerInitPath>
   </PropertyGroup>
 
   <UsingTask

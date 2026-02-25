@@ -23,7 +23,8 @@ internal static class GeneratorRunner
     private const string PublicClientFileName = "GoAffProPublicClient.g.cs";
     private const string HashFileName = "GoAffPro.Client.Generator.hash";
     private const string LockFileName = "GoAffPro.Client.Generator.lock";
-    private const string GeneratorCacheVersion = "3";
+    private const string GeneratorCacheVersion = "4";
+    private const string CanonicalSpecFileName = "goaffpro-canonical.json";
 
     public static async Task RunAsync(GeneratorOptions options, CancellationToken cancellationToken)
     {
@@ -43,13 +44,8 @@ internal static class GeneratorRunner
 
         try
         {
-            (string swaggerUiInitContents, string swaggerSource) =
-                await LoadSwaggerUiInitContentsAsync(options, projectDirectory, cancellationToken).ConfigureAwait(false);
-
-            string swaggerDocumentJson = SpecExtractor.ExtractSwaggerDocumentJson(swaggerUiInitContents);
-            JsonNode parsedNode = JsonNode.Parse(swaggerDocumentJson)
-                ?? throw new InvalidOperationException("Failed to parse swagger document JSON.");
-            JsonObject rootSpec = parsedNode.AsObject();
+            (JsonObject rootSpec, string swaggerSource, bool requiresLegacyNormalization) =
+                await LoadRootSpecAsync(options, projectDirectory, cancellationToken).ConfigureAwait(false);
 
             JsonSerializerOptions writeIndented = new() { WriteIndented = true };
             string normalizedRootJson = rootSpec.ToJsonString(writeIndented);
@@ -73,8 +69,13 @@ internal static class GeneratorRunner
                 return;
             }
 
-            JsonObject userSpec = NormalizeSpec(FilterPaths(rootSpec, UserPathPrefix));
-            JsonObject publicSpec = NormalizeSpec(FilterPaths(rootSpec, PublicPathPrefix));
+            JsonObject userSpec = FilterPaths(rootSpec, UserPathPrefix);
+            JsonObject publicSpec = FilterPaths(rootSpec, PublicPathPrefix);
+            if (requiresLegacyNormalization)
+            {
+                userSpec = NormalizeSpec(userSpec);
+                publicSpec = NormalizeSpec(publicSpec);
+            }
 
             string userSpecJson = userSpec.ToJsonString(writeIndented);
             string publicSpecJson = publicSpec.ToJsonString(writeIndented);
@@ -137,7 +138,7 @@ internal static class GeneratorRunner
         }
     }
 
-    private static async Task<(string Contents, string SourceReference)> LoadSwaggerUiInitContentsAsync(
+    private static async Task<(JsonObject RootSpec, string SourceReference, bool RequiresLegacyNormalization)> LoadRootSpecAsync(
         GeneratorOptions options,
         string projectDirectory,
         CancellationToken cancellationToken)
@@ -147,19 +148,56 @@ internal static class GeneratorRunner
             string configuredPath = Path.GetFullPath(options.SwaggerInitPath);
             if (File.Exists(configuredPath))
             {
-                return (await File.ReadAllTextAsync(configuredPath, cancellationToken).ConfigureAwait(false), configuredPath);
+                if (IsOpenApiSpecFile(configuredPath))
+                {
+                    JsonObject root = await LoadOpenApiSpecFileAsJsonObjectAsync(configuredPath, cancellationToken).ConfigureAwait(false);
+                    return (root, configuredPath, false);
+                }
+
+                string initContents = await File.ReadAllTextAsync(configuredPath, cancellationToken).ConfigureAwait(false);
+                return (ExtractRootSpecFromSwaggerUiInit(initContents), configuredPath, true);
             }
+        }
+
+        string canonicalSpecPath = Path.GetFullPath(Path.Combine(projectDirectory, "..", "..", "openapi", CanonicalSpecFileName));
+        if (File.Exists(canonicalSpecPath))
+        {
+            JsonObject root = await LoadOpenApiSpecFileAsJsonObjectAsync(canonicalSpecPath, cancellationToken).ConfigureAwait(false);
+            return (root, canonicalSpecPath, false);
         }
 
         string defaultLocalPath = Path.GetFullPath(Path.Combine(projectDirectory, "..", "..", "openapi", "swagger-ui-init.js"));
         if (File.Exists(defaultLocalPath))
         {
-            return (await File.ReadAllTextAsync(defaultLocalPath, cancellationToken).ConfigureAwait(false), defaultLocalPath);
+            string initContents = await File.ReadAllTextAsync(defaultLocalPath, cancellationToken).ConfigureAwait(false);
+            return (ExtractRootSpecFromSwaggerUiInit(initContents), defaultLocalPath, true);
         }
 
         using var client = new HttpClient();
         string remoteContents = await client.GetStringAsync(options.SwaggerUrl, cancellationToken).ConfigureAwait(false);
-        return (remoteContents, options.SwaggerUrl.ToString());
+        return (ExtractRootSpecFromSwaggerUiInit(remoteContents), options.SwaggerUrl.ToString(), true);
+    }
+
+    private static bool IsOpenApiSpecFile(string path)
+    {
+        string extension = Path.GetExtension(path);
+        return extension.Equals(".json", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static JsonObject ExtractRootSpecFromSwaggerUiInit(string initContents)
+    {
+        string swaggerDocumentJson = SpecExtractor.ExtractSwaggerDocumentJson(initContents);
+        JsonNode parsedNode = JsonNode.Parse(swaggerDocumentJson)
+            ?? throw new InvalidOperationException("Failed to parse swagger document JSON.");
+        return parsedNode.AsObject();
+    }
+
+    private static async Task<JsonObject> LoadOpenApiSpecFileAsJsonObjectAsync(string specPath, CancellationToken cancellationToken)
+    {
+        OpenApiDocument document = await OpenApiDocument.FromFileAsync(specPath, cancellationToken).ConfigureAwait(false);
+        JsonNode parsedNode = JsonNode.Parse(document.ToJson())
+            ?? throw new InvalidOperationException($"Failed to parse OpenAPI spec at '{specPath}'.");
+        return parsedNode.AsObject();
     }
 
     private static JsonObject FilterPaths(JsonObject rootSpec, string pathPrefix)

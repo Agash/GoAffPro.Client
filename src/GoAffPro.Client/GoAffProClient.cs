@@ -104,7 +104,7 @@ public sealed class GoAffProClient : IGoAffProClient
             Password = password,
         };
 
-        global::GoAffPro.Client.Generated.User.Response response = await ExecuteUserAsync(
+        var response = await ExecuteUserAsync(
                 () => User.UserLoginAsync(request, cancellationToken))
             .ConfigureAwait(false);
 
@@ -136,7 +136,7 @@ public sealed class GoAffProClient : IGoAffProClient
         int offset = 0,
         CancellationToken cancellationToken = default)
     {
-        global::GoAffPro.Client.Generated.User.Response6 response = await ExecuteUserAsync(
+        var response = await ExecuteUserAsync(
                 () => User.UserFeedOrdersAsync(
                     site_ids: null,
                     since_id: null,
@@ -149,8 +149,12 @@ public sealed class GoAffProClient : IGoAffProClient
                     cancellationToken))
             .ConfigureAwait(false);
 
+        IEnumerable<object> orderItems = response.Orders is null
+            ? Array.Empty<object>()
+            : response.Orders.Select(static item => (object)item);
+
         return MapFeedItems(
-            response.Orders ?? Array.Empty<object>(),
+            orderItems,
             TryMapOrder);
     }
 
@@ -162,7 +166,7 @@ public sealed class GoAffProClient : IGoAffProClient
         int offset = 0,
         CancellationToken cancellationToken = default)
     {
-        global::GoAffPro.Client.Generated.User.Response8 response = await ExecuteUserAsync(
+        var response = await ExecuteUserAsync(
                 () => User.UserFeedTrafficAsync(
                     site_ids: null,
                     start_time: from?.ToString("o"),
@@ -173,8 +177,12 @@ public sealed class GoAffProClient : IGoAffProClient
                     cancellationToken))
             .ConfigureAwait(false);
 
+        IEnumerable<object> trafficItems = response.Traffic is null
+            ? Array.Empty<object>()
+            : response.Traffic.Select(static item => (object)item);
+
         return MapFeedItems(
-            response.Traffic ?? Array.Empty<object>(),
+            trafficItems,
             TryMapAffiliate);
     }
 
@@ -203,7 +211,7 @@ public sealed class GoAffProClient : IGoAffProClient
         int offset = 0,
         CancellationToken cancellationToken = default)
     {
-        object response = await ExecuteUserAsync(
+        var response = await ExecuteUserAsync(
                 () => User.UserFeedPayoutsAsync(
                     site_ids: null,
                     start_time: from?.ToString("o"),
@@ -214,9 +222,11 @@ public sealed class GoAffProClient : IGoAffProClient
                     cancellationToken))
             .ConfigureAwait(false);
 
-        return MapFeedItems(
-            ExtractPayoutItems(response),
-            TryMapPayout);
+        IEnumerable<object> payoutItems = response.Payouts is null
+            ? Array.Empty<object>()
+            : response.Payouts;
+
+        return MapFeedItems(payoutItems, TryMapPayout);
     }
 
     /// <inheritdoc />
@@ -225,16 +235,18 @@ public sealed class GoAffProClient : IGoAffProClient
         int offset = 0,
         CancellationToken cancellationToken = default)
     {
-        object response = await ExecuteUserAsync(
+        var response = await ExecuteUserAsync(
                 () => User.UserFeedProductsAsync(
                     limit: limit,
                     offset: offset,
                     cancellationToken: cancellationToken))
             .ConfigureAwait(false);
 
-        return MapFeedItems(
-            ExtractProductItems(response),
-            TryMapProduct);
+        IEnumerable<object> productItems = response.Products is null
+            ? Array.Empty<object>()
+            : response.Products;
+
+        return MapFeedItems(productItems, TryMapProduct);
     }
 
     /// <summary>
@@ -344,24 +356,6 @@ public sealed class GoAffProClient : IGoAffProClient
         }
 
         return results;
-    }
-
-    private static object[] ExtractPayoutItems(object response)
-    {
-        return response is JsonElement jsonElement && jsonElement.ValueKind == JsonValueKind.Object
-            ? jsonElement.TryGetProperty("payouts", out JsonElement payouts)
-                ? JsonSerializer.Deserialize<object[]>(payouts.GetRawText()) ?? []
-                : []
-            : [];
-    }
-
-    private static object[] ExtractProductItems(object response)
-    {
-        return response is JsonElement jsonElement && jsonElement.ValueKind == JsonValueKind.Object
-            ? jsonElement.TryGetProperty("products", out JsonElement products)
-                ? JsonSerializer.Deserialize<object[]>(products.GetRawText()) ?? []
-                : []
-            : [];
     }
 
     private static GoAffProOrder? TryMapOrder(JsonElement payload)

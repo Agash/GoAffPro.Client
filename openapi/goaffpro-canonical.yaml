@@ -620,39 +620,9 @@ components:
             orders:
               type: array
               items:
-                $ref: '#/components/schemas/UserOrderFeedItem'
+                type: object
+                additionalProperties: true
           additionalProperties: true
-
-    UserOrderFeedItem:
-      type: object
-      properties:
-        id:
-          type: string
-        number:
-          type: string
-        total:
-          type: number
-        subtotal:
-          type: number
-        line_items:
-          type: array
-          items:
-            type: object
-            additionalProperties: true
-        commission:
-          type: number
-        created_at:
-          type: string
-        currency:
-          type: string
-        site_id:
-          type: string
-        sub_id:
-          type: string
-        conversion_details:
-          type: object
-          additionalProperties: true
-      additionalProperties: true
 
     UserPayoutFeedResponse:
       allOf:

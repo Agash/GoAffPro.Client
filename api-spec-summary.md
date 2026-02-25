@@ -6,10 +6,10 @@ This repo now has a maintained canonical spec for GoAffPro user/public APIs:
 
 ## Key decisions
 
-- Canonical source is YAML and is decoupled from upstream `swagger-ui-init.js` schema drift.
+- Canonical source is local YAML maintained in this repo and used directly for client generation.
 - Response envelopes are normalized with shared wrappers (`allOf`) for recurring pagination-like shapes.
 - Drift-prone payloads keep `additionalProperties: true`.
-- Known logical failures that still return HTTP `200` are modeled via `oneOf` success/error responses.
+- Known logical failures are captured with explicit error schemas/codes where the runtime behavior is stable.
 - Known plain-text failure cases are modeled (`/user/feed/rewards` -> `404`, `/user/feed/products` -> `502`).
 
 ## Added/normalized user endpoints

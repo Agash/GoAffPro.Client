@@ -1,11 +1,15 @@
 # GoAffPro.Client
 
+<<<<<<< Updated upstream
 Async-first .NET client for the GoAffPro API with build-time NSwag generation and polling/event-based change detection.
+=======
+Async-first .NET client for GoAffPro using Kiota-generated API models and a thin wrapper with polling observers.
+>>>>>>> Stashed changes
 
 ## Targets
 
-- `net8.0`
-- `net10.0` (working on native-AOT compatibility)
+- `net9.0`
+- `net10.0`
 
 ## Install
 
@@ -18,18 +22,16 @@ dotnet add package GoAffPro.Client
 ```csharp
 using GoAffPro.Client;
 
-// Option 1: create from existing token
 await using var client = new GoAffProClient(new GoAffProClientOptions
 {
     BearerToken = "your-access-token",
 });
 
-// Option 2: login and create
-await using var loggedInClient = await GoAffProClient.CreateLoggedInAsync(
-    email: "affiliate@example.com",
-    password: "password123");
+// Or login first:
+string token = await client.LoginAsync("affiliate@example.com", "password123");
 ```
 
+<<<<<<< Updated upstream
 ### Wrapper Methods (DX Layer)
 
 The wrapper methods are built on top of generated clients:
@@ -57,10 +59,27 @@ Wrapper methods return typed models:
 Each model includes strongly typed fields and `RawPayload` (`JsonElement`) for advanced scenarios.
 
 `GetRewardsAsync` is currently disabled because `/user/feed/rewards` is returning `404` (observed on 2026-02-18). The method is marked `[Obsolete]` and returns an empty collection.
+=======
+## Client Surface
 
-### Access Generated Clients Directly
+`GoAffProClient` keeps a minimal surface:
+
+- Auth helpers:
+  - `LoginAsync(email, password, ct)`
+  - `SetBearerToken(token)`
+- Generated API root:
+  - `client.Api.User...`
+  - `client.Api.Public...`
+- Observer streams/events (inside `GoAffProClient`):
+  - `NewOrdersAsync`, `NewAffiliatesAsync`, `NewPayoutsAsync`, `NewProductsAsync`, `NewTransactionsAsync`
+  - `StartEventObserverAsync(...)`
+  - events: `OrderDetected`, `AffiliateDetected`, `PayoutDetected`, `ProductDetected`, `TransactionDetected`
+>>>>>>> Stashed changes
+
+Example generated call:
 
 ```csharp
+<<<<<<< Updated upstream
 var loginResponse = await client.User.UserLoginAsync(new GoAffPro.Client.Generated.User.Body
 {
     Email = "affiliate@example.com",
@@ -73,42 +92,52 @@ var publicSites = await client.PublicApi.PublicSitesAsync(
     keyword: null,
     limit: 20,
     offset: 0);
+=======
+var response = await client.Api.User.Sites.GetAsync(config =>
+{
+    config.QueryParameters.Limit = 20;
+    config.QueryParameters.Offset = 0;
+});
+>>>>>>> Stashed changes
 ```
 
-## Event Detection
+## Observer Usage
 
+<<<<<<< Updated upstream
 `GoAffProEventDetector` supports both async streams and classic `.NET` events. It uses time-based filtering to fetch only new items since the last poll.
 
 ### Async Streams
+=======
+Stream-based:
+>>>>>>> Stashed changes
 
 ```csharp
-using GoAffPro.Client.Events;
-
-var detector = new GoAffProEventDetector(client, pollingInterval: TimeSpan.FromSeconds(30));
-
-// Optional: backfill historical data from a specific time
-detector.OrderStartTime = DateTimeOffset.UtcNow.AddDays(-7);
-
-await foreach (var order in detector.NewOrdersAsync(cancellationToken))
+await foreach (var order in client.NewOrdersAsync(
+    pollingInterval: TimeSpan.FromSeconds(30),
+    pageSize: 100,
+    cancellationToken: cancellationToken))
 {
-    Console.WriteLine($"New order: {order.Id}");
+    Console.WriteLine(order.Id?.String);
 }
 ```
 
-### Event Handlers
+Event-based:
 
 ```csharp
-using GoAffPro.Client.Events;
+client.OrderDetected += (_, e) => Console.WriteLine(e.Order.Id?.String);
+client.AffiliateDetected += (_, e) => Console.WriteLine(e.Affiliate.AffiliateId?.String);
 
-var detector = new GoAffProEventDetector(client, pollingInterval: TimeSpan.FromSeconds(30));
-
-detector.OrderDetected += (_, args) => Console.WriteLine($"Order: {args.Order.Id}");
-detector.AffiliateDetected += (_, args) => Console.WriteLine($"Affiliate: {args.Affiliate.Id}");
-
-await detector.StartAsync(cancellationToken);
+await client.StartEventObserverAsync(
+    pollingInterval: TimeSpan.FromSeconds(30),
+    pageSize: 100,
+    cancellationToken: cancellationToken);
 ```
 
-The detector stores the last poll timestamp internally. Use `OrderStartTime` and `AffiliateStartTime` properties to backfill historical data on first run.
+Backfill controls:
+
+- `OrderObserverStartTime`
+- `AffiliateObserverStartTime`
+- `PayoutObserverStartTime`
 
 ## Dependency Injection
 
@@ -123,18 +152,31 @@ services.AddGoAffProClient(options =>
 
 ## Example App
 
-An executable sample is included at:
+Project:
 
 - `examples/GoAffPro.Client.Example`
 
-Run it with:
+Interactive mode:
 
 ```bash
 dotnet run --project examples/GoAffPro.Client.Example
 ```
 
+CLI sweep mode:
+
+```bash
+dotnet run --project examples/GoAffPro.Client.Example -- \
+  --run-tests \
+  --access_token=env:GOAFFPRO_TEST_TOKEN \
+  --products-timeout-seconds=90 \
+  --output=api-sweep.json
+```
+
+The sweep calls every supported endpoint and writes a JSON report with per-endpoint success/failure details.
+
 ## Build-Time Generation
 
+<<<<<<< Updated upstream
 On build, `GoAffPro.Client.Generator`:
 
 1. Fetches `https://api.goaffpro.com/docs/admin/swagger-ui-init.js`
@@ -147,24 +189,42 @@ On build, `GoAffPro.Client.Generator`:
    - `src/GoAffPro.Client/Generated/GoAffProPublicClient.g.cs`
 
 Do not edit `*.g.cs` manually.
+=======
+Generation is handled by `src/GoAffPro.Client.Generated/GoAffPro.Client.Generated.csproj`:
+
+1. Uses local canonical spec: `openapi/goaffpro-canonical.yaml`
+2. Runs Kiota at build time
+3. Writes generated sources under `src/GoAffPro.Client.Generated/Generated`
+
+Do not edit generated files manually.
+>>>>>>> Stashed changes
 
 ## Testing
 
-```bash
-dotnet test
-```
-
-### Integration Tests
+Unit tests:
 
 ```bash
-$env:GOAFFPRO_TEST_TOKEN="your-token"
-dotnet test --filter "Category=Integration"
+dotnet test tests/GoAffPro.Client.Tests/GoAffPro.Client.Tests.csproj
 ```
 
-### Contract Snapshot Test
+Integration tests:
 
-The test suite validates generated client method signatures against:
+```bash
+dotnet test tests/GoAffPro.Client.IntegrationTests/GoAffPro.Client.IntegrationTests.csproj --filter "Category=Integration"
+```
 
-- `tests/GoAffPro.Client.Tests/Snapshots/GeneratedClientSignatures.snapshot`
+Integration auth options:
 
-If generated signatures change, update the snapshot intentionally in the same change.
+- `GOAFFPRO_TEST_TOKEN`
+- or `GOAFFPRO_TEST_EMAIL` + `GOAFFPRO_TEST_PASSWORD`
+- or local file `tests/GoAffPro.Client.IntegrationTests/appsettings.Test.local.json`
+  - template: `appsettings.Test.local.example.json`
+
+## Known Upstream Endpoint Instability
+
+Tracked in `openapi/goaffpro-canonical.yaml` comments:
+
+- `/user/feed/products` can time out
+- `/user/feed/rewards` returns 404/non-JSON in current runtime
+- `/user/feed/transactions` can return 500 with non-JSON payload
+- `/user/payouts/pending` tracked as parity endpoint also exposed under `/sdk/user/*`

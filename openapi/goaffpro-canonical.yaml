@@ -1,0 +1,933 @@
+openapi: 3.0.3
+info:
+  title: GOAFFPRO Canonical API (User/Public)
+  version: 2026.2.25
+  description: >
+    Maintained canonical contract for GoAffPro user/public endpoints.
+    This spec intentionally corrects known response-shape drift from upstream docs.
+servers:
+  - url: https://api.goaffpro.com/v1/
+
+paths:
+  /user/login:
+    post:
+      summary: Log in to get the access token
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/LoginResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+
+  /user/sites:
+    get:
+      summary: List of stores the user is enrolled in
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: offset
+          schema:
+            type: integer
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [approved, pending, blocked]
+        - in: query
+          name: fields
+          required: true
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [id, name, logo, website, status, currency, affiliate_portal, ref_code, referral_link, coupon]
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/UserSiteListResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          $ref: '#/components/responses/AuthErrorResponse'
+
+  /user:
+    get:
+      summary: Get information about logged in user profile
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/UserProfileEnvelope'
+                  - $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          $ref: '#/components/responses/AuthErrorResponse'
+    post:
+      summary: Update your profile
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/UserProfileUpdateResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          $ref: '#/components/responses/AuthErrorResponse'
+
+  /user/stats/aggregate:
+    get:
+      summary: Aggregates of user stats
+      parameters:
+        - in: query
+          name: site_ids
+          schema:
+            type: string
+        - in: query
+          name: start_time
+          schema:
+            type: string
+        - in: query
+          name: end_time
+          schema:
+            type: string
+        - in: query
+          name: fields
+          required: true
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [total_sales, other_commission_earned, revenue_generated, sale_commission_earned, commission_paid]
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/UserStatsAggregateResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          $ref: '#/components/responses/AuthErrorResponse'
+
+  /user/feed/orders:
+    get:
+      summary: Feed of user orders
+      parameters:
+        - in: query
+          name: site_ids
+          schema:
+            type: string
+        - in: query
+          name: since_id
+          schema:
+            type: string
+        - in: query
+          name: max_id
+          schema:
+            type: string
+        - in: query
+          name: created_at_max
+          schema:
+            type: string
+        - in: query
+          name: created_at_min
+          schema:
+            type: string
+        - in: query
+          name: fields
+          required: true
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [id, number, total, subtotal, line_items, commission, created_at, currency, site_id, sub_id, conversion_details]
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: offset
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/UserOrderFeedResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          $ref: '#/components/responses/AuthErrorResponse'
+
+  /user/feed/payouts:
+    get:
+      summary: Feed of user payouts
+      parameters:
+        - in: query
+          name: site_ids
+          schema:
+            type: string
+        - in: query
+          name: start_time
+          schema:
+            type: string
+        - in: query
+          name: end_time
+          schema:
+            type: string
+        - in: query
+          name: since_id
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: offset
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/UserPayoutFeedResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          $ref: '#/components/responses/AuthErrorResponse'
+
+  /user/feed/products:
+    get:
+      summary: Feed of products available for promotion
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: offset
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/UserProductFeedResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          $ref: '#/components/responses/AuthErrorResponse'
+        '502':
+          $ref: '#/components/responses/PlainTextErrorResponse'
+
+  /user/feed/rewards:
+    get:
+      summary: Feed of user rewards
+      parameters:
+        - in: query
+          name: site_ids
+          schema:
+            type: string
+        - in: query
+          name: start_time
+          schema:
+            type: string
+        - in: query
+          name: end_time
+          schema:
+            type: string
+        - in: query
+          name: since_id
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: offset
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/UserRewardFeedResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/PlainTextErrorResponse'
+
+  /user/feed/traffic:
+    get:
+      summary: Feed of user traffic
+      parameters:
+        - in: query
+          name: site_ids
+          schema:
+            type: string
+        - in: query
+          name: start_time
+          schema:
+            type: string
+        - in: query
+          name: end_time
+          schema:
+            type: string
+        - in: query
+          name: since_id
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: offset
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/UserTrafficFeedResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          $ref: '#/components/responses/AuthErrorResponse'
+
+  /user/feed/transactions:
+    get:
+      summary: Feed of user transactions
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: offset
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/UserTransactionFeedResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          $ref: '#/components/responses/AuthErrorResponse'
+        '500':
+          $ref: '#/components/responses/PlainTextErrorResponse'
+
+  /user/commissions:
+    get:
+      summary: Get commission structure
+      parameters:
+        - in: query
+          name: site_ids
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/UserCommissionsResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          $ref: '#/components/responses/AuthErrorResponse'
+
+  /user/payouts/pending:
+    get:
+      summary: Get pending payout amount (and its breakdown)
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/UserPendingPayoutsResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          $ref: '#/components/responses/AuthErrorResponse'
+
+  /public/sites:
+    get:
+      summary: Public marketplace sites
+      parameters:
+        - in: query
+          name: site_ids
+          schema:
+            type: string
+        - in: query
+          name: currency
+          schema:
+            type: string
+        - in: query
+          name: keyword
+          schema:
+            type: string
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: offset
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/PublicSitesResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/PlainTextErrorResponse'
+        '502':
+          $ref: '#/components/responses/PlainTextErrorResponse'
+
+  /public/products:
+    get:
+      summary: Public marketplace products
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: offset
+          schema:
+            type: integer
+        - in: query
+          name: site_ids
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/PublicProductsResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/PlainTextErrorResponse'
+        '502':
+          $ref: '#/components/responses/PlainTextErrorResponse'
+
+components:
+  responses:
+    AuthErrorResponse:
+      description: Authentication or authorization failure.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+        text/plain:
+          schema:
+            type: string
+    PlainTextErrorResponse:
+      description: Upstream service error response in plain text.
+      content:
+        text/plain:
+          schema:
+            type: string
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    LoginResponse:
+      type: object
+      required: [access_token]
+      properties:
+        access_token:
+          type: string
+
+    UserProfileEnvelope:
+      type: object
+      required: [user]
+      properties:
+        user:
+          type: object
+          additionalProperties: true
+      additionalProperties: true
+
+    UserProfileUpdateResponse:
+      type: object
+      required: [success]
+      properties:
+        success:
+          type: integer
+      additionalProperties: true
+
+    UserSiteListResponse:
+      type: object
+      required: [sites, count]
+      properties:
+        sites:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserSite'
+        count:
+          type: integer
+      additionalProperties: true
+
+    UserSite:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        logo:
+          type: string
+        website:
+          type: string
+        status:
+          type: string
+        currency:
+          type: string
+        affiliate_portal:
+          type: string
+        ref_code:
+          type: string
+        referral_link:
+          type: string
+        coupon:
+          type: object
+          additionalProperties: true
+      additionalProperties: true
+
+    UserStatsAggregateResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserStatsAggregateItem'
+      additionalProperties: true
+
+    UserStatsAggregateItem:
+      type: object
+      properties:
+        site_id:
+          type: integer
+        total_sales:
+          type: number
+        currency:
+          type: string
+        sale_commission_earned:
+          type: number
+        revenue_generated:
+          type: number
+        commission_paid:
+          type: number
+      additionalProperties: true
+
+    CountLimitOffsetEnvelope:
+      type: object
+      required: [count, limit, offset]
+      properties:
+        count:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+      additionalProperties: true
+
+    CountLimitOffsetEnvelopeFlexibleOffset:
+      type: object
+      required: [count, limit, offset]
+      properties:
+        count:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          oneOf:
+            - type: integer
+            - type: string
+      additionalProperties: true
+
+    SinceIdEcho:
+      type: object
+      properties:
+        since_id:
+          oneOf:
+            - type: integer
+            - type: string
+      additionalProperties: true
+
+    UserOrderFeedResponse:
+      allOf:
+        - $ref: '#/components/schemas/CountLimitOffsetEnvelope'
+        - type: object
+          required: [orders]
+          properties:
+            orders:
+              type: array
+              items:
+                $ref: '#/components/schemas/UserOrderFeedItem'
+          additionalProperties: true
+
+    UserOrderFeedItem:
+      type: object
+      properties:
+        id:
+          type: string
+        number:
+          type: string
+        total:
+          type: number
+        subtotal:
+          type: number
+        line_items:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        commission:
+          type: number
+        created_at:
+          type: string
+        currency:
+          type: string
+        site_id:
+          type: string
+        sub_id:
+          type: string
+        conversion_details:
+          type: object
+          additionalProperties: true
+      additionalProperties: true
+
+    UserPayoutFeedResponse:
+      allOf:
+        - $ref: '#/components/schemas/CountLimitOffsetEnvelope'
+        - $ref: '#/components/schemas/SinceIdEcho'
+        - type: object
+          required: [payouts]
+          properties:
+            payouts:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+          additionalProperties: true
+
+    UserProductFeedResponse:
+      allOf:
+        - $ref: '#/components/schemas/CountLimitOffsetEnvelopeFlexibleOffset'
+        - type: object
+          required: [products]
+          properties:
+            products:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+          additionalProperties: true
+
+    UserRewardFeedResponse:
+      allOf:
+        - $ref: '#/components/schemas/CountLimitOffsetEnvelope'
+        - type: object
+          required: [rewards]
+          properties:
+            rewards:
+              type: array
+              items:
+                $ref: '#/components/schemas/UserRewardFeedItem'
+          additionalProperties: true
+
+    UserRewardFeedItem:
+      type: object
+      properties:
+        id:
+          type: string
+        affiliate_id:
+          type: string
+        type:
+          type: string
+        metadata:
+          type: string
+        order_id:
+          type: string
+        level:
+          type: integer
+        amount:
+          type: number
+        status:
+          type: string
+        created:
+          type: string
+      additionalProperties: true
+
+    UserTrafficFeedResponse:
+      allOf:
+        - $ref: '#/components/schemas/CountLimitOffsetEnvelope'
+        - $ref: '#/components/schemas/SinceIdEcho'
+        - type: object
+          required: [traffic]
+          properties:
+            traffic:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+          additionalProperties: true
+
+    UserCommissionsResponse:
+      type: object
+      properties:
+        standard:
+          type: object
+          additionalProperties: true
+        special:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        royalties:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        mlm:
+          type: object
+          additionalProperties: true
+        commissions:
+          type: array
+          items:
+            nullable: true
+      additionalProperties: true
+
+    UserTransactionFeedResponse:
+      type: object
+      required: [transactions]
+      properties:
+        transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserTransactionItem'
+        count:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          oneOf:
+            - type: integer
+            - type: string
+      additionalProperties: true
+
+    UserTransactionItem:
+      type: object
+      properties:
+        id:
+          type: string
+        tx_id:
+          type: integer
+        affiliate_id:
+          type: integer
+        amount:
+          type: number
+        currency:
+          type: string
+        startingBalance:
+          type: number
+        endingBalance:
+          type: number
+        created_at:
+          type: string
+        entity_type:
+          type: string
+          enum: [orders, rewards, payouts, ORDERS, REWARDS, PAYOUTS]
+        event_type:
+          type: string
+          enum: [insert, update, delete]
+        entity_id:
+          type: string
+        is_paid:
+          type: boolean
+        metadata:
+          type: object
+          additionalProperties: true
+      additionalProperties: true
+
+    UserPendingPayoutsResponse:
+      type: object
+      required: [pending]
+      properties:
+        pending:
+          oneOf:
+            - type: array
+              items:
+                $ref: '#/components/schemas/PendingPayoutItem'
+            - $ref: '#/components/schemas/PendingPayoutBreakdown'
+      additionalProperties: true
+
+    PendingPayoutItem:
+      type: object
+      properties:
+        affiliate_id:
+          oneOf:
+            - type: integer
+            - type: string
+        amount:
+          oneOf:
+            - type: number
+            - type: string
+        total_earned:
+          oneOf:
+            - type: number
+            - type: string
+        total_paid:
+          oneOf:
+            - type: number
+            - type: string
+      additionalProperties: true
+
+    PendingPayoutBreakdown:
+      type: object
+      properties:
+        sale_earnings:
+          type: number
+        other_earnings:
+          type: number
+        paid_earnings:
+          type: number
+        amount_pending:
+          type: number
+      additionalProperties: true
+
+    PublicSitesResponse:
+      allOf:
+        - $ref: '#/components/schemas/CountLimitOffsetEnvelopeFlexibleOffset'
+        - type: object
+          required: [stores]
+          properties:
+            stores:
+              type: array
+              items:
+                $ref: '#/components/schemas/PublicStore'
+            currency:
+              type: string
+            keyword:
+              type: string
+          additionalProperties: true
+
+    PublicStore:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        website:
+          type: string
+        logo:
+          type: string
+        currency:
+          type: string
+        affiliatePortal:
+          type: string
+        cookieDuration:
+          type: integer
+        areRegistrationsOpen:
+          type: integer
+        isApprovedAutomatically:
+          type: integer
+        commission:
+          $ref: '#/components/schemas/CommissionLike'
+      additionalProperties: true
+
+    PublicProductsResponse:
+      allOf:
+        - $ref: '#/components/schemas/CountLimitOffsetEnvelopeFlexibleOffset'
+        - type: object
+          required: [products]
+          properties:
+            products:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+            site_ids:
+              type: string
+          additionalProperties: true
+
+    CommissionLike:
+      type: object
+      properties:
+        type:
+          type: string
+        amount:
+          type: number
+        on:
+          type: string
+      additionalProperties: true
+
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+        code:
+          oneOf:
+            - type: integer
+            - type: string
+      additionalProperties: true

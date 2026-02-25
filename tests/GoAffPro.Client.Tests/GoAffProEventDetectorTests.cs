@@ -207,6 +207,7 @@ public sealed class GoAffProEventDetectorTests
         int ordersCallCount = 0;
         int trafficCallCount = 0;
         int payoutsCallCount = 0;
+        // Product/transaction observer polling is intentionally disabled due to upstream API instability.
         int productsCallCount = 0;
         int transactionsCallCount = 0;
 
@@ -261,8 +262,6 @@ public sealed class GoAffProEventDetectorTests
         var orderIds = new List<string>();
         var affiliateIds = new List<string>();
         var payoutIds = new List<string>();
-        var productIds = new List<int>();
-        var transactionIds = new List<int>();
         using CancellationTokenSource cancellationTokenSource = new(TimeSpan.FromSeconds(1));
 
         client.OrderDetected += (_, args) => orderIds.Add(args.Order.Id?.String ?? args.Order.OrderId?.String ?? string.Empty);
@@ -291,9 +290,7 @@ public sealed class GoAffProEventDetectorTests
 
         while (orderIds.Count == 0 ||
                affiliateIds.Count == 0 ||
-               payoutIds.Count == 0 ||
-               productIds.Count == 0 ||
-               transactionIds.Count == 0)
+               payoutIds.Count == 0)
         {
             await Task.Delay(10);
             if (cancellationTokenSource.IsCancellationRequested)
@@ -315,8 +312,6 @@ public sealed class GoAffProEventDetectorTests
         _ = orderIds.Should().Contain("o-1");
         _ = affiliateIds.Should().Contain("a-1");
         _ = payoutIds.Should().Contain("p-1");
-        _ = productIds.Should().Contain(3);
-        _ = transactionIds.Should().Contain(11);
     }
 
     private static async Task<IReadOnlyList<T>> TakeAsync<T>(IAsyncEnumerable<T> source, int expectedCount)

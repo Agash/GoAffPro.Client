@@ -32,27 +32,15 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/LoginResponse'
-                  - $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/LoginResponse'
 
   /user/sites:
     get:
       summary: List of stores the user is enrolled in
       parameters:
-        - in: query
-          name: limit
-          schema:
-            type: integer
-        - in: query
-          name: offset
-          schema:
-            type: integer
-        - in: query
-          name: status
-          schema:
-            type: string
-            enum: [approved, pending, blocked]
+        - $ref: '#/components/parameters/LimitQuery'
+        - $ref: '#/components/parameters/OffsetQuery'
+        - $ref: '#/components/parameters/UserStatusQuery'
         - in: query
           name: fields
           required: true
@@ -68,11 +56,13 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/UserSiteListResponse'
-                  - $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/UserSiteListResponse'
+        '401':
+          $ref: '#/components/responses/AuthErrorResponse'
         '403':
           $ref: '#/components/responses/AuthErrorResponse'
+        '500':
+          $ref: '#/components/responses/PlainTextErrorResponse'
 
   /user:
     get:
@@ -83,11 +73,13 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/UserProfileEnvelope'
-                  - $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/UserProfileEnvelope'
+        '401':
+          $ref: '#/components/responses/AuthErrorResponse'
         '403':
           $ref: '#/components/responses/AuthErrorResponse'
+        '500':
+          $ref: '#/components/responses/PlainTextErrorResponse'
     post:
       summary: Update your profile
       responses:
@@ -96,28 +88,21 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/UserProfileUpdateResponse'
-                  - $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/UserProfileUpdateResponse'
+        '401':
+          $ref: '#/components/responses/AuthErrorResponse'
         '403':
           $ref: '#/components/responses/AuthErrorResponse'
+        '500':
+          $ref: '#/components/responses/PlainTextErrorResponse'
 
   /user/stats/aggregate:
     get:
       summary: Aggregates of user stats
       parameters:
-        - in: query
-          name: site_ids
-          schema:
-            type: string
-        - in: query
-          name: start_time
-          schema:
-            type: string
-        - in: query
-          name: end_time
-          schema:
-            type: string
+        - $ref: '#/components/parameters/SiteIdsQuery'
+        - $ref: '#/components/parameters/StartTimeQuery'
+        - $ref: '#/components/parameters/EndTimeQuery'
         - in: query
           name: fields
           required: true
@@ -133,36 +118,23 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/UserStatsAggregateResponse'
-                  - $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/UserStatsAggregateResponse'
+        '401':
+          $ref: '#/components/responses/AuthErrorResponse'
         '403':
           $ref: '#/components/responses/AuthErrorResponse'
+        '500':
+          $ref: '#/components/responses/PlainTextErrorResponse'
 
   /user/feed/orders:
     get:
       summary: Feed of user orders
       parameters:
-        - in: query
-          name: site_ids
-          schema:
-            type: string
-        - in: query
-          name: since_id
-          schema:
-            type: string
-        - in: query
-          name: max_id
-          schema:
-            type: string
-        - in: query
-          name: created_at_max
-          schema:
-            type: string
-        - in: query
-          name: created_at_min
-          schema:
-            type: string
+        - $ref: '#/components/parameters/SiteIdsQuery'
+        - $ref: '#/components/parameters/SinceIdStringQuery'
+        - $ref: '#/components/parameters/MaxIdQuery'
+        - $ref: '#/components/parameters/CreatedAtMaxQuery'
+        - $ref: '#/components/parameters/CreatedAtMinQuery'
         - in: query
           name: fields
           required: true
@@ -172,89 +144,65 @@ paths:
             items:
               type: string
               enum: [id, number, total, subtotal, line_items, commission, created_at, currency, site_id, sub_id, conversion_details]
-        - in: query
-          name: limit
-          schema:
-            type: integer
-        - in: query
-          name: offset
-          schema:
-            type: integer
+        - $ref: '#/components/parameters/LimitQuery'
+        - $ref: '#/components/parameters/OffsetQuery'
       responses:
         '200':
           description: Success
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/UserOrderFeedResponse'
-                  - $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/UserOrderFeedResponse'
+        '401':
+          $ref: '#/components/responses/AuthErrorResponse'
         '403':
           $ref: '#/components/responses/AuthErrorResponse'
+        '500':
+          $ref: '#/components/responses/PlainTextErrorResponse'
 
   /user/feed/payouts:
     get:
       summary: Feed of user payouts
       parameters:
-        - in: query
-          name: site_ids
-          schema:
-            type: string
-        - in: query
-          name: start_time
-          schema:
-            type: string
-        - in: query
-          name: end_time
-          schema:
-            type: string
-        - in: query
-          name: since_id
-          schema:
-            type: integer
-        - in: query
-          name: limit
-          schema:
-            type: integer
-        - in: query
-          name: offset
-          schema:
-            type: integer
+        - $ref: '#/components/parameters/SiteIdsQuery'
+        - $ref: '#/components/parameters/StartTimeQuery'
+        - $ref: '#/components/parameters/EndTimeQuery'
+        - $ref: '#/components/parameters/SinceIdIntegerQuery'
+        - $ref: '#/components/parameters/LimitQuery'
+        - $ref: '#/components/parameters/OffsetQuery'
       responses:
         '200':
           description: Success
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/UserPayoutFeedResponse'
-                  - $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/UserPayoutFeedResponse'
+        '401':
+          $ref: '#/components/responses/AuthErrorResponse'
         '403':
           $ref: '#/components/responses/AuthErrorResponse'
+        '500':
+          $ref: '#/components/responses/PlainTextErrorResponse'
 
   /user/feed/products:
     get:
       summary: Feed of products available for promotion
       parameters:
-        - in: query
-          name: limit
-          schema:
-            type: integer
-        - in: query
-          name: offset
-          schema:
-            type: integer
+        - $ref: '#/components/parameters/LimitQuery'
+        - $ref: '#/components/parameters/OffsetQuery'
       responses:
         '200':
           description: Success
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/UserProductFeedResponse'
-                  - $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/UserProductFeedResponse'
+        '401':
+          $ref: '#/components/responses/AuthErrorResponse'
         '403':
           $ref: '#/components/responses/AuthErrorResponse'
+        '500':
+          $ref: '#/components/responses/PlainTextErrorResponse'
         '502':
           $ref: '#/components/responses/PlainTextErrorResponse'
 
@@ -262,103 +210,67 @@ paths:
     get:
       summary: Feed of user rewards
       parameters:
-        - in: query
-          name: site_ids
-          schema:
-            type: string
-        - in: query
-          name: start_time
-          schema:
-            type: string
-        - in: query
-          name: end_time
-          schema:
-            type: string
-        - in: query
-          name: since_id
-          schema:
-            type: integer
-        - in: query
-          name: limit
-          schema:
-            type: integer
-        - in: query
-          name: offset
-          schema:
-            type: integer
+        - $ref: '#/components/parameters/SiteIdsQuery'
+        - $ref: '#/components/parameters/StartTimeQuery'
+        - $ref: '#/components/parameters/EndTimeQuery'
+        - $ref: '#/components/parameters/SinceIdIntegerQuery'
+        - $ref: '#/components/parameters/LimitQuery'
+        - $ref: '#/components/parameters/OffsetQuery'
       responses:
         '200':
           description: Success
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/UserRewardFeedResponse'
-                  - $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/UserRewardFeedResponse'
+        '401':
+          $ref: '#/components/responses/AuthErrorResponse'
+        '403':
+          $ref: '#/components/responses/AuthErrorResponse'
         '404':
+          $ref: '#/components/responses/PlainTextErrorResponse'
+        '500':
           $ref: '#/components/responses/PlainTextErrorResponse'
 
   /user/feed/traffic:
     get:
       summary: Feed of user traffic
       parameters:
-        - in: query
-          name: site_ids
-          schema:
-            type: string
-        - in: query
-          name: start_time
-          schema:
-            type: string
-        - in: query
-          name: end_time
-          schema:
-            type: string
-        - in: query
-          name: since_id
-          schema:
-            type: integer
-        - in: query
-          name: limit
-          schema:
-            type: integer
-        - in: query
-          name: offset
-          schema:
-            type: integer
+        - $ref: '#/components/parameters/SiteIdsQuery'
+        - $ref: '#/components/parameters/StartTimeQuery'
+        - $ref: '#/components/parameters/EndTimeQuery'
+        - $ref: '#/components/parameters/SinceIdIntegerQuery'
+        - $ref: '#/components/parameters/LimitQuery'
+        - $ref: '#/components/parameters/OffsetQuery'
       responses:
         '200':
           description: Success
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/UserTrafficFeedResponse'
-                  - $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/UserTrafficFeedResponse'
+        '401':
+          $ref: '#/components/responses/AuthErrorResponse'
         '403':
           $ref: '#/components/responses/AuthErrorResponse'
+        '500':
+          $ref: '#/components/responses/PlainTextErrorResponse'
 
   /user/feed/transactions:
     get:
       summary: Feed of user transactions
       parameters:
-        - in: query
-          name: limit
-          schema:
-            type: integer
-        - in: query
-          name: offset
-          schema:
-            type: integer
+        - $ref: '#/components/parameters/LimitQuery'
+        - $ref: '#/components/parameters/OffsetQuery'
       responses:
         '200':
           description: Success
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/UserTransactionFeedResponse'
-                  - $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/UserTransactionFeedResponse'
+        '401':
+          $ref: '#/components/responses/AuthErrorResponse'
         '403':
           $ref: '#/components/responses/AuthErrorResponse'
         '500':
@@ -368,21 +280,20 @@ paths:
     get:
       summary: Get commission structure
       parameters:
-        - in: query
-          name: site_ids
-          schema:
-            type: string
+        - $ref: '#/components/parameters/SiteIdsQuery'
       responses:
         '200':
           description: Success
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/UserCommissionsResponse'
-                  - $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/UserCommissionsResponse'
+        '401':
+          $ref: '#/components/responses/AuthErrorResponse'
         '403':
           $ref: '#/components/responses/AuthErrorResponse'
+        '500':
+          $ref: '#/components/responses/PlainTextErrorResponse'
 
   /user/payouts/pending:
     get:
@@ -393,45 +304,30 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/UserPendingPayoutsResponse'
-                  - $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/UserPendingPayoutsResponse'
+        '401':
+          $ref: '#/components/responses/AuthErrorResponse'
         '403':
           $ref: '#/components/responses/AuthErrorResponse'
+        '500':
+          $ref: '#/components/responses/PlainTextErrorResponse'
 
   /public/sites:
     get:
       summary: Public marketplace sites
       parameters:
-        - in: query
-          name: site_ids
-          schema:
-            type: string
-        - in: query
-          name: currency
-          schema:
-            type: string
-        - in: query
-          name: keyword
-          schema:
-            type: string
-        - in: query
-          name: limit
-          schema:
-            type: integer
-        - in: query
-          name: offset
-          schema:
-            type: integer
+        - $ref: '#/components/parameters/SiteIdsQuery'
+        - $ref: '#/components/parameters/PublicCurrencyQuery'
+        - $ref: '#/components/parameters/PublicKeywordQuery'
+        - $ref: '#/components/parameters/LimitQuery'
+        - $ref: '#/components/parameters/OffsetQuery'
       responses:
         '200':
           description: Success
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/PublicSitesResponse'
-                  - $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/PublicSitesResponse'
         '500':
           $ref: '#/components/responses/PlainTextErrorResponse'
         '502':
@@ -441,33 +337,89 @@ paths:
     get:
       summary: Public marketplace products
       parameters:
-        - in: query
-          name: limit
-          schema:
-            type: integer
-        - in: query
-          name: offset
-          schema:
-            type: integer
-        - in: query
-          name: site_ids
-          schema:
-            type: string
+        - $ref: '#/components/parameters/LimitQuery'
+        - $ref: '#/components/parameters/OffsetQuery'
+        - $ref: '#/components/parameters/SiteIdsQuery'
       responses:
         '200':
           description: Success
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/PublicProductsResponse'
-                  - $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/PublicProductsResponse'
         '500':
           $ref: '#/components/responses/PlainTextErrorResponse'
         '502':
           $ref: '#/components/responses/PlainTextErrorResponse'
 
 components:
+  parameters:
+    LimitQuery:
+      in: query
+      name: limit
+      schema:
+        type: integer
+    OffsetQuery:
+      in: query
+      name: offset
+      schema:
+        type: integer
+    SiteIdsQuery:
+      in: query
+      name: site_ids
+      schema:
+        type: string
+    StartTimeQuery:
+      in: query
+      name: start_time
+      schema:
+        type: string
+    EndTimeQuery:
+      in: query
+      name: end_time
+      schema:
+        type: string
+    SinceIdIntegerQuery:
+      in: query
+      name: since_id
+      schema:
+        type: integer
+    SinceIdStringQuery:
+      in: query
+      name: since_id
+      schema:
+        type: string
+    MaxIdQuery:
+      in: query
+      name: max_id
+      schema:
+        type: string
+    CreatedAtMaxQuery:
+      in: query
+      name: created_at_max
+      schema:
+        type: string
+    CreatedAtMinQuery:
+      in: query
+      name: created_at_min
+      schema:
+        type: string
+    PublicCurrencyQuery:
+      in: query
+      name: currency
+      schema:
+        type: string
+    PublicKeywordQuery:
+      in: query
+      name: keyword
+      schema:
+        type: string
+    UserStatusQuery:
+      in: query
+      name: status
+      schema:
+        type: string
+        enum: [approved, pending, blocked]
   responses:
     AuthErrorResponse:
       description: Authentication or authorization failure.
@@ -481,12 +433,12 @@ components:
     PlainTextErrorResponse:
       description: Upstream service error response in plain text.
       content:
-        text/plain:
-          schema:
-            type: string
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
+        text/plain:
+          schema:
+            type: string
   schemas:
     LoginResponse:
       type: object
@@ -620,9 +572,59 @@ components:
             orders:
               type: array
               items:
-                type: object
-                additionalProperties: true
+                $ref: '#/components/schemas/UserOrderFeedItem'
           additionalProperties: true
+
+    UserOrderFeedItem:
+      type: object
+      properties:
+        id:
+          oneOf:
+            - type: string
+            - type: integer
+        order_id:
+          oneOf:
+            - type: string
+            - type: integer
+        number:
+          type: string
+        total:
+          type: number
+        subtotal:
+          type: number
+        line_items:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        commission:
+          oneOf:
+            - type: number
+            - type: string
+        created_at:
+          type: string
+        created:
+          oneOf:
+            - type: string
+            - type: integer
+        currency:
+          type: string
+        site_id:
+          oneOf:
+            - type: string
+            - type: integer
+        sub_id:
+          type: string
+        status:
+          type: string
+        affiliate_id:
+          oneOf:
+            - type: string
+            - type: integer
+        conversion_details:
+          type: object
+          additionalProperties: true
+      additionalProperties: true
 
     UserPayoutFeedResponse:
       allOf:
@@ -634,9 +636,43 @@ components:
             payouts:
               type: array
               items:
-                type: object
-                additionalProperties: true
+                $ref: '#/components/schemas/UserPayoutFeedItem'
           additionalProperties: true
+
+    UserPayoutFeedItem:
+      type: object
+      properties:
+        id:
+          oneOf:
+            - type: string
+            - type: integer
+        payout_id:
+          oneOf:
+            - type: string
+            - type: integer
+        affiliate_id:
+          oneOf:
+            - type: string
+            - type: integer
+        amount:
+          oneOf:
+            - type: number
+            - type: string
+        status:
+          type: string
+        payment_method:
+          type: string
+        transaction_id:
+          type: string
+        currency:
+          type: string
+        created_at:
+          type: string
+        created:
+          oneOf:
+            - type: string
+            - type: integer
+      additionalProperties: true
 
     UserProductFeedResponse:
       allOf:
@@ -647,9 +683,43 @@ components:
             products:
               type: array
               items:
-                type: object
-                additionalProperties: true
+                $ref: '#/components/schemas/UserProductFeedItem'
           additionalProperties: true
+
+    UserProductFeedItem:
+      type: object
+      properties:
+        id:
+          oneOf:
+            - type: string
+            - type: integer
+        product_id:
+          oneOf:
+            - type: string
+            - type: integer
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          oneOf:
+            - type: number
+            - type: string
+        sale_price:
+          oneOf:
+            - type: number
+            - type: string
+        image_url:
+          type: string
+        product_url:
+          type: string
+        category:
+          type: string
+        sku:
+          type: string
+        currency:
+          type: string
+      additionalProperties: true
 
     UserRewardFeedResponse:
       allOf:
@@ -696,9 +766,55 @@ components:
             traffic:
               type: array
               items:
-                type: object
-                additionalProperties: true
+                $ref: '#/components/schemas/UserTrafficFeedItem'
           additionalProperties: true
+
+    UserTrafficFeedItem:
+      type: object
+      properties:
+        id:
+          oneOf:
+            - type: string
+            - type: integer
+        affiliate_id:
+          oneOf:
+            - type: string
+            - type: integer
+        customer_id:
+          oneOf:
+            - type: string
+            - type: integer
+        name:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        email:
+          type: string
+        ref_code:
+          type: string
+        phone:
+          type: string
+        country:
+          type: string
+        group_id:
+          oneOf:
+            - type: integer
+            - type: string
+        site_id:
+          oneOf:
+            - type: string
+            - type: integer
+        sub_id:
+          type: string
+        created_at:
+          type: string
+        created:
+          oneOf:
+            - type: string
+            - type: integer
+      additionalProperties: true
 
     UserCommissionsResponse:
       type: object

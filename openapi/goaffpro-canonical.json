@@ -42,14 +42,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "oneOf": [
-                    {
-                      "$ref": "#/components/schemas/LoginResponse"
-                    },
-                    {
-                      "$ref": "#/components/schemas/ErrorResponse"
-                    }
-                  ]
+                  "$ref": "#/components/schemas/LoginResponse"
                 }
               }
             }
@@ -62,30 +55,13 @@
         "summary": "List of stores the user is enrolled in",
         "parameters": [
           {
-            "in": "query",
-            "name": "limit",
-            "schema": {
-              "type": "integer"
-            }
+            "$ref": "#/components/parameters/LimitQuery"
           },
           {
-            "in": "query",
-            "name": "offset",
-            "schema": {
-              "type": "integer"
-            }
+            "$ref": "#/components/parameters/OffsetQuery"
           },
           {
-            "in": "query",
-            "name": "status",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "approved",
-                "pending",
-                "blocked"
-              ]
-            }
+            "$ref": "#/components/parameters/UserStatusQuery"
           },
           {
             "in": "query",
@@ -118,14 +94,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "oneOf": [
-                    {
-                      "$ref": "#/components/schemas/UserSiteListResponse"
-                    },
-                    {
-                      "$ref": "#/components/schemas/ErrorResponse"
-                    }
-                  ]
+                  "$ref": "#/components/schemas/UserSiteListResponse"
                 }
               }
             }
@@ -145,14 +114,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "oneOf": [
-                    {
-                      "$ref": "#/components/schemas/UserProfileEnvelope"
-                    },
-                    {
-                      "$ref": "#/components/schemas/ErrorResponse"
-                    }
-                  ]
+                  "$ref": "#/components/schemas/UserProfileEnvelope"
                 }
               }
             }
@@ -170,14 +132,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "oneOf": [
-                    {
-                      "$ref": "#/components/schemas/UserProfileUpdateResponse"
-                    },
-                    {
-                      "$ref": "#/components/schemas/ErrorResponse"
-                    }
-                  ]
+                  "$ref": "#/components/schemas/UserProfileUpdateResponse"
                 }
               }
             }
@@ -193,25 +148,13 @@
         "summary": "Aggregates of user stats",
         "parameters": [
           {
-            "in": "query",
-            "name": "site_ids",
-            "schema": {
-              "type": "string"
-            }
+            "$ref": "#/components/parameters/SiteIdsQuery"
           },
           {
-            "in": "query",
-            "name": "start_time",
-            "schema": {
-              "type": "string"
-            }
+            "$ref": "#/components/parameters/StartTimeQuery"
           },
           {
-            "in": "query",
-            "name": "end_time",
-            "schema": {
-              "type": "string"
-            }
+            "$ref": "#/components/parameters/EndTimeQuery"
           },
           {
             "in": "query",
@@ -239,14 +182,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "oneOf": [
-                    {
-                      "$ref": "#/components/schemas/UserStatsAggregateResponse"
-                    },
-                    {
-                      "$ref": "#/components/schemas/ErrorResponse"
-                    }
-                  ]
+                  "$ref": "#/components/schemas/UserStatsAggregateResponse"
                 }
               }
             }
@@ -262,39 +198,19 @@
         "summary": "Feed of user orders",
         "parameters": [
           {
-            "in": "query",
-            "name": "site_ids",
-            "schema": {
-              "type": "string"
-            }
+            "$ref": "#/components/parameters/SiteIdsQuery"
           },
           {
-            "in": "query",
-            "name": "since_id",
-            "schema": {
-              "type": "string"
-            }
+            "$ref": "#/components/parameters/SinceIdStringQuery"
           },
           {
-            "in": "query",
-            "name": "max_id",
-            "schema": {
-              "type": "string"
-            }
+            "$ref": "#/components/parameters/MaxIdQuery"
           },
           {
-            "in": "query",
-            "name": "created_at_max",
-            "schema": {
-              "type": "string"
-            }
+            "$ref": "#/components/parameters/CreatedAtMaxQuery"
           },
           {
-            "in": "query",
-            "name": "created_at_min",
-            "schema": {
-              "type": "string"
-            }
+            "$ref": "#/components/parameters/CreatedAtMinQuery"
           },
           {
             "in": "query",
@@ -322,18 +238,10 @@
             }
           },
           {
-            "in": "query",
-            "name": "limit",
-            "schema": {
-              "type": "integer"
-            }
+            "$ref": "#/components/parameters/LimitQuery"
           },
           {
-            "in": "query",
-            "name": "offset",
-            "schema": {
-              "type": "integer"
-            }
+            "$ref": "#/components/parameters/OffsetQuery"
           }
         ],
         "responses": {
@@ -342,14 +250,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "oneOf": [
-                    {
-                      "$ref": "#/components/schemas/UserOrderFeedResponse"
-                    },
-                    {
-                      "$ref": "#/components/schemas/ErrorResponse"
-                    }
-                  ]
+                  "$ref": "#/components/schemas/UserOrderFeedResponse"
                 }
               }
             }
@@ -365,46 +266,22 @@
         "summary": "Feed of user payouts",
         "parameters": [
           {
-            "in": "query",
-            "name": "site_ids",
-            "schema": {
-              "type": "string"
-            }
+            "$ref": "#/components/parameters/SiteIdsQuery"
           },
           {
-            "in": "query",
-            "name": "start_time",
-            "schema": {
-              "type": "string"
-            }
+            "$ref": "#/components/parameters/StartTimeQuery"
           },
           {
-            "in": "query",
-            "name": "end_time",
-            "schema": {
-              "type": "string"
-            }
+            "$ref": "#/components/parameters/EndTimeQuery"
           },
           {
-            "in": "query",
-            "name": "since_id",
-            "schema": {
-              "type": "integer"
-            }
+            "$ref": "#/components/parameters/SinceIdIntegerQuery"
           },
           {
-            "in": "query",
-            "name": "limit",
-            "schema": {
-              "type": "integer"
-            }
+            "$ref": "#/components/parameters/LimitQuery"
           },
           {
-            "in": "query",
-            "name": "offset",
-            "schema": {
-              "type": "integer"
-            }
+            "$ref": "#/components/parameters/OffsetQuery"
           }
         ],
         "responses": {
@@ -413,14 +290,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "oneOf": [
-                    {
-                      "$ref": "#/components/schemas/UserPayoutFeedResponse"
-                    },
-                    {
-                      "$ref": "#/components/schemas/ErrorResponse"
-                    }
-                  ]
+                  "$ref": "#/components/schemas/UserPayoutFeedResponse"
                 }
               }
             }
@@ -436,18 +306,10 @@
         "summary": "Feed of products available for promotion",
         "parameters": [
           {
-            "in": "query",
-            "name": "limit",
-            "schema": {
-              "type": "integer"
-            }
+            "$ref": "#/components/parameters/LimitQuery"
           },
           {
-            "in": "query",
-            "name": "offset",
-            "schema": {
-              "type": "integer"
-            }
+            "$ref": "#/components/parameters/OffsetQuery"
           }
         ],
         "responses": {
@@ -456,14 +318,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "oneOf": [
-                    {
-                      "$ref": "#/components/schemas/UserProductFeedResponse"
-                    },
-                    {
-                      "$ref": "#/components/schemas/ErrorResponse"
-                    }
-                  ]
+                  "$ref": "#/components/schemas/UserProductFeedResponse"
                 }
               }
             }
@@ -482,46 +337,22 @@
         "summary": "Feed of user rewards",
         "parameters": [
           {
-            "in": "query",
-            "name": "site_ids",
-            "schema": {
-              "type": "string"
-            }
+            "$ref": "#/components/parameters/SiteIdsQuery"
           },
           {
-            "in": "query",
-            "name": "start_time",
-            "schema": {
-              "type": "string"
-            }
+            "$ref": "#/components/parameters/StartTimeQuery"
           },
           {
-            "in": "query",
-            "name": "end_time",
-            "schema": {
-              "type": "string"
-            }
+            "$ref": "#/components/parameters/EndTimeQuery"
           },
           {
-            "in": "query",
-            "name": "since_id",
-            "schema": {
-              "type": "integer"
-            }
+            "$ref": "#/components/parameters/SinceIdIntegerQuery"
           },
           {
-            "in": "query",
-            "name": "limit",
-            "schema": {
-              "type": "integer"
-            }
+            "$ref": "#/components/parameters/LimitQuery"
           },
           {
-            "in": "query",
-            "name": "offset",
-            "schema": {
-              "type": "integer"
-            }
+            "$ref": "#/components/parameters/OffsetQuery"
           }
         ],
         "responses": {
@@ -530,14 +361,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "oneOf": [
-                    {
-                      "$ref": "#/components/schemas/UserRewardFeedResponse"
-                    },
-                    {
-                      "$ref": "#/components/schemas/ErrorResponse"
-                    }
-                  ]
+                  "$ref": "#/components/schemas/UserRewardFeedResponse"
                 }
               }
             }
@@ -553,46 +377,22 @@
         "summary": "Feed of user traffic",
         "parameters": [
           {
-            "in": "query",
-            "name": "site_ids",
-            "schema": {
-              "type": "string"
-            }
+            "$ref": "#/components/parameters/SiteIdsQuery"
           },
           {
-            "in": "query",
-            "name": "start_time",
-            "schema": {
-              "type": "string"
-            }
+            "$ref": "#/components/parameters/StartTimeQuery"
           },
           {
-            "in": "query",
-            "name": "end_time",
-            "schema": {
-              "type": "string"
-            }
+            "$ref": "#/components/parameters/EndTimeQuery"
           },
           {
-            "in": "query",
-            "name": "since_id",
-            "schema": {
-              "type": "integer"
-            }
+            "$ref": "#/components/parameters/SinceIdIntegerQuery"
           },
           {
-            "in": "query",
-            "name": "limit",
-            "schema": {
-              "type": "integer"
-            }
+            "$ref": "#/components/parameters/LimitQuery"
           },
           {
-            "in": "query",
-            "name": "offset",
-            "schema": {
-              "type": "integer"
-            }
+            "$ref": "#/components/parameters/OffsetQuery"
           }
         ],
         "responses": {
@@ -601,14 +401,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "oneOf": [
-                    {
-                      "$ref": "#/components/schemas/UserTrafficFeedResponse"
-                    },
-                    {
-                      "$ref": "#/components/schemas/ErrorResponse"
-                    }
-                  ]
+                  "$ref": "#/components/schemas/UserTrafficFeedResponse"
                 }
               }
             }
@@ -624,18 +417,10 @@
         "summary": "Feed of user transactions",
         "parameters": [
           {
-            "in": "query",
-            "name": "limit",
-            "schema": {
-              "type": "integer"
-            }
+            "$ref": "#/components/parameters/LimitQuery"
           },
           {
-            "in": "query",
-            "name": "offset",
-            "schema": {
-              "type": "integer"
-            }
+            "$ref": "#/components/parameters/OffsetQuery"
           }
         ],
         "responses": {
@@ -644,14 +429,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "oneOf": [
-                    {
-                      "$ref": "#/components/schemas/UserTransactionFeedResponse"
-                    },
-                    {
-                      "$ref": "#/components/schemas/ErrorResponse"
-                    }
-                  ]
+                  "$ref": "#/components/schemas/UserTransactionFeedResponse"
                 }
               }
             }
@@ -670,11 +448,7 @@
         "summary": "Get commission structure",
         "parameters": [
           {
-            "in": "query",
-            "name": "site_ids",
-            "schema": {
-              "type": "string"
-            }
+            "$ref": "#/components/parameters/SiteIdsQuery"
           }
         ],
         "responses": {
@@ -683,14 +457,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "oneOf": [
-                    {
-                      "$ref": "#/components/schemas/UserCommissionsResponse"
-                    },
-                    {
-                      "$ref": "#/components/schemas/ErrorResponse"
-                    }
-                  ]
+                  "$ref": "#/components/schemas/UserCommissionsResponse"
                 }
               }
             }
@@ -710,14 +477,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "oneOf": [
-                    {
-                      "$ref": "#/components/schemas/UserPendingPayoutsResponse"
-                    },
-                    {
-                      "$ref": "#/components/schemas/ErrorResponse"
-                    }
-                  ]
+                  "$ref": "#/components/schemas/UserPendingPayoutsResponse"
                 }
               }
             }
@@ -733,39 +493,19 @@
         "summary": "Public marketplace sites",
         "parameters": [
           {
-            "in": "query",
-            "name": "site_ids",
-            "schema": {
-              "type": "string"
-            }
+            "$ref": "#/components/parameters/SiteIdsQuery"
           },
           {
-            "in": "query",
-            "name": "currency",
-            "schema": {
-              "type": "string"
-            }
+            "$ref": "#/components/parameters/PublicCurrencyQuery"
           },
           {
-            "in": "query",
-            "name": "keyword",
-            "schema": {
-              "type": "string"
-            }
+            "$ref": "#/components/parameters/PublicKeywordQuery"
           },
           {
-            "in": "query",
-            "name": "limit",
-            "schema": {
-              "type": "integer"
-            }
+            "$ref": "#/components/parameters/LimitQuery"
           },
           {
-            "in": "query",
-            "name": "offset",
-            "schema": {
-              "type": "integer"
-            }
+            "$ref": "#/components/parameters/OffsetQuery"
           }
         ],
         "responses": {
@@ -774,14 +514,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "oneOf": [
-                    {
-                      "$ref": "#/components/schemas/PublicSitesResponse"
-                    },
-                    {
-                      "$ref": "#/components/schemas/ErrorResponse"
-                    }
-                  ]
+                  "$ref": "#/components/schemas/PublicSitesResponse"
                 }
               }
             }
@@ -800,25 +533,13 @@
         "summary": "Public marketplace products",
         "parameters": [
           {
-            "in": "query",
-            "name": "limit",
-            "schema": {
-              "type": "integer"
-            }
+            "$ref": "#/components/parameters/LimitQuery"
           },
           {
-            "in": "query",
-            "name": "offset",
-            "schema": {
-              "type": "integer"
-            }
+            "$ref": "#/components/parameters/OffsetQuery"
           },
           {
-            "in": "query",
-            "name": "site_ids",
-            "schema": {
-              "type": "string"
-            }
+            "$ref": "#/components/parameters/SiteIdsQuery"
           }
         ],
         "responses": {
@@ -827,14 +548,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "oneOf": [
-                    {
-                      "$ref": "#/components/schemas/PublicProductsResponse"
-                    },
-                    {
-                      "$ref": "#/components/schemas/ErrorResponse"
-                    }
-                  ]
+                  "$ref": "#/components/schemas/PublicProductsResponse"
                 }
               }
             }
@@ -850,6 +564,104 @@
     }
   },
   "components": {
+    "parameters": {
+      "LimitQuery": {
+        "in": "query",
+        "name": "limit",
+        "schema": {
+          "type": "integer"
+        }
+      },
+      "OffsetQuery": {
+        "in": "query",
+        "name": "offset",
+        "schema": {
+          "type": "integer"
+        }
+      },
+      "SiteIdsQuery": {
+        "in": "query",
+        "name": "site_ids",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "StartTimeQuery": {
+        "in": "query",
+        "name": "start_time",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "EndTimeQuery": {
+        "in": "query",
+        "name": "end_time",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "SinceIdIntegerQuery": {
+        "in": "query",
+        "name": "since_id",
+        "schema": {
+          "type": "integer"
+        }
+      },
+      "SinceIdStringQuery": {
+        "in": "query",
+        "name": "since_id",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "MaxIdQuery": {
+        "in": "query",
+        "name": "max_id",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "CreatedAtMaxQuery": {
+        "in": "query",
+        "name": "created_at_max",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "CreatedAtMinQuery": {
+        "in": "query",
+        "name": "created_at_min",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "PublicCurrencyQuery": {
+        "in": "query",
+        "name": "currency",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "PublicKeywordQuery": {
+        "in": "query",
+        "name": "keyword",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "UserStatusQuery": {
+        "in": "query",
+        "name": "status",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "approved",
+            "pending",
+            "blocked"
+          ]
+        }
+      }
+    },
     "responses": {
       "AuthErrorResponse": {
         "description": "Authentication or authorization failure.",

@@ -10,13 +10,15 @@
     <PackageVersion Include="MinVer" Version="6.0.0" />
     <PackageVersion Include="Polly" Version="8.4.2" />
     <PackageVersion Include="Polly.Extensions.Http" Version="3.0.0" />
+    <PackageVersion Include="Spectre.Console" Version="0.49.1" />
   </ItemGroup>
-  <ItemGroup Label="Code generation">
-    <PackageVersion Include="Microsoft.Build.Framework" Version="18.3.3" />
-    <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="18.3.3" />
-    <PackageVersion Include="NSwag.Core" Version="14.1.0" />
-    <PackageVersion Include="NSwag.Core.Yaml" Version="14.1.0" />
-    <PackageVersion Include="NSwag.CodeGeneration.CSharp" Version="14.1.0" />
+  <ItemGroup Label="Code generation and Kiota runtime">
+    <PackageVersion Include="Microsoft.Kiota.Abstractions" Version="1.21.2" />
+    <PackageVersion Include="Microsoft.Kiota.Http.HttpClientLibrary" Version="1.21.2" />
+    <PackageVersion Include="Microsoft.Kiota.Serialization.Form" Version="1.21.2" />
+    <PackageVersion Include="Microsoft.Kiota.Serialization.Json" Version="1.21.2" />
+    <PackageVersion Include="Microsoft.Kiota.Serialization.Multipart" Version="1.21.2" />
+    <PackageVersion Include="Microsoft.Kiota.Serialization.Text" Version="1.21.2" />
   </ItemGroup>
   <ItemGroup Label="Testing">
     <PackageVersion Include="xunit" Version="2.9.3" />

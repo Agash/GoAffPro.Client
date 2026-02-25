@@ -185,6 +185,9 @@ paths:
           $ref: '#/components/responses/PlainTextErrorResponse'
 
   /user/feed/products:
+    # Known runtime issue (observed on 2026-02-25):
+    # endpoint can hang/timeout for valid authenticated requests.
+    # Keep error mappings broad and preserve this note until behavior stabilizes.
     get:
       summary: Feed of products available for promotion
       parameters:
@@ -207,6 +210,9 @@ paths:
           $ref: '#/components/responses/PlainTextErrorResponse'
 
   /user/feed/rewards:
+    # Known runtime issue (observed on 2026-02-25):
+    # endpoint responds as not found / non-JSON error payload for authenticated requests.
+    # Leave modeled but treat as unstable until upstream fixes behavior.
     get:
       summary: Feed of user rewards
       parameters:
@@ -257,6 +263,9 @@ paths:
           $ref: '#/components/responses/PlainTextErrorResponse'
 
   /user/feed/transactions:
+    # Known runtime issue (observed on 2026-02-25):
+    # endpoint can return HTTP 500 with HTML/plain-text error payloads.
+    # Error content may not match structured JSON schema.
     get:
       summary: Feed of user transactions
       parameters:
@@ -296,6 +305,9 @@ paths:
           $ref: '#/components/responses/PlainTextErrorResponse'
 
   /user/payouts/pending:
+    # Undocumented/parity endpoint:
+    # observed to exist on /user while also exposed under /sdk/user paths.
+    # Keep tracked here even if upstream /user docs omit or mis-document it.
     get:
       summary: Get pending payout amount (and its breakdown)
       responses:

@@ -12,6 +12,8 @@
     <PackageProjectUrl>https://github.com/Agash/GoAffPro.Client</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>goaffpro;affiliate;marketing;api;client;dotnet</PackageTags>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
     <NoWarn>$(NoWarn);CS8981;CA1708</NoWarn>
   </PropertyGroup>
 

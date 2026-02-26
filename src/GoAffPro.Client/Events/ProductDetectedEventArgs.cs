@@ -1,5 +1,3 @@
-using GoAffPro.Client.Generated.Models;
-
 namespace GoAffPro.Client.Events;
 
 ///// <summary>

@@ -36,12 +36,9 @@ public static class GoAffProUtils
     /// </example>
     public static decimal? ParseMonetary(string? value)
     {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return null;
-        }
-
-        return decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out decimal result)
+        return string.IsNullOrWhiteSpace(value)
+            ? null
+            : decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out decimal result)
             ? result
             : null;
     }
@@ -59,12 +56,9 @@ public static class GoAffProUtils
     /// </returns>
     public static DateTimeOffset? ParseTimestamp(string? value)
     {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return null;
-        }
-
-        return DateTimeOffset.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTimeOffset result)
+        return string.IsNullOrWhiteSpace(value)
+            ? null
+            : DateTimeOffset.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTimeOffset result)
             ? result.ToUniversalTime()
             : null;
     }

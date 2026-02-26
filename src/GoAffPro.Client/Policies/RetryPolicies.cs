@@ -28,10 +28,9 @@ public static class RetryPolicies
     /// <returns>An async Polly retry policy.</returns>
     public static IAsyncPolicy<HttpResponseMessage> CreateTransientRetryPolicy(int retryCount = 3)
     {
-        if (retryCount <= 0)
-            return Policy.NoOpAsync<HttpResponseMessage>();
-
-        return HttpPolicyExtensions
+        return retryCount <= 0
+            ? Policy.NoOpAsync<HttpResponseMessage>()
+            : HttpPolicyExtensions
             .HandleTransientHttpError()
             .OrResult(static r => r.StatusCode == HttpStatusCode.TooManyRequests)
             .WaitAndRetryAsync(
@@ -59,10 +58,9 @@ public static class RetryPolicies
         int? handledEventsAllowedBeforeBreaking = 5,
         TimeSpan? durationOfBreak = null)
     {
-        if (handledEventsAllowedBeforeBreaking is not > 0)
-            return Policy.NoOpAsync<HttpResponseMessage>();
-
-        return HttpPolicyExtensions
+        return handledEventsAllowedBeforeBreaking is not > 0
+            ? Policy.NoOpAsync<HttpResponseMessage>()
+            : HttpPolicyExtensions
             .HandleTransientHttpError()
             .OrResult(static r => r.StatusCode == HttpStatusCode.TooManyRequests)
             .CircuitBreakerAsync(

@@ -4,15 +4,14 @@ using System.Net.Http.Headers;
 using GoAffPro.Client.Events;
 using GoAffPro.Client.Exceptions;
 using GoAffPro.Client.Generated.Models;
-using GoAffPro.Client.Generated.User.Feed.Orders;
 using GoAffPro.Client.Generated.User.Sites;
 using GoAffPro.Client.Policies;
 using Microsoft.Extensions.Http;
 using Microsoft.Kiota.Abstractions;
 using Microsoft.Kiota.Abstractions.Authentication;
 using Microsoft.Kiota.Http.HttpClientLibrary;
-using GetSiteFieldsQueryParameterType = GoAffPro.Client.Generated.User.Sites.GetFieldsQueryParameterType;
 using GetOrderFieldsQueryParameterType = GoAffPro.Client.Generated.User.Feed.Orders.GetFieldsQueryParameterType;
+using GetSiteFieldsQueryParameterType = GoAffPro.Client.Generated.User.Sites.GetFieldsQueryParameterType;
 
 namespace GoAffPro.Client;
 
@@ -241,9 +240,9 @@ public sealed class GoAffProClient : IGoAffProClient
                     config.QueryParameters.StatusAsGetStatusQueryParameterType = status.ToUpperInvariant() switch
                     {
                         "APPROVED" => GetStatusQueryParameterType.Approved,
-                        "PENDING"  => GetStatusQueryParameterType.Pending,
-                        "BLOCKED"  => GetStatusQueryParameterType.Blocked,
-                        _          => null,
+                        "PENDING" => GetStatusQueryParameterType.Pending,
+                        "BLOCKED" => GetStatusQueryParameterType.Blocked,
+                        _ => null,
                     };
                 }
             }, cancellationToken).ConfigureAwait(false)
@@ -310,25 +309,34 @@ public sealed class GoAffProClient : IGoAffProClient
 
         _ = RewardDetected; // keep obsolete member in compiled output
 
-        DateTimeOffset lastOrderPoll     = OrderObserverStartTime     ?? DateTimeOffset.UtcNow;
+        DateTimeOffset lastOrderPoll = OrderObserverStartTime ?? DateTimeOffset.UtcNow;
         DateTimeOffset lastTrafficPoll = TrafficObserverStartTime ?? DateTimeOffset.UtcNow;
-        DateTimeOffset lastPayoutPoll    = PayoutObserverStartTime    ?? DateTimeOffset.UtcNow;
+        DateTimeOffset lastPayoutPoll = PayoutObserverStartTime ?? DateTimeOffset.UtcNow;
 
         while (!cancellationToken.IsCancellationRequested)
         {
             DateTimeOffset orderTo = DateTimeOffset.UtcNow;
             foreach (UserOrderFeedItem order in await PollOrdersAsync(lastOrderPoll, orderTo, validatedPageSize, cancellationToken).ConfigureAwait(false))
+            {
                 OrderDetected?.Invoke(this, new OrderDetectedEventArgs(order));
+            }
+
             lastOrderPoll = orderTo;
 
             DateTimeOffset trafficTo = DateTimeOffset.UtcNow;
             foreach (UserTrafficFeedItem item in await PollTrafficAsync(lastTrafficPoll, trafficTo, validatedPageSize, cancellationToken).ConfigureAwait(false))
+            {
                 TrafficDetected?.Invoke(this, new TrafficDetectedEventArgs(item));
+            }
+
             lastTrafficPoll = trafficTo;
 
             DateTimeOffset payoutTo = DateTimeOffset.UtcNow;
             foreach (UserPayoutFeedItem payout in await PollPayoutsAsync(lastPayoutPoll, payoutTo, validatedPageSize, cancellationToken).ConfigureAwait(false))
+            {
                 PayoutDetected?.Invoke(this, new PayoutDetectedEventArgs(payout));
+            }
+
             lastPayoutPoll = payoutTo;
 
             await Task.Delay(interval, cancellationToken).ConfigureAwait(false);
@@ -353,7 +361,10 @@ public sealed class GoAffProClient : IGoAffProClient
         {
             DateTimeOffset to = DateTimeOffset.UtcNow;
             foreach (UserOrderFeedItem order in await PollOrdersAsync(lastPoll, to, size, cancellationToken).ConfigureAwait(false))
+            {
                 yield return order;
+            }
+
             lastPoll = to;
             await Task.Delay(interval, cancellationToken).ConfigureAwait(false);
         }
@@ -373,7 +384,10 @@ public sealed class GoAffProClient : IGoAffProClient
         {
             DateTimeOffset to = DateTimeOffset.UtcNow;
             foreach (UserTrafficFeedItem item in await PollTrafficAsync(lastPoll, to, size, cancellationToken).ConfigureAwait(false))
+            {
                 yield return item;
+            }
+
             lastPoll = to;
             await Task.Delay(interval, cancellationToken).ConfigureAwait(false);
         }
@@ -393,7 +407,10 @@ public sealed class GoAffProClient : IGoAffProClient
         {
             DateTimeOffset to = DateTimeOffset.UtcNow;
             foreach (UserPayoutFeedItem payout in await PollPayoutsAsync(lastPoll, to, size, cancellationToken).ConfigureAwait(false))
+            {
                 yield return payout;
+            }
+
             lastPoll = to;
             await Task.Delay(interval, cancellationToken).ConfigureAwait(false);
         }
@@ -414,7 +431,10 @@ public sealed class GoAffProClient : IGoAffProClient
             (IReadOnlyList<UserProductFeedItem> products, int? nextId) = await PollProductsAsync(lastId, size, cancellationToken).ConfigureAwait(false);
             lastId = nextId;
             foreach (UserProductFeedItem product in products)
+            {
                 yield return product;
+            }
+
             await Task.Delay(interval, cancellationToken).ConfigureAwait(false);
         }
     }
@@ -434,7 +454,10 @@ public sealed class GoAffProClient : IGoAffProClient
             (IReadOnlyList<UserTransactionItem> transactions, int? nextId) = await PollTransactionsAsync(lastId, size, cancellationToken).ConfigureAwait(false);
             lastId = nextId;
             foreach (UserTransactionItem tx in transactions)
+            {
                 yield return tx;
+            }
+
             await Task.Delay(interval, cancellationToken).ConfigureAwait(false);
         }
     }
@@ -456,7 +479,11 @@ public sealed class GoAffProClient : IGoAffProClient
     /// <summary>Disposes resources owned by this client.</summary>
     public void Dispose()
     {
-        if (!_disposeHttpClient) return;
+        if (!_disposeHttpClient)
+        {
+            return;
+        }
+
         (_requestAdapter as IDisposable)?.Dispose();
         _httpClient.Dispose();
     }
@@ -551,7 +578,9 @@ public sealed class GoAffProClient : IGoAffProClient
             ?? new UserProductFeedResponse()).ConfigureAwait(false);
 
         if (response.Products is not { Count: > 0 })
+        {
             return ([], lastId);
+        }
 
         int? maxId = response.Products
             .Select(p => ToNullableInt(p.ProductId) ?? ToNullableInt(p.Id))
@@ -559,7 +588,9 @@ public sealed class GoAffProClient : IGoAffProClient
             .DefaultIfEmpty(lastId ?? int.MinValue).Max();
 
         if (!lastId.HasValue)
+        {
             return ([], maxId == int.MinValue ? null : maxId);
+        }
 
         var newItems = response.Products
             .Where(p => { int? id = ToNullableInt(p.ProductId) ?? ToNullableInt(p.Id); return id > lastId; })
@@ -581,14 +612,18 @@ public sealed class GoAffProClient : IGoAffProClient
             ?? new UserTransactionFeedResponse()).ConfigureAwait(false);
 
         if (response.Transactions is not { Count: > 0 })
+        {
             return ([], lastId);
+        }
 
         int? maxId = response.Transactions
             .Select(t => t.TxId).Where(v => v.HasValue).Select(v => v!.Value)
             .DefaultIfEmpty(lastId ?? int.MinValue).Max();
 
         if (!lastId.HasValue)
+        {
             return ([], maxId == int.MinValue ? null : maxId);
+        }
 
         var newItems = response.Transactions
             .Where(t => t.TxId > lastId)
@@ -598,11 +633,15 @@ public sealed class GoAffProClient : IGoAffProClient
         return (newItems, maxId == int.MinValue ? lastId : maxId);
     }
 
-    private static int? ToNullableInt(UserProductFeedItem.UserProductFeedItem_product_id? v) =>
-        v?.Integer ?? (int.TryParse(v?.String, NumberStyles.Integer, CultureInfo.InvariantCulture, out int p) ? p : null);
+    private static int? ToNullableInt(UserProductFeedItem.UserProductFeedItem_product_id? v)
+    {
+        return v?.Integer ?? (int.TryParse(v?.String, NumberStyles.Integer, CultureInfo.InvariantCulture, out int p) ? p : null);
+    }
 
-    private static int? ToNullableInt(UserProductFeedItem.UserProductFeedItem_id? v) =>
-        v?.Integer ?? (int.TryParse(v?.String, NumberStyles.Integer, CultureInfo.InvariantCulture, out int p) ? p : null);
+    private static int? ToNullableInt(UserProductFeedItem.UserProductFeedItem_id? v)
+    {
+        return v?.Integer ?? (int.TryParse(v?.String, NumberStyles.Integer, CultureInfo.InvariantCulture, out int p) ? p : null);
+    }
 
     private static HttpClient CreateHttpClient(GoAffProClientOptions options)
     {
@@ -625,8 +664,10 @@ public sealed class GoAffProClient : IGoAffProClient
         return options;
     }
 
-    private static int ValidatePageSize(int pageSize) =>
-        pageSize > 0 ? pageSize : throw new ArgumentOutOfRangeException(nameof(pageSize), pageSize, "Page size must be greater than zero.");
+    private static int ValidatePageSize(int pageSize)
+    {
+        return pageSize > 0 ? pageSize : throw new ArgumentOutOfRangeException(nameof(pageSize), pageSize, "Page size must be greater than zero.");
+    }
 
     private static async Task<T> ExecuteAsync<T>(Func<Task<T>> action)
     {

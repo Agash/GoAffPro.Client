@@ -34,7 +34,7 @@ namespace GoAffPro.Client.Generated.User.Feed.Transactions
         {
         }
         /// <summary>
-        /// Feed of user transactions
+        /// Returns ledger transaction records for the authenticated affiliate.**Warning:** This endpoint has been observed to return HTTP 500 with non-JSON (HTML/plain-text) response bodies (observed 2026-02-25). Callers should handle non-JSON 500 responses gracefully.
         /// </summary>
         /// <returns>A <see cref="global::GoAffPro.Client.Generated.Models.UserTransactionFeedResponse"/></returns>
         /// <param name="cancellationToken">Cancellation token to use when cancelling requests</param>
@@ -61,7 +61,7 @@ namespace GoAffPro.Client.Generated.User.Feed.Transactions
             return await RequestAdapter.SendAsync<global::GoAffPro.Client.Generated.Models.UserTransactionFeedResponse>(requestInfo, global::GoAffPro.Client.Generated.Models.UserTransactionFeedResponse.CreateFromDiscriminatorValue, errorMapping, cancellationToken).ConfigureAwait(false);
         }
         /// <summary>
-        /// Feed of user transactions
+        /// Returns ledger transaction records for the authenticated affiliate.**Warning:** This endpoint has been observed to return HTTP 500 with non-JSON (HTML/plain-text) response bodies (observed 2026-02-25). Callers should handle non-JSON 500 responses gracefully.
         /// </summary>
         /// <returns>A <see cref="RequestInformation"/></returns>
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
@@ -89,13 +89,15 @@ namespace GoAffPro.Client.Generated.User.Feed.Transactions
             return new global::GoAffPro.Client.Generated.User.Feed.Transactions.TransactionsRequestBuilder(rawUrl, RequestAdapter);
         }
         /// <summary>
-        /// Feed of user transactions
+        /// Returns ledger transaction records for the authenticated affiliate.**Warning:** This endpoint has been observed to return HTTP 500 with non-JSON (HTML/plain-text) response bodies (observed 2026-02-25). Callers should handle non-JSON 500 responses gracefully.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
         public partial class TransactionsRequestBuilderGetQueryParameters 
         {
+            /// <summary>Maximum number of items to return per page.</summary>
             [QueryParameter("limit")]
             public int? Limit { get; set; }
+            /// <summary>Number of items to skip (zero-based).</summary>
             [QueryParameter("offset")]
             public int? Offset { get; set; }
         }

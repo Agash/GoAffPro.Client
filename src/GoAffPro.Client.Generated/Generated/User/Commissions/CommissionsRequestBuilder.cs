@@ -22,7 +22,7 @@ namespace GoAffPro.Client.Generated.User.Commissions
         /// </summary>
         /// <param name="pathParameters">Path parameters for the request</param>
         /// <param name="requestAdapter">The request adapter to use to execute the requests.</param>
-        public CommissionsRequestBuilder(Dictionary<string, object> pathParameters, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/user/commissions{?site_ids*}", pathParameters)
+        public CommissionsRequestBuilder(Dictionary<string, object> pathParameters, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/user/commissions?site_ids={site_ids}", pathParameters)
         {
         }
         /// <summary>
@@ -30,11 +30,11 @@ namespace GoAffPro.Client.Generated.User.Commissions
         /// </summary>
         /// <param name="rawUrl">The raw URL to use for the request builder.</param>
         /// <param name="requestAdapter">The request adapter to use to execute the requests.</param>
-        public CommissionsRequestBuilder(string rawUrl, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/user/commissions{?site_ids*}", rawUrl)
+        public CommissionsRequestBuilder(string rawUrl, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/user/commissions?site_ids={site_ids}", rawUrl)
         {
         }
         /// <summary>
-        /// Get commission structure
+        /// Returns the commission tiers and rules applicable to the authenticated affiliate per enrolled store. Returns the list in the same order as the site_id list passed in the query parameter.**IMPORTANT:** `site_id` must be provided or the endpoint returns an empty result set (confirmed empirically on 2026-02).**Real-data notes (2026-02):** - Response wraps results in a `commissions` array; each item represents  one store&apos;s commission config with `standard`, `special`, and `royalties`.- `standard.commission_value` may be `0` meaning the base rate is zero  and only `special`/`royalties` tiers apply.- `special[].collection` may be an empty object `{}` when no collection  restriction applies.- `royalties[].collection.name` appears to be an internal affiliate group  or segment name, not a public product collection.- The `mlm` field has not been observed in real data; retained as unknown.
         /// </summary>
         /// <returns>A <see cref="global::GoAffPro.Client.Generated.Models.UserCommissionsResponse"/></returns>
         /// <param name="cancellationToken">Cancellation token to use when cancelling requests</param>
@@ -61,7 +61,7 @@ namespace GoAffPro.Client.Generated.User.Commissions
             return await RequestAdapter.SendAsync<global::GoAffPro.Client.Generated.Models.UserCommissionsResponse>(requestInfo, global::GoAffPro.Client.Generated.Models.UserCommissionsResponse.CreateFromDiscriminatorValue, errorMapping, cancellationToken).ConfigureAwait(false);
         }
         /// <summary>
-        /// Get commission structure
+        /// Returns the commission tiers and rules applicable to the authenticated affiliate per enrolled store. Returns the list in the same order as the site_id list passed in the query parameter.**IMPORTANT:** `site_id` must be provided or the endpoint returns an empty result set (confirmed empirically on 2026-02).**Real-data notes (2026-02):** - Response wraps results in a `commissions` array; each item represents  one store&apos;s commission config with `standard`, `special`, and `royalties`.- `standard.commission_value` may be `0` meaning the base rate is zero  and only `special`/`royalties` tiers apply.- `special[].collection` may be an empty object `{}` when no collection  restriction applies.- `royalties[].collection.name` appears to be an internal affiliate group  or segment name, not a public product collection.- The `mlm` field has not been observed in real data; retained as unknown.
         /// </summary>
         /// <returns>A <see cref="RequestInformation"/></returns>
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
@@ -89,11 +89,12 @@ namespace GoAffPro.Client.Generated.User.Commissions
             return new global::GoAffPro.Client.Generated.User.Commissions.CommissionsRequestBuilder(rawUrl, RequestAdapter);
         }
         /// <summary>
-        /// Get commission structure
+        /// Returns the commission tiers and rules applicable to the authenticated affiliate per enrolled store. Returns the list in the same order as the site_id list passed in the query parameter.**IMPORTANT:** `site_id` must be provided or the endpoint returns an empty result set (confirmed empirically on 2026-02).**Real-data notes (2026-02):** - Response wraps results in a `commissions` array; each item represents  one store&apos;s commission config with `standard`, `special`, and `royalties`.- `standard.commission_value` may be `0` meaning the base rate is zero  and only `special`/`royalties` tiers apply.- `special[].collection` may be an empty object `{}` when no collection  restriction applies.- `royalties[].collection.name` appears to be an internal affiliate group  or segment name, not a public product collection.- The `mlm` field has not been observed in real data; retained as unknown.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
         public partial class CommissionsRequestBuilderGetQueryParameters 
         {
+            /// <summary>Comma-separated list of site IDs to filter results to specific enrolled stores. **Required** — omitting this parameter causes the endpoint to return an empty result set or fail with a silent success.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
             [QueryParameter("site_ids")]

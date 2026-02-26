@@ -7,12 +7,13 @@ using System.IO;
 using System;
 namespace GoAffPro.Client.Generated.Models
 {
+    /// <summary>
+    /// Paginated feed response containing affiliate reward records. Currently returns HTTP 404 in practice (observed 2026-02).
+    /// </summary>
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
-    #pragma warning disable CS1591
     public partial class UserRewardFeedResponse : global::GoAffPro.Client.Generated.Models.CountLimitOffsetEnvelope, IParsable
-    #pragma warning restore CS1591
     {
-        /// <summary>The rewards property</summary>
+        /// <summary>Array of reward records.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public List<global::GoAffPro.Client.Generated.Models.UserRewardFeedItem>? Rewards { get; set; }

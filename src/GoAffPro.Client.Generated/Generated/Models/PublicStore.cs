@@ -7,14 +7,15 @@ using System.IO;
 using System;
 namespace GoAffPro.Client.Generated.Models
 {
+    /// <summary>
+    /// A publicly listed affiliate program in the GoAffPro marketplace.
+    /// </summary>
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
-    #pragma warning disable CS1591
     public partial class PublicStore : IAdditionalDataHolder, IParsable
-    #pragma warning restore CS1591
     {
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
-        /// <summary>The affiliatePortal property</summary>
+        /// <summary>URL of the store&apos;s affiliate portal.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? AffiliatePortal { get; set; }
@@ -22,9 +23,9 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string AffiliatePortal { get; set; }
 #endif
-        /// <summary>The areRegistrationsOpen property</summary>
+        /// <summary>Non-zero when the affiliate program is accepting new registrations.</summary>
         public int? AreRegistrationsOpen { get; set; }
-        /// <summary>The commission property</summary>
+        /// <summary>A simple commission descriptor used in public store listings.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public global::GoAffPro.Client.Generated.Models.CommissionLike? Commission { get; set; }
@@ -32,9 +33,9 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public global::GoAffPro.Client.Generated.Models.CommissionLike Commission { get; set; }
 #endif
-        /// <summary>The cookieDuration property</summary>
+        /// <summary>Affiliate tracking cookie lifetime in days.</summary>
         public int? CookieDuration { get; set; }
-        /// <summary>The currency property</summary>
+        /// <summary>ISO-4217 currency code.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? Currency { get; set; }
@@ -42,11 +43,11 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string Currency { get; set; }
 #endif
-        /// <summary>The id property</summary>
+        /// <summary>GoAffPro store identifier.</summary>
         public int? Id { get; set; }
-        /// <summary>The isApprovedAutomatically property</summary>
+        /// <summary>Non-zero when new affiliates are approved automatically without manual review.</summary>
         public int? IsApprovedAutomatically { get; set; }
-        /// <summary>The logo property</summary>
+        /// <summary>Store logo URL.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? Logo { get; set; }
@@ -54,7 +55,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string Logo { get; set; }
 #endif
-        /// <summary>The name property</summary>
+        /// <summary>Store display name.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? Name { get; set; }
@@ -62,7 +63,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string Name { get; set; }
 #endif
-        /// <summary>The website property</summary>
+        /// <summary>Store&apos;s primary website URL.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? Website { get; set; }

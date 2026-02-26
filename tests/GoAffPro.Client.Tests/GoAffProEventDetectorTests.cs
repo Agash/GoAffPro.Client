@@ -56,7 +56,7 @@ public sealed class GoAffProEventDetectorTests
         using var httpClient = new HttpClient(handler);
         using var client = new GoAffProClient(httpClient, new GoAffProClientOptions { BaseUrl = new Uri("https://example.test/v1/", UriKind.Absolute) });
 
-        IReadOnlyList<UserTrafficFeedItem> events = await TakeAsync(client.NewAffiliatesAsync(pollingInterval: TimeSpan.FromMilliseconds(5), pageSize: 100), expectedCount: 1);
+        IReadOnlyList<UserTrafficFeedItem> events = await TakeAsync(client.NewTrafficAsync(pollingInterval: TimeSpan.FromMilliseconds(5), pageSize: 100), expectedCount: 1);
 
         _ = events.Count.Should().Be(1);
         _ = events[0].AffiliateId?.String.Should().Be("a-1");
@@ -265,7 +265,7 @@ public sealed class GoAffProEventDetectorTests
         using CancellationTokenSource cancellationTokenSource = new(TimeSpan.FromSeconds(1));
 
         client.OrderDetected += (_, args) => orderIds.Add(args.Order.Id?.String ?? args.Order.OrderId?.String ?? string.Empty);
-        client.AffiliateDetected += (_, args) => affiliateIds.Add(args.Affiliate.AffiliateId?.String ?? args.Affiliate.Id?.String ?? string.Empty);
+        client.TrafficDetected += (_, args) => affiliateIds.Add(args.Traffic.AffiliateId?.String ?? args.Traffic.Id?.String ?? string.Empty);
         client.PayoutDetected += (_, args) => payoutIds.Add(args.Payout.Id?.String ?? args.Payout.PayoutId?.String ?? string.Empty);
 
         //client.ProductDetected += (_, args) =>

@@ -22,7 +22,7 @@ namespace GoAffPro.Client.Generated.User.Stats.Aggregate
         /// </summary>
         /// <param name="pathParameters">Path parameters for the request</param>
         /// <param name="requestAdapter">The request adapter to use to execute the requests.</param>
-        public AggregateRequestBuilder(Dictionary<string, object> pathParameters, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/user/stats/aggregate?fields={fields}{&end_time*,site_ids*,start_time*}", pathParameters)
+        public AggregateRequestBuilder(Dictionary<string, object> pathParameters, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/user/stats/aggregate?fields={fields}&limit={limit}&offset={offset}{&end_time*,site_ids*,start_time*}", pathParameters)
         {
         }
         /// <summary>
@@ -30,11 +30,11 @@ namespace GoAffPro.Client.Generated.User.Stats.Aggregate
         /// </summary>
         /// <param name="rawUrl">The raw URL to use for the request builder.</param>
         /// <param name="requestAdapter">The request adapter to use to execute the requests.</param>
-        public AggregateRequestBuilder(string rawUrl, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/user/stats/aggregate?fields={fields}{&end_time*,site_ids*,start_time*}", rawUrl)
+        public AggregateRequestBuilder(string rawUrl, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/user/stats/aggregate?fields={fields}&limit={limit}&offset={offset}{&end_time*,site_ids*,start_time*}", rawUrl)
         {
         }
         /// <summary>
-        /// Aggregates of user stats
+        /// Returns per-store aggregate statistics. Monetary values are returned as decimal strings (e.g. `&quot;1000.23&quot;`).**IMPORTANT:** `limit` and `offset` must be provided or the endpoint returns an empty result set (confirmed empirically on 2026-02).The `fields` parameter is required and selects which stat columns to return.**Note:** Date filtering via `start_time`/`end_time` has not been fully verified; the endpoint may return all-time data regardless of these params.
         /// </summary>
         /// <returns>A <see cref="global::GoAffPro.Client.Generated.Models.UserStatsAggregateResponse"/></returns>
         /// <param name="cancellationToken">Cancellation token to use when cancelling requests</param>
@@ -61,7 +61,7 @@ namespace GoAffPro.Client.Generated.User.Stats.Aggregate
             return await RequestAdapter.SendAsync<global::GoAffPro.Client.Generated.Models.UserStatsAggregateResponse>(requestInfo, global::GoAffPro.Client.Generated.Models.UserStatsAggregateResponse.CreateFromDiscriminatorValue, errorMapping, cancellationToken).ConfigureAwait(false);
         }
         /// <summary>
-        /// Aggregates of user stats
+        /// Returns per-store aggregate statistics. Monetary values are returned as decimal strings (e.g. `&quot;1000.23&quot;`).**IMPORTANT:** `limit` and `offset` must be provided or the endpoint returns an empty result set (confirmed empirically on 2026-02).The `fields` parameter is required and selects which stat columns to return.**Note:** Date filtering via `start_time`/`end_time` has not been fully verified; the endpoint may return all-time data regardless of these params.
         /// </summary>
         /// <returns>A <see cref="RequestInformation"/></returns>
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
@@ -89,20 +89,15 @@ namespace GoAffPro.Client.Generated.User.Stats.Aggregate
             return new global::GoAffPro.Client.Generated.User.Stats.Aggregate.AggregateRequestBuilder(rawUrl, RequestAdapter);
         }
         /// <summary>
-        /// Aggregates of user stats
+        /// Returns per-store aggregate statistics. Monetary values are returned as decimal strings (e.g. `&quot;1000.23&quot;`).**IMPORTANT:** `limit` and `offset` must be provided or the endpoint returns an empty result set (confirmed empirically on 2026-02).The `fields` parameter is required and selects which stat columns to return.**Note:** Date filtering via `start_time`/`end_time` has not been fully verified; the endpoint may return all-time data regardless of these params.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
         public partial class AggregateRequestBuilderGetQueryParameters 
         {
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
+            /// <summary>End of the time window for filtering. ISO-8601 UTC timestamp, e.g. `2026-02-28T23:59:59.000Z`. Exact filtering behaviour has not been fully verified against the API.</summary>
             [QueryParameter("end_time")]
-            public string? EndTime { get; set; }
-#nullable restore
-#else
-            [QueryParameter("end_time")]
-            public string EndTime { get; set; }
-#endif
+            public DateTimeOffset? EndTime { get; set; }
+            /// <summary>Stat columns to include in each result item.</summary>
             [Obsolete("This property is deprecated, use FieldsAsGetFieldsQueryParameterType instead")]
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -113,6 +108,7 @@ namespace GoAffPro.Client.Generated.User.Stats.Aggregate
             [QueryParameter("fields")]
             public string[] Fields { get; set; }
 #endif
+            /// <summary>Stat columns to include in each result item.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
             [QueryParameter("fields")]
@@ -122,6 +118,13 @@ namespace GoAffPro.Client.Generated.User.Stats.Aggregate
             [QueryParameter("fields")]
             public global::GoAffPro.Client.Generated.User.Stats.Aggregate.GetFieldsQueryParameterType[] FieldsAsGetFieldsQueryParameterType { get; set; }
 #endif
+            /// <summary>Maximum number of items to return per page. **Required** — omitting this parameter causes the endpoint to return an empty result set.</summary>
+            [QueryParameter("limit")]
+            public int? Limit { get; set; }
+            /// <summary>Number of items to skip (zero-based). **Required** — omitting this parameter causes the endpoint to return an empty result set.</summary>
+            [QueryParameter("offset")]
+            public int? Offset { get; set; }
+            /// <summary>Comma-separated list of site IDs to filter results to specific enrolled stores. When omitted, results span all enrolled stores.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
             [QueryParameter("site_ids")]
@@ -131,15 +134,9 @@ namespace GoAffPro.Client.Generated.User.Stats.Aggregate
             [QueryParameter("site_ids")]
             public string SiteIds { get; set; }
 #endif
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
+            /// <summary>Start of the time window for filtering. ISO-8601 UTC timestamp, e.g. `2026-02-01T00:00:00.000Z`. Exact filtering behaviour has not been fully verified against the API.</summary>
             [QueryParameter("start_time")]
-            public string? StartTime { get; set; }
-#nullable restore
-#else
-            [QueryParameter("start_time")]
-            public string StartTime { get; set; }
-#endif
+            public DateTimeOffset? StartTime { get; set; }
         }
         /// <summary>
         /// Configuration for the request such as headers, query parameters, and middleware options.

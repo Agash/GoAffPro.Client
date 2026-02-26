@@ -7,14 +7,15 @@ using System.IO;
 using System;
 namespace GoAffPro.Client.Generated.Models
 {
+    /// <summary>
+    /// A store (affiliate program) the authenticated user is enrolled in.
+    /// </summary>
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
-    #pragma warning disable CS1591
     public partial class UserSite : IAdditionalDataHolder, IParsable
-    #pragma warning restore CS1591
     {
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
-        /// <summary>The affiliate_portal property</summary>
+        /// <summary>URL of the store&apos;s affiliate portal (e.g. &quot;https://gamersupps.goaffpro.com&quot;).</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? AffiliatePortal { get; set; }
@@ -22,15 +23,15 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string AffiliatePortal { get; set; }
 #endif
-        /// <summary>The coupon property</summary>
+        /// <summary>Coupon details when a coupon code is associated with this affiliate program. `null` when no coupon applies.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public global::GoAffPro.Client.Generated.Models.UserSite_coupon? Coupon { get; set; }
+        public global::GoAffPro.Client.Generated.Models.UserSiteCoupon? Coupon { get; set; }
 #nullable restore
 #else
-        public global::GoAffPro.Client.Generated.Models.UserSite_coupon Coupon { get; set; }
+        public global::GoAffPro.Client.Generated.Models.UserSiteCoupon Coupon { get; set; }
 #endif
-        /// <summary>The currency property</summary>
+        /// <summary>ISO-4217 currency code used by this store (e.g. &quot;USD&quot;).</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? Currency { get; set; }
@@ -38,15 +39,9 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string Currency { get; set; }
 #endif
-        /// <summary>The id property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public string? Id { get; set; }
-#nullable restore
-#else
-        public string Id { get; set; }
-#endif
-        /// <summary>The logo property</summary>
+        /// <summary>Unique GoAffPro store identifier. Confirmed as integer from real data (e.g. 132230, 165328).</summary>
+        public int? Id { get; set; }
+        /// <summary>Absolute URL to the store&apos;s logo image hosted on GoAffPro CDN.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? Logo { get; set; }
@@ -54,7 +49,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string Logo { get; set; }
 #endif
-        /// <summary>The name property</summary>
+        /// <summary>Store display name (e.g. &quot;GamerSupps.GG&quot;).</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? Name { get; set; }
@@ -62,7 +57,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string Name { get; set; }
 #endif
-        /// <summary>The ref_code property</summary>
+        /// <summary>The affiliate&apos;s primary referral code for this store. Only the newest/active code is returned; historical or secondary codes are not exposed by this endpoint.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? RefCode { get; set; }
@@ -70,7 +65,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string RefCode { get; set; }
 #endif
-        /// <summary>The referral_link property</summary>
+        /// <summary>Full referral URL including ref_code (e.g. &quot;https://gamersupps.gg/?ref=CODE&quot;).</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? ReferralLink { get; set; }
@@ -78,15 +73,9 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string ReferralLink { get; set; }
 #endif
-        /// <summary>The status property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public string? Status { get; set; }
-#nullable restore
-#else
-        public string Status { get; set; }
-#endif
-        /// <summary>The website property</summary>
+        /// <summary>Affiliate membership status for this store.</summary>
+        public global::GoAffPro.Client.Generated.Models.UserSite_status? Status { get; set; }
+        /// <summary>Store&apos;s primary website URL (e.g. &quot;https://gamersupps.gg/&quot;).</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? Website { get; set; }
@@ -120,14 +109,14 @@ namespace GoAffPro.Client.Generated.Models
             return new Dictionary<string, Action<IParseNode>>
             {
                 { "affiliate_portal", n => { AffiliatePortal = n.GetStringValue(); } },
-                { "coupon", n => { Coupon = n.GetObjectValue<global::GoAffPro.Client.Generated.Models.UserSite_coupon>(global::GoAffPro.Client.Generated.Models.UserSite_coupon.CreateFromDiscriminatorValue); } },
+                { "coupon", n => { Coupon = n.GetObjectValue<global::GoAffPro.Client.Generated.Models.UserSiteCoupon>(global::GoAffPro.Client.Generated.Models.UserSiteCoupon.CreateFromDiscriminatorValue); } },
                 { "currency", n => { Currency = n.GetStringValue(); } },
-                { "id", n => { Id = n.GetStringValue(); } },
+                { "id", n => { Id = n.GetIntValue(); } },
                 { "logo", n => { Logo = n.GetStringValue(); } },
                 { "name", n => { Name = n.GetStringValue(); } },
                 { "ref_code", n => { RefCode = n.GetStringValue(); } },
                 { "referral_link", n => { ReferralLink = n.GetStringValue(); } },
-                { "status", n => { Status = n.GetStringValue(); } },
+                { "status", n => { Status = n.GetEnumValue<global::GoAffPro.Client.Generated.Models.UserSite_status>(); } },
                 { "website", n => { Website = n.GetStringValue(); } },
             };
         }
@@ -139,14 +128,14 @@ namespace GoAffPro.Client.Generated.Models
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
             writer.WriteStringValue("affiliate_portal", AffiliatePortal);
-            writer.WriteObjectValue<global::GoAffPro.Client.Generated.Models.UserSite_coupon>("coupon", Coupon);
+            writer.WriteObjectValue<global::GoAffPro.Client.Generated.Models.UserSiteCoupon>("coupon", Coupon);
             writer.WriteStringValue("currency", Currency);
-            writer.WriteStringValue("id", Id);
+            writer.WriteIntValue("id", Id);
             writer.WriteStringValue("logo", Logo);
             writer.WriteStringValue("name", Name);
             writer.WriteStringValue("ref_code", RefCode);
             writer.WriteStringValue("referral_link", ReferralLink);
-            writer.WriteStringValue("status", Status);
+            writer.WriteEnumValue<global::GoAffPro.Client.Generated.Models.UserSite_status>("status", Status);
             writer.WriteStringValue("website", Website);
             writer.WriteAdditionalData(AdditionalData);
         }

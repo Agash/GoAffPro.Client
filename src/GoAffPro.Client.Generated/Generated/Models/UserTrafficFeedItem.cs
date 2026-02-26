@@ -7,14 +7,15 @@ using System.IO;
 using System;
 namespace GoAffPro.Client.Generated.Models
 {
+    /// <summary>
+    /// A single referral traffic (click) event attributed to the authenticated affiliate. Represents a visitor who clicked the affiliate&apos;s referral link.
+    /// </summary>
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
-    #pragma warning disable CS1591
     public partial class UserTrafficFeedItem : IAdditionalDataHolder, IParsable
-    #pragma warning restore CS1591
     {
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
-        /// <summary>The affiliate_id property</summary>
+        /// <summary>[UNCONFIRMED] Affiliate identifier. Not observed in real traffic feed responses; may only appear in admin-facing endpoints.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_affiliate_id? AffiliateId { get; set; }
@@ -22,7 +23,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_affiliate_id AffiliateId { get; set; }
 #endif
-        /// <summary>The country property</summary>
+        /// <summary>[UNCONFIRMED] Country code. Not observed in real traffic feed responses.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? Country { get; set; }
@@ -30,7 +31,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string Country { get; set; }
 #endif
-        /// <summary>The created property</summary>
+        /// <summary>Legacy timestamp field. Prefer `created_at`.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_created? Created { get; set; }
@@ -38,15 +39,9 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_created Created { get; set; }
 #endif
-        /// <summary>The created_at property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public string? CreatedAt { get; set; }
-#nullable restore
-#else
-        public string CreatedAt { get; set; }
-#endif
-        /// <summary>The customer_id property</summary>
+        /// <summary>ISO-8601 UTC timestamp of the traffic event (e.g. &quot;2026-02-24T12:00:31.000Z&quot;).</summary>
+        public DateTimeOffset? CreatedAt { get; set; }
+        /// <summary>[UNCONFIRMED] Customer identifier. Not observed in real traffic feed responses.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_customer_id? CustomerId { get; set; }
@@ -54,7 +49,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_customer_id CustomerId { get; set; }
 #endif
-        /// <summary>The email property</summary>
+        /// <summary>[UNCONFIRMED] Email address. Not observed in real traffic feed responses.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? Email { get; set; }
@@ -62,7 +57,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string Email { get; set; }
 #endif
-        /// <summary>The first_name property</summary>
+        /// <summary>[UNCONFIRMED] First name. Not observed in real traffic feed responses.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? FirstName { get; set; }
@@ -70,7 +65,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string FirstName { get; set; }
 #endif
-        /// <summary>The group_id property</summary>
+        /// <summary>[UNCONFIRMED] Affiliate group ID. Not observed in real traffic feed responses.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_group_id? GroupId { get; set; }
@@ -78,7 +73,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_group_id GroupId { get; set; }
 #endif
-        /// <summary>The id property</summary>
+        /// <summary>Unique traffic event identifier. Confirmed as large integer from real data.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_id? Id { get; set; }
@@ -86,7 +81,23 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_id Id { get; set; }
 #endif
-        /// <summary>The last_name property</summary>
+        /// <summary>IP address of the visitor. May be IPv4 or IPv6. Confirmed present in real data.</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? IpAddress { get; set; }
+#nullable restore
+#else
+        public string IpAddress { get; set; }
+#endif
+        /// <summary>URL of the landing page the visitor reached. Observed as `null` in all available real data; may be populated in some configurations.</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? LandingPage { get; set; }
+#nullable restore
+#else
+        public string LandingPage { get; set; }
+#endif
+        /// <summary>[UNCONFIRMED] Last name. Not observed in real traffic feed responses.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? LastName { get; set; }
@@ -94,7 +105,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string LastName { get; set; }
 #endif
-        /// <summary>The name property</summary>
+        /// <summary>[UNCONFIRMED] Full name. Not observed in real traffic feed responses.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? Name { get; set; }
@@ -102,7 +113,15 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string Name { get; set; }
 #endif
-        /// <summary>The phone property</summary>
+        /// <summary>ID of an order that resulted from this traffic event, when applicable. Confirmed present in real data.</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_order_id? OrderId { get; set; }
+#nullable restore
+#else
+        public global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_order_id OrderId { get; set; }
+#endif
+        /// <summary>[UNCONFIRMED] Phone number. Not observed in real traffic feed responses.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? Phone { get; set; }
@@ -110,7 +129,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string Phone { get; set; }
 #endif
-        /// <summary>The ref_code property</summary>
+        /// <summary>[UNCONFIRMED] Referral code. Not observed in real traffic feed responses.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? RefCode { get; set; }
@@ -118,7 +137,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string RefCode { get; set; }
 #endif
-        /// <summary>The site_id property</summary>
+        /// <summary>[UNCONFIRMED] Store identifier. Not observed in real traffic feed responses.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_site_id? SiteId { get; set; }
@@ -126,13 +145,21 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_site_id SiteId { get; set; }
 #endif
-        /// <summary>The sub_id property</summary>
+        /// <summary>Sub-affiliate tracking ID. `null` when not applicable.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? SubId { get; set; }
 #nullable restore
 #else
         public string SubId { get; set; }
+#endif
+        /// <summary>Browser user-agent string of the visitor. Observed as `null` in all available real data; may be populated in some configurations.</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? UserAgent { get; set; }
+#nullable restore
+#else
+        public string UserAgent { get; set; }
 #endif
         /// <summary>
         /// Instantiates a new <see cref="global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem"/> and sets the default values.
@@ -162,18 +189,22 @@ namespace GoAffPro.Client.Generated.Models
                 { "affiliate_id", n => { AffiliateId = n.GetObjectValue<global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_affiliate_id>(global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_affiliate_id.CreateFromDiscriminatorValue); } },
                 { "country", n => { Country = n.GetStringValue(); } },
                 { "created", n => { Created = n.GetObjectValue<global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_created>(global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_created.CreateFromDiscriminatorValue); } },
-                { "created_at", n => { CreatedAt = n.GetStringValue(); } },
+                { "created_at", n => { CreatedAt = n.GetDateTimeOffsetValue(); } },
                 { "customer_id", n => { CustomerId = n.GetObjectValue<global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_customer_id>(global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_customer_id.CreateFromDiscriminatorValue); } },
                 { "email", n => { Email = n.GetStringValue(); } },
                 { "first_name", n => { FirstName = n.GetStringValue(); } },
                 { "group_id", n => { GroupId = n.GetObjectValue<global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_group_id>(global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_group_id.CreateFromDiscriminatorValue); } },
                 { "id", n => { Id = n.GetObjectValue<global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_id>(global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_id.CreateFromDiscriminatorValue); } },
+                { "ip_address", n => { IpAddress = n.GetStringValue(); } },
+                { "landing_page", n => { LandingPage = n.GetStringValue(); } },
                 { "last_name", n => { LastName = n.GetStringValue(); } },
                 { "name", n => { Name = n.GetStringValue(); } },
+                { "order_id", n => { OrderId = n.GetObjectValue<global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_order_id>(global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_order_id.CreateFromDiscriminatorValue); } },
                 { "phone", n => { Phone = n.GetStringValue(); } },
                 { "ref_code", n => { RefCode = n.GetStringValue(); } },
                 { "site_id", n => { SiteId = n.GetObjectValue<global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_site_id>(global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_site_id.CreateFromDiscriminatorValue); } },
                 { "sub_id", n => { SubId = n.GetStringValue(); } },
+                { "user_agent", n => { UserAgent = n.GetStringValue(); } },
             };
         }
         /// <summary>
@@ -186,18 +217,22 @@ namespace GoAffPro.Client.Generated.Models
             writer.WriteObjectValue<global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_affiliate_id>("affiliate_id", AffiliateId);
             writer.WriteStringValue("country", Country);
             writer.WriteObjectValue<global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_created>("created", Created);
-            writer.WriteStringValue("created_at", CreatedAt);
+            writer.WriteDateTimeOffsetValue("created_at", CreatedAt);
             writer.WriteObjectValue<global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_customer_id>("customer_id", CustomerId);
             writer.WriteStringValue("email", Email);
             writer.WriteStringValue("first_name", FirstName);
             writer.WriteObjectValue<global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_group_id>("group_id", GroupId);
             writer.WriteObjectValue<global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_id>("id", Id);
+            writer.WriteStringValue("ip_address", IpAddress);
+            writer.WriteStringValue("landing_page", LandingPage);
             writer.WriteStringValue("last_name", LastName);
             writer.WriteStringValue("name", Name);
+            writer.WriteObjectValue<global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_order_id>("order_id", OrderId);
             writer.WriteStringValue("phone", Phone);
             writer.WriteStringValue("ref_code", RefCode);
             writer.WriteObjectValue<global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_site_id>("site_id", SiteId);
             writer.WriteStringValue("sub_id", SubId);
+            writer.WriteStringValue("user_agent", UserAgent);
             writer.WriteAdditionalData(AdditionalData);
         }
         /// <summary>
@@ -470,6 +505,67 @@ namespace GoAffPro.Client.Generated.Models
                 if(ReferenceEquals(parseNode, null)) throw new ArgumentNullException(nameof(parseNode));
                 var mappingValue = parseNode.GetChildNode("")?.GetStringValue();
                 var result = new global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_id();
+                if(parseNode.GetIntValue() is int integerValue)
+                {
+                    result.Integer = integerValue;
+                }
+                else if(parseNode.GetStringValue() is string stringValue)
+                {
+                    result.String = stringValue;
+                }
+                return result;
+            }
+            /// <summary>
+            /// The deserialization information for the current model
+            /// </summary>
+            /// <returns>A IDictionary&lt;string, Action&lt;IParseNode&gt;&gt;</returns>
+            public virtual IDictionary<string, Action<IParseNode>> GetFieldDeserializers()
+            {
+                return new Dictionary<string, Action<IParseNode>>();
+            }
+            /// <summary>
+            /// Serializes information the current object
+            /// </summary>
+            /// <param name="writer">Serialization writer to use to serialize this model</param>
+            public virtual void Serialize(ISerializationWriter writer)
+            {
+                if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
+                if(Integer != null)
+                {
+                    writer.WriteIntValue(null, Integer);
+                }
+                else if(String != null)
+                {
+                    writer.WriteStringValue(null, String);
+                }
+            }
+        }
+        /// <summary>
+        /// Composed type wrapper for classes <see cref="int"/>, <see cref="string"/>
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
+        public partial class UserTrafficFeedItem_order_id : IComposedTypeWrapper, IParsable
+        {
+            /// <summary>Composed type representation for type <see cref="int"/></summary>
+            public int? Integer { get; set; }
+            /// <summary>Composed type representation for type <see cref="string"/></summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            public string? String { get; set; }
+#nullable restore
+#else
+            public string String { get; set; }
+#endif
+            /// <summary>
+            /// Creates a new instance of the appropriate class based on discriminator value
+            /// </summary>
+            /// <returns>A <see cref="global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_order_id"/></returns>
+            /// <param name="parseNode">The parse node to use to read the discriminator value and create the object</param>
+            public static global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_order_id CreateFromDiscriminatorValue(IParseNode parseNode)
+            {
+                if(ReferenceEquals(parseNode, null)) throw new ArgumentNullException(nameof(parseNode));
+                var mappingValue = parseNode.GetChildNode("")?.GetStringValue();
+                var result = new global::GoAffPro.Client.Generated.Models.UserTrafficFeedItem.UserTrafficFeedItem_order_id();
                 if(parseNode.GetIntValue() is int integerValue)
                 {
                     result.Integer = integerValue;

@@ -7,26 +7,21 @@ using System.IO;
 using System;
 namespace GoAffPro.Client.Generated.Models
 {
+    /// <summary>
+    /// A single ledger transaction affecting the affiliate&apos;s balance.
+    /// </summary>
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
-    #pragma warning disable CS1591
     public partial class UserTransactionItem : IAdditionalDataHolder, IParsable
-    #pragma warning restore CS1591
     {
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
-        /// <summary>The affiliate_id property</summary>
+        /// <summary>ID of the affiliate whose balance was affected.</summary>
         public int? AffiliateId { get; set; }
-        /// <summary>The amount property</summary>
+        /// <summary>Amount of this transaction (positive for credits, negative for debits).</summary>
         public double? Amount { get; set; }
-        /// <summary>The created_at property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public string? CreatedAt { get; set; }
-#nullable restore
-#else
-        public string CreatedAt { get; set; }
-#endif
-        /// <summary>The currency property</summary>
+        /// <summary>ISO-8601 UTC timestamp of when the transaction was recorded.</summary>
+        public DateTimeOffset? CreatedAt { get; set; }
+        /// <summary>ISO-4217 currency code.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? Currency { get; set; }
@@ -34,9 +29,9 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string Currency { get; set; }
 #endif
-        /// <summary>The endingBalance property</summary>
+        /// <summary>Affiliate&apos;s balance after this transaction.</summary>
         public double? EndingBalance { get; set; }
-        /// <summary>The entity_id property</summary>
+        /// <summary>ID of the entity (order, reward, payout) that triggered this transaction.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? EntityId { get; set; }
@@ -44,11 +39,11 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string EntityId { get; set; }
 #endif
-        /// <summary>The entity_type property</summary>
+        /// <summary>Type of entity that triggered this transaction.</summary>
         public global::GoAffPro.Client.Generated.Models.UserTransactionItem_entity_type? EntityType { get; set; }
-        /// <summary>The event_type property</summary>
+        /// <summary>The operation that created this transaction.</summary>
         public global::GoAffPro.Client.Generated.Models.UserTransactionItem_event_type? EventType { get; set; }
-        /// <summary>The id property</summary>
+        /// <summary>Transaction identifier.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? Id { get; set; }
@@ -56,9 +51,9 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string Id { get; set; }
 #endif
-        /// <summary>The is_paid property</summary>
+        /// <summary>Whether this transaction has been included in a payout.</summary>
         public bool? IsPaid { get; set; }
-        /// <summary>The metadata property</summary>
+        /// <summary>Additional transaction metadata. Shape varies by entity type.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public global::GoAffPro.Client.Generated.Models.UserTransactionItem_metadata? Metadata { get; set; }
@@ -66,9 +61,9 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public global::GoAffPro.Client.Generated.Models.UserTransactionItem_metadata Metadata { get; set; }
 #endif
-        /// <summary>The startingBalance property</summary>
+        /// <summary>Affiliate&apos;s balance before this transaction.</summary>
         public double? StartingBalance { get; set; }
-        /// <summary>The tx_id property</summary>
+        /// <summary>Sequential transaction ID used for pagination tracking.</summary>
         public int? TxId { get; set; }
         /// <summary>
         /// Instantiates a new <see cref="global::GoAffPro.Client.Generated.Models.UserTransactionItem"/> and sets the default values.
@@ -97,7 +92,7 @@ namespace GoAffPro.Client.Generated.Models
             {
                 { "affiliate_id", n => { AffiliateId = n.GetIntValue(); } },
                 { "amount", n => { Amount = n.GetDoubleValue(); } },
-                { "created_at", n => { CreatedAt = n.GetStringValue(); } },
+                { "created_at", n => { CreatedAt = n.GetDateTimeOffsetValue(); } },
                 { "currency", n => { Currency = n.GetStringValue(); } },
                 { "endingBalance", n => { EndingBalance = n.GetDoubleValue(); } },
                 { "entity_id", n => { EntityId = n.GetStringValue(); } },
@@ -119,7 +114,7 @@ namespace GoAffPro.Client.Generated.Models
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
             writer.WriteIntValue("affiliate_id", AffiliateId);
             writer.WriteDoubleValue("amount", Amount);
-            writer.WriteStringValue("created_at", CreatedAt);
+            writer.WriteDateTimeOffsetValue("created_at", CreatedAt);
             writer.WriteStringValue("currency", Currency);
             writer.WriteDoubleValue("endingBalance", EndingBalance);
             writer.WriteStringValue("entity_id", EntityId);

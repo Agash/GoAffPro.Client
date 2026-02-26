@@ -7,14 +7,15 @@ using System.IO;
 using System;
 namespace GoAffPro.Client.Generated.Models
 {
+    /// <summary>
+    /// A single payout record for the authenticated affiliate.
+    /// </summary>
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
-    #pragma warning disable CS1591
     public partial class UserPayoutFeedItem : IAdditionalDataHolder, IParsable
-    #pragma warning restore CS1591
     {
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
-        /// <summary>The affiliate_id property</summary>
+        /// <summary>ID of the affiliate who received the payout.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public global::GoAffPro.Client.Generated.Models.UserPayoutFeedItem.UserPayoutFeedItem_affiliate_id? AffiliateId { get; set; }
@@ -22,7 +23,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public global::GoAffPro.Client.Generated.Models.UserPayoutFeedItem.UserPayoutFeedItem_affiliate_id AffiliateId { get; set; }
 #endif
-        /// <summary>The amount property</summary>
+        /// <summary>Payout amount (number or decimal string depending on response).</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public global::GoAffPro.Client.Generated.Models.UserPayoutFeedItem.UserPayoutFeedItem_amount? Amount { get; set; }
@@ -30,7 +31,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public global::GoAffPro.Client.Generated.Models.UserPayoutFeedItem.UserPayoutFeedItem_amount Amount { get; set; }
 #endif
-        /// <summary>The created property</summary>
+        /// <summary>Legacy timestamp field. Prefer `created_at`.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public global::GoAffPro.Client.Generated.Models.UserPayoutFeedItem.UserPayoutFeedItem_created? Created { get; set; }
@@ -38,15 +39,9 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public global::GoAffPro.Client.Generated.Models.UserPayoutFeedItem.UserPayoutFeedItem_created Created { get; set; }
 #endif
-        /// <summary>The created_at property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public string? CreatedAt { get; set; }
-#nullable restore
-#else
-        public string CreatedAt { get; set; }
-#endif
-        /// <summary>The currency property</summary>
+        /// <summary>ISO-8601 UTC timestamp of when the payout was created.</summary>
+        public DateTimeOffset? CreatedAt { get; set; }
+        /// <summary>ISO-4217 currency code for the payout amount.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? Currency { get; set; }
@@ -54,7 +49,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string Currency { get; set; }
 #endif
-        /// <summary>The id property</summary>
+        /// <summary>GoAffPro payout identifier.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public global::GoAffPro.Client.Generated.Models.UserPayoutFeedItem.UserPayoutFeedItem_id? Id { get; set; }
@@ -62,7 +57,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public global::GoAffPro.Client.Generated.Models.UserPayoutFeedItem.UserPayoutFeedItem_id Id { get; set; }
 #endif
-        /// <summary>The payment_method property</summary>
+        /// <summary>Payment method used for the payout (e.g. `&quot;paypal&quot;`, `&quot;bank_transfer&quot;`).</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? PaymentMethod { get; set; }
@@ -70,7 +65,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string PaymentMethod { get; set; }
 #endif
-        /// <summary>The payout_id property</summary>
+        /// <summary>Alternate payout identifier field. May coincide with `id`.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public global::GoAffPro.Client.Generated.Models.UserPayoutFeedItem.UserPayoutFeedItem_payout_id? PayoutId { get; set; }
@@ -78,7 +73,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public global::GoAffPro.Client.Generated.Models.UserPayoutFeedItem.UserPayoutFeedItem_payout_id PayoutId { get; set; }
 #endif
-        /// <summary>The status property</summary>
+        /// <summary>Payout status (e.g. `&quot;paid&quot;`, `&quot;pending&quot;`).</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? Status { get; set; }
@@ -86,7 +81,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string Status { get; set; }
 #endif
-        /// <summary>The transaction_id property</summary>
+        /// <summary>External transaction identifier for the payout.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? TransactionId { get; set; }
@@ -122,7 +117,7 @@ namespace GoAffPro.Client.Generated.Models
                 { "affiliate_id", n => { AffiliateId = n.GetObjectValue<global::GoAffPro.Client.Generated.Models.UserPayoutFeedItem.UserPayoutFeedItem_affiliate_id>(global::GoAffPro.Client.Generated.Models.UserPayoutFeedItem.UserPayoutFeedItem_affiliate_id.CreateFromDiscriminatorValue); } },
                 { "amount", n => { Amount = n.GetObjectValue<global::GoAffPro.Client.Generated.Models.UserPayoutFeedItem.UserPayoutFeedItem_amount>(global::GoAffPro.Client.Generated.Models.UserPayoutFeedItem.UserPayoutFeedItem_amount.CreateFromDiscriminatorValue); } },
                 { "created", n => { Created = n.GetObjectValue<global::GoAffPro.Client.Generated.Models.UserPayoutFeedItem.UserPayoutFeedItem_created>(global::GoAffPro.Client.Generated.Models.UserPayoutFeedItem.UserPayoutFeedItem_created.CreateFromDiscriminatorValue); } },
-                { "created_at", n => { CreatedAt = n.GetStringValue(); } },
+                { "created_at", n => { CreatedAt = n.GetDateTimeOffsetValue(); } },
                 { "currency", n => { Currency = n.GetStringValue(); } },
                 { "id", n => { Id = n.GetObjectValue<global::GoAffPro.Client.Generated.Models.UserPayoutFeedItem.UserPayoutFeedItem_id>(global::GoAffPro.Client.Generated.Models.UserPayoutFeedItem.UserPayoutFeedItem_id.CreateFromDiscriminatorValue); } },
                 { "payment_method", n => { PaymentMethod = n.GetStringValue(); } },
@@ -141,7 +136,7 @@ namespace GoAffPro.Client.Generated.Models
             writer.WriteObjectValue<global::GoAffPro.Client.Generated.Models.UserPayoutFeedItem.UserPayoutFeedItem_affiliate_id>("affiliate_id", AffiliateId);
             writer.WriteObjectValue<global::GoAffPro.Client.Generated.Models.UserPayoutFeedItem.UserPayoutFeedItem_amount>("amount", Amount);
             writer.WriteObjectValue<global::GoAffPro.Client.Generated.Models.UserPayoutFeedItem.UserPayoutFeedItem_created>("created", Created);
-            writer.WriteStringValue("created_at", CreatedAt);
+            writer.WriteDateTimeOffsetValue("created_at", CreatedAt);
             writer.WriteStringValue("currency", Currency);
             writer.WriteObjectValue<global::GoAffPro.Client.Generated.Models.UserPayoutFeedItem.UserPayoutFeedItem_id>("id", Id);
             writer.WriteStringValue("payment_method", PaymentMethod);

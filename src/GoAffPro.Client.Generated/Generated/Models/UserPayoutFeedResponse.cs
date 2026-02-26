@@ -7,20 +7,13 @@ using System.IO;
 using System;
 namespace GoAffPro.Client.Generated.Models
 {
+    /// <summary>
+    /// Paginated feed response containing affiliate payouts.
+    /// </summary>
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
-    #pragma warning disable CS1591
-    public partial class UserPayoutFeedResponse : IAdditionalDataHolder, IParsable
-    #pragma warning restore CS1591
+    public partial class UserPayoutFeedResponse : global::GoAffPro.Client.Generated.Models.CountLimitOffsetEnvelope, IParsable
     {
-        /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
-        public IDictionary<string, object> AdditionalData { get; set; }
-        /// <summary>The count property</summary>
-        public int? Count { get; set; }
-        /// <summary>The limit property</summary>
-        public int? Limit { get; set; }
-        /// <summary>The offset property</summary>
-        public int? Offset { get; set; }
-        /// <summary>The payouts property</summary>
+        /// <summary>Array of payout records.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public List<global::GoAffPro.Client.Generated.Models.UserPayoutFeedItem>? Payouts { get; set; }
@@ -28,7 +21,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public List<global::GoAffPro.Client.Generated.Models.UserPayoutFeedItem> Payouts { get; set; }
 #endif
-        /// <summary>The since_id property</summary>
+        /// <summary>The `since_id` value used for this request, echoed in the response.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public global::GoAffPro.Client.Generated.Models.UserPayoutFeedResponse.UserPayoutFeedResponse_since_id? SinceId { get; set; }
@@ -37,18 +30,11 @@ namespace GoAffPro.Client.Generated.Models
         public global::GoAffPro.Client.Generated.Models.UserPayoutFeedResponse.UserPayoutFeedResponse_since_id SinceId { get; set; }
 #endif
         /// <summary>
-        /// Instantiates a new <see cref="global::GoAffPro.Client.Generated.Models.UserPayoutFeedResponse"/> and sets the default values.
-        /// </summary>
-        public UserPayoutFeedResponse()
-        {
-            AdditionalData = new Dictionary<string, object>();
-        }
-        /// <summary>
         /// Creates a new instance of the appropriate class based on discriminator value
         /// </summary>
         /// <returns>A <see cref="global::GoAffPro.Client.Generated.Models.UserPayoutFeedResponse"/></returns>
         /// <param name="parseNode">The parse node to use to read the discriminator value and create the object</param>
-        public static global::GoAffPro.Client.Generated.Models.UserPayoutFeedResponse CreateFromDiscriminatorValue(IParseNode parseNode)
+        public static new global::GoAffPro.Client.Generated.Models.UserPayoutFeedResponse CreateFromDiscriminatorValue(IParseNode parseNode)
         {
             if(ReferenceEquals(parseNode, null)) throw new ArgumentNullException(nameof(parseNode));
             return new global::GoAffPro.Client.Generated.Models.UserPayoutFeedResponse();
@@ -57,13 +43,10 @@ namespace GoAffPro.Client.Generated.Models
         /// The deserialization information for the current model
         /// </summary>
         /// <returns>A IDictionary&lt;string, Action&lt;IParseNode&gt;&gt;</returns>
-        public virtual IDictionary<string, Action<IParseNode>> GetFieldDeserializers()
+        public override IDictionary<string, Action<IParseNode>> GetFieldDeserializers()
         {
-            return new Dictionary<string, Action<IParseNode>>
+            return new Dictionary<string, Action<IParseNode>>(base.GetFieldDeserializers())
             {
-                { "count", n => { Count = n.GetIntValue(); } },
-                { "limit", n => { Limit = n.GetIntValue(); } },
-                { "offset", n => { Offset = n.GetIntValue(); } },
                 { "payouts", n => { Payouts = n.GetCollectionOfObjectValues<global::GoAffPro.Client.Generated.Models.UserPayoutFeedItem>(global::GoAffPro.Client.Generated.Models.UserPayoutFeedItem.CreateFromDiscriminatorValue)?.AsList(); } },
                 { "since_id", n => { SinceId = n.GetObjectValue<global::GoAffPro.Client.Generated.Models.UserPayoutFeedResponse.UserPayoutFeedResponse_since_id>(global::GoAffPro.Client.Generated.Models.UserPayoutFeedResponse.UserPayoutFeedResponse_since_id.CreateFromDiscriminatorValue); } },
             };
@@ -72,15 +55,12 @@ namespace GoAffPro.Client.Generated.Models
         /// Serializes information the current object
         /// </summary>
         /// <param name="writer">Serialization writer to use to serialize this model</param>
-        public virtual void Serialize(ISerializationWriter writer)
+        public override void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
-            writer.WriteIntValue("count", Count);
-            writer.WriteIntValue("limit", Limit);
-            writer.WriteIntValue("offset", Offset);
+            base.Serialize(writer);
             writer.WriteCollectionOfObjectValues<global::GoAffPro.Client.Generated.Models.UserPayoutFeedItem>("payouts", Payouts);
             writer.WriteObjectValue<global::GoAffPro.Client.Generated.Models.UserPayoutFeedResponse.UserPayoutFeedResponse_since_id>("since_id", SinceId);
-            writer.WriteAdditionalData(AdditionalData);
         }
         /// <summary>
         /// Composed type wrapper for classes <see cref="int"/>, <see cref="string"/>

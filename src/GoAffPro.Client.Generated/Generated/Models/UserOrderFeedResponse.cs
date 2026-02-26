@@ -7,12 +7,13 @@ using System.IO;
 using System;
 namespace GoAffPro.Client.Generated.Models
 {
+    /// <summary>
+    /// Paginated feed response containing affiliate orders.
+    /// </summary>
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
-    #pragma warning disable CS1591
     public partial class UserOrderFeedResponse : global::GoAffPro.Client.Generated.Models.CountLimitOffsetEnvelope, IParsable
-    #pragma warning restore CS1591
     {
-        /// <summary>The orders property</summary>
+        /// <summary>Array of order records attributed to the affiliate.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public List<global::GoAffPro.Client.Generated.Models.UserOrderFeedItem>? Orders { get; set; }

@@ -7,16 +7,23 @@ using System.IO;
 using System;
 namespace GoAffPro.Client.Generated.Models
 {
+    /// <summary>
+    /// Aggregated stats for a single enrolled store.
+    /// </summary>
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
-    #pragma warning disable CS1591
     public partial class UserStatsAggregateItem : IAdditionalDataHolder, IParsable
-    #pragma warning restore CS1591
     {
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
-        /// <summary>The commission_paid property</summary>
-        public double? CommissionPaid { get; set; }
-        /// <summary>The currency property</summary>
+        /// <summary>Total commission already paid out, as a decimal string (e.g. &quot;1000.23&quot;). Parse with invariant-culture decimal parsing.</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? CommissionPaid { get; set; }
+#nullable restore
+#else
+        public string CommissionPaid { get; set; }
+#endif
+        /// <summary>Currency code for the monetary values in this record.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? Currency { get; set; }
@@ -24,14 +31,50 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string Currency { get; set; }
 #endif
-        /// <summary>The revenue_generated property</summary>
-        public double? RevenueGenerated { get; set; }
-        /// <summary>The sale_commission_earned property</summary>
-        public double? SaleCommissionEarned { get; set; }
-        /// <summary>The site_id property</summary>
+        /// <summary>Store&apos;s default ISO-4217 currency code.</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? DefaultCurrency { get; set; }
+#nullable restore
+#else
+        public string DefaultCurrency { get; set; }
+#endif
+        /// <summary>Total revenue generated through the affiliate&apos;s referrals, as a decimal string (e.g. &quot;5000.45&quot;). Parse with invariant-culture decimal parsing.</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? RevenueGenerated { get; set; }
+#nullable restore
+#else
+        public string RevenueGenerated { get; set; }
+#endif
+        /// <summary>Total commission earned from sales (paid + pending), as a decimal string (e.g. &quot;2000.567000&quot;). Parse with invariant-culture decimal parsing.</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? SaleCommissionEarned { get; set; }
+#nullable restore
+#else
+        public string SaleCommissionEarned { get; set; }
+#endif
+        /// <summary>GoAffPro store identifier.</summary>
         public int? SiteId { get; set; }
-        /// <summary>The total_sales property</summary>
-        public double? TotalSales { get; set; }
+        /// <summary>Store display name (e.g. &quot;GamerSupps.GG&quot;).</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? StoreName { get; set; }
+#nullable restore
+#else
+        public string StoreName { get; set; }
+#endif
+        /// <summary>Number (count) of sales attributed to the affiliate for this store.</summary>
+        public int? TotalSales { get; set; }
+        /// <summary>Store&apos;s primary domain (e.g. &quot;gamersupps.gg&quot;). No protocol prefix.</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? Website { get; set; }
+#nullable restore
+#else
+        public string Website { get; set; }
+#endif
         /// <summary>
         /// Instantiates a new <see cref="global::GoAffPro.Client.Generated.Models.UserStatsAggregateItem"/> and sets the default values.
         /// </summary>
@@ -57,12 +100,15 @@ namespace GoAffPro.Client.Generated.Models
         {
             return new Dictionary<string, Action<IParseNode>>
             {
-                { "commission_paid", n => { CommissionPaid = n.GetDoubleValue(); } },
+                { "commission_paid", n => { CommissionPaid = n.GetStringValue(); } },
                 { "currency", n => { Currency = n.GetStringValue(); } },
-                { "revenue_generated", n => { RevenueGenerated = n.GetDoubleValue(); } },
-                { "sale_commission_earned", n => { SaleCommissionEarned = n.GetDoubleValue(); } },
+                { "default_currency", n => { DefaultCurrency = n.GetStringValue(); } },
+                { "revenue_generated", n => { RevenueGenerated = n.GetStringValue(); } },
+                { "sale_commission_earned", n => { SaleCommissionEarned = n.GetStringValue(); } },
                 { "site_id", n => { SiteId = n.GetIntValue(); } },
-                { "total_sales", n => { TotalSales = n.GetDoubleValue(); } },
+                { "store_name", n => { StoreName = n.GetStringValue(); } },
+                { "total_sales", n => { TotalSales = n.GetIntValue(); } },
+                { "website", n => { Website = n.GetStringValue(); } },
             };
         }
         /// <summary>
@@ -72,12 +118,15 @@ namespace GoAffPro.Client.Generated.Models
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
-            writer.WriteDoubleValue("commission_paid", CommissionPaid);
+            writer.WriteStringValue("commission_paid", CommissionPaid);
             writer.WriteStringValue("currency", Currency);
-            writer.WriteDoubleValue("revenue_generated", RevenueGenerated);
-            writer.WriteDoubleValue("sale_commission_earned", SaleCommissionEarned);
+            writer.WriteStringValue("default_currency", DefaultCurrency);
+            writer.WriteStringValue("revenue_generated", RevenueGenerated);
+            writer.WriteStringValue("sale_commission_earned", SaleCommissionEarned);
             writer.WriteIntValue("site_id", SiteId);
-            writer.WriteDoubleValue("total_sales", TotalSales);
+            writer.WriteStringValue("store_name", StoreName);
+            writer.WriteIntValue("total_sales", TotalSales);
+            writer.WriteStringValue("website", Website);
             writer.WriteAdditionalData(AdditionalData);
         }
     }

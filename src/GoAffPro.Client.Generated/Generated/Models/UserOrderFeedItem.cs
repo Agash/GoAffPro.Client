@@ -7,14 +7,15 @@ using System.IO;
 using System;
 namespace GoAffPro.Client.Generated.Models
 {
+    /// <summary>
+    /// A single order attributed to the authenticated affiliate.
+    /// </summary>
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
-    #pragma warning disable CS1591
     public partial class UserOrderFeedItem : IAdditionalDataHolder, IParsable
-    #pragma warning restore CS1591
     {
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
-        /// <summary>The affiliate_id property</summary>
+        /// <summary>ID of the affiliate. May appear on the order or only on line items.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public global::GoAffPro.Client.Generated.Models.UserOrderFeedItem.UserOrderFeedItem_affiliate_id? AffiliateId { get; set; }
@@ -22,23 +23,23 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public global::GoAffPro.Client.Generated.Models.UserOrderFeedItem.UserOrderFeedItem_affiliate_id AffiliateId { get; set; }
 #endif
-        /// <summary>The commission property</summary>
+        /// <summary>Commission amount earned by the affiliate for this order, as a decimal string (e.g. &quot;8.754800&quot;). Parse with invariant-culture decimal parsing.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public global::GoAffPro.Client.Generated.Models.UserOrderFeedItem.UserOrderFeedItem_commission? Commission { get; set; }
+        public string? Commission { get; set; }
 #nullable restore
 #else
-        public global::GoAffPro.Client.Generated.Models.UserOrderFeedItem.UserOrderFeedItem_commission Commission { get; set; }
+        public string Commission { get; set; }
 #endif
-        /// <summary>The conversion_details property</summary>
+        /// <summary>Additional conversion tracking details. `null` in observed data.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public global::GoAffPro.Client.Generated.Models.UserOrderFeedItem_conversion_details? ConversionDetails { get; set; }
+        public global::GoAffPro.Client.Generated.Models.UserOrderFeedItemConversionDetails? ConversionDetails { get; set; }
 #nullable restore
 #else
-        public global::GoAffPro.Client.Generated.Models.UserOrderFeedItem_conversion_details ConversionDetails { get; set; }
+        public global::GoAffPro.Client.Generated.Models.UserOrderFeedItemConversionDetails ConversionDetails { get; set; }
 #endif
-        /// <summary>The created property</summary>
+        /// <summary>Legacy/alternate timestamp field. Not present in all observed responses. Prefer `created_at`.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public global::GoAffPro.Client.Generated.Models.UserOrderFeedItem.UserOrderFeedItem_created? Created { get; set; }
@@ -46,15 +47,9 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public global::GoAffPro.Client.Generated.Models.UserOrderFeedItem.UserOrderFeedItem_created Created { get; set; }
 #endif
-        /// <summary>The created_at property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public string? CreatedAt { get; set; }
-#nullable restore
-#else
-        public string CreatedAt { get; set; }
-#endif
-        /// <summary>The currency property</summary>
+        /// <summary>ISO-8601 UTC timestamp of when the order was created (e.g. &quot;2026-02-24T11:57:26.000Z&quot;).</summary>
+        public DateTimeOffset? CreatedAt { get; set; }
+        /// <summary>ISO-4217 currency code for all monetary values in this order.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? Currency { get; set; }
@@ -62,7 +57,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string Currency { get; set; }
 #endif
-        /// <summary>The id property</summary>
+        /// <summary>GoAffPro order identifier. Confirmed as integer from real data.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public global::GoAffPro.Client.Generated.Models.UserOrderFeedItem.UserOrderFeedItem_id? Id { get; set; }
@@ -70,15 +65,15 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public global::GoAffPro.Client.Generated.Models.UserOrderFeedItem.UserOrderFeedItem_id Id { get; set; }
 #endif
-        /// <summary>The line_items property</summary>
+        /// <summary>Individual products within this order.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public List<global::GoAffPro.Client.Generated.Models.UserOrderFeedItem_line_items>? LineItems { get; set; }
+        public List<global::GoAffPro.Client.Generated.Models.UserOrderLineItem>? LineItems { get; set; }
 #nullable restore
 #else
-        public List<global::GoAffPro.Client.Generated.Models.UserOrderFeedItem_line_items> LineItems { get; set; }
+        public List<global::GoAffPro.Client.Generated.Models.UserOrderLineItem> LineItems { get; set; }
 #endif
-        /// <summary>The number property</summary>
+        /// <summary>Store-facing order number string (e.g. &quot;#100001&quot;). Includes hash prefix in observed data.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? Number { get; set; }
@@ -86,7 +81,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string Number { get; set; }
 #endif
-        /// <summary>The order_id property</summary>
+        /// <summary>Store-native order identifier. May differ from `id`. Not always present.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public global::GoAffPro.Client.Generated.Models.UserOrderFeedItem.UserOrderFeedItem_order_id? OrderId { get; set; }
@@ -94,7 +89,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public global::GoAffPro.Client.Generated.Models.UserOrderFeedItem.UserOrderFeedItem_order_id OrderId { get; set; }
 #endif
-        /// <summary>The site_id property</summary>
+        /// <summary>GoAffPro store identifier. Confirmed as integer from real data.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public global::GoAffPro.Client.Generated.Models.UserOrderFeedItem.UserOrderFeedItem_site_id? SiteId { get; set; }
@@ -102,7 +97,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public global::GoAffPro.Client.Generated.Models.UserOrderFeedItem.UserOrderFeedItem_site_id SiteId { get; set; }
 #endif
-        /// <summary>The status property</summary>
+        /// <summary>Order approval status. Observed values: `&quot;new&quot;`, `&quot;approved&quot;`. Other values (e.g. `&quot;rejected&quot;`, `&quot;refunded&quot;`) may exist.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? Status { get; set; }
@@ -110,7 +105,15 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string Status { get; set; }
 #endif
-        /// <summary>The sub_id property</summary>
+        /// <summary>Store display name (e.g. &quot;UwU Market&quot;). Appears to always be returned.</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? StoreName { get; set; }
+#nullable restore
+#else
+        public string StoreName { get; set; }
+#endif
+        /// <summary>Sub-affiliate identifier. `null` when not applicable.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? SubId { get; set; }
@@ -118,10 +121,30 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string SubId { get; set; }
 #endif
-        /// <summary>The subtotal property</summary>
-        public double? Subtotal { get; set; }
-        /// <summary>The total property</summary>
-        public double? Total { get; set; }
+        /// <summary>Order subtotal as a decimal string (e.g. &quot;40.72&quot;). This is typically the amount on which commission is calculated. Parse with invariant-culture decimal parsing.</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? Subtotal { get; set; }
+#nullable restore
+#else
+        public string Subtotal { get; set; }
+#endif
+        /// <summary>Order grand total as a decimal string (e.g. &quot;58.00&quot;). May differ from `subtotal` due to shipping, taxes etc. Parse with invariant-culture decimal parsing.</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? Total { get; set; }
+#nullable restore
+#else
+        public string Total { get; set; }
+#endif
+        /// <summary>Store domain (e.g. &quot;uwumarket.us&quot;). Appears to always be returned.</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? Website { get; set; }
+#nullable restore
+#else
+        public string Website { get; set; }
+#endif
         /// <summary>
         /// Instantiates a new <see cref="global::GoAffPro.Client.Generated.Models.UserOrderFeedItem"/> and sets the default values.
         /// </summary>
@@ -148,20 +171,22 @@ namespace GoAffPro.Client.Generated.Models
             return new Dictionary<string, Action<IParseNode>>
             {
                 { "affiliate_id", n => { AffiliateId = n.GetObjectValue<global::GoAffPro.Client.Generated.Models.UserOrderFeedItem.UserOrderFeedItem_affiliate_id>(global::GoAffPro.Client.Generated.Models.UserOrderFeedItem.UserOrderFeedItem_affiliate_id.CreateFromDiscriminatorValue); } },
-                { "commission", n => { Commission = n.GetObjectValue<global::GoAffPro.Client.Generated.Models.UserOrderFeedItem.UserOrderFeedItem_commission>(global::GoAffPro.Client.Generated.Models.UserOrderFeedItem.UserOrderFeedItem_commission.CreateFromDiscriminatorValue); } },
-                { "conversion_details", n => { ConversionDetails = n.GetObjectValue<global::GoAffPro.Client.Generated.Models.UserOrderFeedItem_conversion_details>(global::GoAffPro.Client.Generated.Models.UserOrderFeedItem_conversion_details.CreateFromDiscriminatorValue); } },
+                { "commission", n => { Commission = n.GetStringValue(); } },
+                { "conversion_details", n => { ConversionDetails = n.GetObjectValue<global::GoAffPro.Client.Generated.Models.UserOrderFeedItemConversionDetails>(global::GoAffPro.Client.Generated.Models.UserOrderFeedItemConversionDetails.CreateFromDiscriminatorValue); } },
                 { "created", n => { Created = n.GetObjectValue<global::GoAffPro.Client.Generated.Models.UserOrderFeedItem.UserOrderFeedItem_created>(global::GoAffPro.Client.Generated.Models.UserOrderFeedItem.UserOrderFeedItem_created.CreateFromDiscriminatorValue); } },
-                { "created_at", n => { CreatedAt = n.GetStringValue(); } },
+                { "created_at", n => { CreatedAt = n.GetDateTimeOffsetValue(); } },
                 { "currency", n => { Currency = n.GetStringValue(); } },
                 { "id", n => { Id = n.GetObjectValue<global::GoAffPro.Client.Generated.Models.UserOrderFeedItem.UserOrderFeedItem_id>(global::GoAffPro.Client.Generated.Models.UserOrderFeedItem.UserOrderFeedItem_id.CreateFromDiscriminatorValue); } },
-                { "line_items", n => { LineItems = n.GetCollectionOfObjectValues<global::GoAffPro.Client.Generated.Models.UserOrderFeedItem_line_items>(global::GoAffPro.Client.Generated.Models.UserOrderFeedItem_line_items.CreateFromDiscriminatorValue)?.AsList(); } },
+                { "line_items", n => { LineItems = n.GetCollectionOfObjectValues<global::GoAffPro.Client.Generated.Models.UserOrderLineItem>(global::GoAffPro.Client.Generated.Models.UserOrderLineItem.CreateFromDiscriminatorValue)?.AsList(); } },
                 { "number", n => { Number = n.GetStringValue(); } },
                 { "order_id", n => { OrderId = n.GetObjectValue<global::GoAffPro.Client.Generated.Models.UserOrderFeedItem.UserOrderFeedItem_order_id>(global::GoAffPro.Client.Generated.Models.UserOrderFeedItem.UserOrderFeedItem_order_id.CreateFromDiscriminatorValue); } },
                 { "site_id", n => { SiteId = n.GetObjectValue<global::GoAffPro.Client.Generated.Models.UserOrderFeedItem.UserOrderFeedItem_site_id>(global::GoAffPro.Client.Generated.Models.UserOrderFeedItem.UserOrderFeedItem_site_id.CreateFromDiscriminatorValue); } },
                 { "status", n => { Status = n.GetStringValue(); } },
+                { "store_name", n => { StoreName = n.GetStringValue(); } },
                 { "sub_id", n => { SubId = n.GetStringValue(); } },
-                { "subtotal", n => { Subtotal = n.GetDoubleValue(); } },
-                { "total", n => { Total = n.GetDoubleValue(); } },
+                { "subtotal", n => { Subtotal = n.GetStringValue(); } },
+                { "total", n => { Total = n.GetStringValue(); } },
+                { "website", n => { Website = n.GetStringValue(); } },
             };
         }
         /// <summary>
@@ -172,20 +197,22 @@ namespace GoAffPro.Client.Generated.Models
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
             writer.WriteObjectValue<global::GoAffPro.Client.Generated.Models.UserOrderFeedItem.UserOrderFeedItem_affiliate_id>("affiliate_id", AffiliateId);
-            writer.WriteObjectValue<global::GoAffPro.Client.Generated.Models.UserOrderFeedItem.UserOrderFeedItem_commission>("commission", Commission);
-            writer.WriteObjectValue<global::GoAffPro.Client.Generated.Models.UserOrderFeedItem_conversion_details>("conversion_details", ConversionDetails);
+            writer.WriteStringValue("commission", Commission);
+            writer.WriteObjectValue<global::GoAffPro.Client.Generated.Models.UserOrderFeedItemConversionDetails>("conversion_details", ConversionDetails);
             writer.WriteObjectValue<global::GoAffPro.Client.Generated.Models.UserOrderFeedItem.UserOrderFeedItem_created>("created", Created);
-            writer.WriteStringValue("created_at", CreatedAt);
+            writer.WriteDateTimeOffsetValue("created_at", CreatedAt);
             writer.WriteStringValue("currency", Currency);
             writer.WriteObjectValue<global::GoAffPro.Client.Generated.Models.UserOrderFeedItem.UserOrderFeedItem_id>("id", Id);
-            writer.WriteCollectionOfObjectValues<global::GoAffPro.Client.Generated.Models.UserOrderFeedItem_line_items>("line_items", LineItems);
+            writer.WriteCollectionOfObjectValues<global::GoAffPro.Client.Generated.Models.UserOrderLineItem>("line_items", LineItems);
             writer.WriteStringValue("number", Number);
             writer.WriteObjectValue<global::GoAffPro.Client.Generated.Models.UserOrderFeedItem.UserOrderFeedItem_order_id>("order_id", OrderId);
             writer.WriteObjectValue<global::GoAffPro.Client.Generated.Models.UserOrderFeedItem.UserOrderFeedItem_site_id>("site_id", SiteId);
             writer.WriteStringValue("status", Status);
+            writer.WriteStringValue("store_name", StoreName);
             writer.WriteStringValue("sub_id", SubId);
-            writer.WriteDoubleValue("subtotal", Subtotal);
-            writer.WriteDoubleValue("total", Total);
+            writer.WriteStringValue("subtotal", Subtotal);
+            writer.WriteStringValue("total", Total);
+            writer.WriteStringValue("website", Website);
             writer.WriteAdditionalData(AdditionalData);
         }
         /// <summary>
@@ -242,67 +269,6 @@ namespace GoAffPro.Client.Generated.Models
                 if(Integer != null)
                 {
                     writer.WriteIntValue(null, Integer);
-                }
-                else if(String != null)
-                {
-                    writer.WriteStringValue(null, String);
-                }
-            }
-        }
-        /// <summary>
-        /// Composed type wrapper for classes <see cref="double"/>, <see cref="string"/>
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
-        public partial class UserOrderFeedItem_commission : IComposedTypeWrapper, IParsable
-        {
-            /// <summary>Composed type representation for type <see cref="double"/></summary>
-            public double? Double { get; set; }
-            /// <summary>Composed type representation for type <see cref="string"/></summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-            public string? String { get; set; }
-#nullable restore
-#else
-            public string String { get; set; }
-#endif
-            /// <summary>
-            /// Creates a new instance of the appropriate class based on discriminator value
-            /// </summary>
-            /// <returns>A <see cref="global::GoAffPro.Client.Generated.Models.UserOrderFeedItem.UserOrderFeedItem_commission"/></returns>
-            /// <param name="parseNode">The parse node to use to read the discriminator value and create the object</param>
-            public static global::GoAffPro.Client.Generated.Models.UserOrderFeedItem.UserOrderFeedItem_commission CreateFromDiscriminatorValue(IParseNode parseNode)
-            {
-                if(ReferenceEquals(parseNode, null)) throw new ArgumentNullException(nameof(parseNode));
-                var mappingValue = parseNode.GetChildNode("")?.GetStringValue();
-                var result = new global::GoAffPro.Client.Generated.Models.UserOrderFeedItem.UserOrderFeedItem_commission();
-                if(parseNode.GetDoubleValue() is double doubleValue)
-                {
-                    result.Double = doubleValue;
-                }
-                else if(parseNode.GetStringValue() is string stringValue)
-                {
-                    result.String = stringValue;
-                }
-                return result;
-            }
-            /// <summary>
-            /// The deserialization information for the current model
-            /// </summary>
-            /// <returns>A IDictionary&lt;string, Action&lt;IParseNode&gt;&gt;</returns>
-            public virtual IDictionary<string, Action<IParseNode>> GetFieldDeserializers()
-            {
-                return new Dictionary<string, Action<IParseNode>>();
-            }
-            /// <summary>
-            /// Serializes information the current object
-            /// </summary>
-            /// <param name="writer">Serialization writer to use to serialize this model</param>
-            public virtual void Serialize(ISerializationWriter writer)
-            {
-                if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
-                if(Double != null)
-                {
-                    writer.WriteDoubleValue(null, Double);
                 }
                 else if(String != null)
                 {

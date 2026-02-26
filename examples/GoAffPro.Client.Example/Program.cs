@@ -242,8 +242,8 @@ static async Task CallEndpointAsync(GoAffProClient client)
         "GET /user/stats/aggregate" => await client.Api.User.Stats.Aggregate.GetAsync(config =>
         {
             config.QueryParameters.SiteIds = siteIds;
-            config.QueryParameters.StartTime = AskOptional("start_time (ISO8601, optional)") ?? startTime;
-            config.QueryParameters.EndTime = AskOptional("end_time (ISO8601, optional)") ?? endTime;
+            config.QueryParameters.StartTime = DateTimeOffset.Parse(AskOptional("start_time (ISO8601, optional)") ?? startTime, CultureInfo.InvariantCulture);
+            config.QueryParameters.EndTime = DateTimeOffset.Parse(AskOptional("end_time (ISO8601, optional)") ?? endTime, CultureInfo.InvariantCulture);
             config.QueryParameters.FieldsAsGetFieldsQueryParameterType =
             [
                 AggregateField.Total_sales,
@@ -258,24 +258,24 @@ static async Task CallEndpointAsync(GoAffProClient client)
             config.QueryParameters.Limit = limit;
             config.QueryParameters.Offset = offset;
             config.QueryParameters.SiteIds = siteIds;
-            config.QueryParameters.CreatedAtMin = AskOptional("created_at_min (ISO8601, optional)") ?? startTime;
-            config.QueryParameters.CreatedAtMax = AskOptional("created_at_max (ISO8601, optional)") ?? endTime;
+            config.QueryParameters.CreatedAtMin = DateTimeOffset.Parse(AskOptional("created_at_min (ISO8601, optional)") ?? startTime, CultureInfo.InvariantCulture);
+            config.QueryParameters.CreatedAtMax = DateTimeOffset.Parse(AskOptional("created_at_max (ISO8601, optional)") ?? endTime, CultureInfo.InvariantCulture);
         }).ConfigureAwait(false),
         "GET /user/feed/traffic" => await client.Api.User.Feed.Traffic.GetAsync(config =>
         {
             config.QueryParameters.Limit = limit;
             config.QueryParameters.Offset = offset;
             config.QueryParameters.SiteIds = siteIds;
-            config.QueryParameters.StartTime = AskOptional("start_time (ISO8601, optional)") ?? startTime;
-            config.QueryParameters.EndTime = AskOptional("end_time (ISO8601, optional)") ?? endTime;
+            config.QueryParameters.StartTime = DateTimeOffset.Parse(AskOptional("start_time (ISO8601, optional)") ?? startTime, CultureInfo.InvariantCulture);
+            config.QueryParameters.EndTime = DateTimeOffset.Parse(AskOptional("end_time (ISO8601, optional)") ?? endTime, CultureInfo.InvariantCulture);
         }).ConfigureAwait(false),
         "GET /user/feed/payouts" => await client.Api.User.Feed.Payouts.GetAsync(config =>
         {
             config.QueryParameters.Limit = limit;
             config.QueryParameters.Offset = offset;
             config.QueryParameters.SiteIds = siteIds;
-            config.QueryParameters.StartTime = AskOptional("start_time (ISO8601, optional)") ?? startTime;
-            config.QueryParameters.EndTime = AskOptional("end_time (ISO8601, optional)") ?? endTime;
+            config.QueryParameters.StartTime = DateTimeOffset.Parse(AskOptional("start_time (ISO8601, optional)") ?? startTime, CultureInfo.InvariantCulture);
+            config.QueryParameters.EndTime = DateTimeOffset.Parse(AskOptional("end_time (ISO8601, optional)") ?? endTime, CultureInfo.InvariantCulture);
         }).ConfigureAwait(false),
         "GET /user/feed/products" => await client.Api.User.Feed.Products.GetAsync(config =>
         {
@@ -287,8 +287,8 @@ static async Task CallEndpointAsync(GoAffProClient client)
             config.QueryParameters.Limit = limit;
             config.QueryParameters.Offset = offset;
             config.QueryParameters.SiteIds = siteIds;
-            config.QueryParameters.StartTime = AskOptional("start_time (ISO8601, optional)") ?? startTime;
-            config.QueryParameters.EndTime = AskOptional("end_time (ISO8601, optional)") ?? endTime;
+            config.QueryParameters.StartTime = DateTimeOffset.Parse(AskOptional("start_time (ISO8601, optional)") ?? startTime, CultureInfo.InvariantCulture);
+            config.QueryParameters.EndTime = DateTimeOffset.Parse(AskOptional("end_time (ISO8601, optional)") ?? endTime, CultureInfo.InvariantCulture);
         }).ConfigureAwait(false),
         "GET /user/feed/transactions" => await client.Api.User.Feed.Transactions.GetAsync(config =>
         {
@@ -474,8 +474,8 @@ internal sealed class ObserverController(IGoAffProClient client) : IAsyncDisposa
 
         client.OrderDetected += (_, args) =>
             WriteLiveEvent("order", args.Order.Id?.String ?? args.Order.OrderId?.String ?? "<unknown>");
-        client.AffiliateDetected += (_, args) =>
-            WriteLiveEvent("affiliate", args.Affiliate.AffiliateId?.String ?? args.Affiliate.Id?.String ?? args.Affiliate.CustomerId?.String ?? "<unknown>");
+        client.TrafficDetected += (_, args) =>
+            WriteLiveEvent("traffic", args.Traffic.AffiliateId?.String ?? args.Traffic.Id?.String ?? args.Traffic.CustomerId?.String ?? "<unknown>");
         client.PayoutDetected += (_, args) =>
             WriteLiveEvent("payout", args.Payout.Id?.String ?? args.Payout.PayoutId?.String ?? "<unknown>");
 
@@ -572,8 +572,8 @@ internal static class ApiSweepRunner
         TimeSpan productTimeout,
         CancellationToken cancellationToken)
     {
-        string startTime = DateTimeOffset.UtcNow.AddDays(-1).ToString("o", CultureInfo.InvariantCulture);
-        string endTime = DateTimeOffset.UtcNow.ToString("o", CultureInfo.InvariantCulture);
+        DateTimeOffset startTime = DateTimeOffset.UtcNow.AddDays(-1);
+        DateTimeOffset endTime = DateTimeOffset.UtcNow;
         var results = new List<ApiEndpointResult>();
 
         await RunEndpointAsync(results, "GET /user", () => client.Api.User.GetAsync(cancellationToken: cancellationToken)).ConfigureAwait(false);

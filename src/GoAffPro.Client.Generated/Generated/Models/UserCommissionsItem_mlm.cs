@@ -7,29 +7,30 @@ using System.IO;
 using System;
 namespace GoAffPro.Client.Generated.Models
 {
+    /// <summary>
+    /// [UNCONFIRMED] Multi-level marketing commission configuration. Not observed in real data. Shape unknown.
+    /// </summary>
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
-    #pragma warning disable CS1591
-    public partial class UserCommissionsResponse_special : IAdditionalDataHolder, IParsable
-    #pragma warning restore CS1591
+    public partial class UserCommissionsItem_mlm : IAdditionalDataHolder, IParsable
     {
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
         /// <summary>
-        /// Instantiates a new <see cref="global::GoAffPro.Client.Generated.Models.UserCommissionsResponse_special"/> and sets the default values.
+        /// Instantiates a new <see cref="global::GoAffPro.Client.Generated.Models.UserCommissionsItem_mlm"/> and sets the default values.
         /// </summary>
-        public UserCommissionsResponse_special()
+        public UserCommissionsItem_mlm()
         {
             AdditionalData = new Dictionary<string, object>();
         }
         /// <summary>
         /// Creates a new instance of the appropriate class based on discriminator value
         /// </summary>
-        /// <returns>A <see cref="global::GoAffPro.Client.Generated.Models.UserCommissionsResponse_special"/></returns>
+        /// <returns>A <see cref="global::GoAffPro.Client.Generated.Models.UserCommissionsItem_mlm"/></returns>
         /// <param name="parseNode">The parse node to use to read the discriminator value and create the object</param>
-        public static global::GoAffPro.Client.Generated.Models.UserCommissionsResponse_special CreateFromDiscriminatorValue(IParseNode parseNode)
+        public static global::GoAffPro.Client.Generated.Models.UserCommissionsItem_mlm CreateFromDiscriminatorValue(IParseNode parseNode)
         {
             if(ReferenceEquals(parseNode, null)) throw new ArgumentNullException(nameof(parseNode));
-            return new global::GoAffPro.Client.Generated.Models.UserCommissionsResponse_special();
+            return new global::GoAffPro.Client.Generated.Models.UserCommissionsItem_mlm();
         }
         /// <summary>
         /// The deserialization information for the current model

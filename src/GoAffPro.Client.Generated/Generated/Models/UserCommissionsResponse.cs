@@ -7,52 +7,21 @@ using System.IO;
 using System;
 namespace GoAffPro.Client.Generated.Models
 {
+    /// <summary>
+    /// Commission structure for the authenticated affiliate. Results are wrapped in a `commissions` array; each element represents one enrolled store&apos;s commission configuration.
+    /// </summary>
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
-    #pragma warning disable CS1591
     public partial class UserCommissionsResponse : IAdditionalDataHolder, IParsable
-    #pragma warning restore CS1591
     {
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
-        /// <summary>The commissions property</summary>
+        /// <summary>Per-store commission configurations.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public List<UntypedNode>? Commissions { get; set; }
+        public List<global::GoAffPro.Client.Generated.Models.UserCommissionsItem>? Commissions { get; set; }
 #nullable restore
 #else
-        public List<UntypedNode> Commissions { get; set; }
-#endif
-        /// <summary>The mlm property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public global::GoAffPro.Client.Generated.Models.UserCommissionsResponse_mlm? Mlm { get; set; }
-#nullable restore
-#else
-        public global::GoAffPro.Client.Generated.Models.UserCommissionsResponse_mlm Mlm { get; set; }
-#endif
-        /// <summary>The royalties property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public List<global::GoAffPro.Client.Generated.Models.UserCommissionsResponse_royalties>? Royalties { get; set; }
-#nullable restore
-#else
-        public List<global::GoAffPro.Client.Generated.Models.UserCommissionsResponse_royalties> Royalties { get; set; }
-#endif
-        /// <summary>The special property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public List<global::GoAffPro.Client.Generated.Models.UserCommissionsResponse_special>? Special { get; set; }
-#nullable restore
-#else
-        public List<global::GoAffPro.Client.Generated.Models.UserCommissionsResponse_special> Special { get; set; }
-#endif
-        /// <summary>The standard property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public global::GoAffPro.Client.Generated.Models.UserCommissionsResponse_standard? Standard { get; set; }
-#nullable restore
-#else
-        public global::GoAffPro.Client.Generated.Models.UserCommissionsResponse_standard Standard { get; set; }
+        public List<global::GoAffPro.Client.Generated.Models.UserCommissionsItem> Commissions { get; set; }
 #endif
         /// <summary>
         /// Instantiates a new <see cref="global::GoAffPro.Client.Generated.Models.UserCommissionsResponse"/> and sets the default values.
@@ -79,11 +48,7 @@ namespace GoAffPro.Client.Generated.Models
         {
             return new Dictionary<string, Action<IParseNode>>
             {
-                { "commissions", n => { Commissions = n.GetCollectionOfPrimitiveValues<UntypedNode>()?.AsList(); } },
-                { "mlm", n => { Mlm = n.GetObjectValue<global::GoAffPro.Client.Generated.Models.UserCommissionsResponse_mlm>(global::GoAffPro.Client.Generated.Models.UserCommissionsResponse_mlm.CreateFromDiscriminatorValue); } },
-                { "royalties", n => { Royalties = n.GetCollectionOfObjectValues<global::GoAffPro.Client.Generated.Models.UserCommissionsResponse_royalties>(global::GoAffPro.Client.Generated.Models.UserCommissionsResponse_royalties.CreateFromDiscriminatorValue)?.AsList(); } },
-                { "special", n => { Special = n.GetCollectionOfObjectValues<global::GoAffPro.Client.Generated.Models.UserCommissionsResponse_special>(global::GoAffPro.Client.Generated.Models.UserCommissionsResponse_special.CreateFromDiscriminatorValue)?.AsList(); } },
-                { "standard", n => { Standard = n.GetObjectValue<global::GoAffPro.Client.Generated.Models.UserCommissionsResponse_standard>(global::GoAffPro.Client.Generated.Models.UserCommissionsResponse_standard.CreateFromDiscriminatorValue); } },
+                { "commissions", n => { Commissions = n.GetCollectionOfObjectValues<global::GoAffPro.Client.Generated.Models.UserCommissionsItem>(global::GoAffPro.Client.Generated.Models.UserCommissionsItem.CreateFromDiscriminatorValue)?.AsList(); } },
             };
         }
         /// <summary>
@@ -93,11 +58,7 @@ namespace GoAffPro.Client.Generated.Models
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
-            writer.WriteCollectionOfPrimitiveValues<UntypedNode>("commissions", Commissions);
-            writer.WriteObjectValue<global::GoAffPro.Client.Generated.Models.UserCommissionsResponse_mlm>("mlm", Mlm);
-            writer.WriteCollectionOfObjectValues<global::GoAffPro.Client.Generated.Models.UserCommissionsResponse_royalties>("royalties", Royalties);
-            writer.WriteCollectionOfObjectValues<global::GoAffPro.Client.Generated.Models.UserCommissionsResponse_special>("special", Special);
-            writer.WriteObjectValue<global::GoAffPro.Client.Generated.Models.UserCommissionsResponse_standard>("standard", Standard);
+            writer.WriteCollectionOfObjectValues<global::GoAffPro.Client.Generated.Models.UserCommissionsItem>("commissions", Commissions);
             writer.WriteAdditionalData(AdditionalData);
         }
     }

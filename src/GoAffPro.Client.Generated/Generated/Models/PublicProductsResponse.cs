@@ -7,12 +7,13 @@ using System.IO;
 using System;
 namespace GoAffPro.Client.Generated.Models
 {
+    /// <summary>
+    /// Paginated list of products from publicly listed affiliate programs.
+    /// </summary>
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
-    #pragma warning disable CS1591
     public partial class PublicProductsResponse : global::GoAffPro.Client.Generated.Models.CountLimitOffsetEnvelopeFlexibleOffset, IParsable
-    #pragma warning restore CS1591
     {
-        /// <summary>The products property</summary>
+        /// <summary>Array of product records.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public List<global::GoAffPro.Client.Generated.Models.PublicProductsResponse_products>? Products { get; set; }
@@ -20,7 +21,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public List<global::GoAffPro.Client.Generated.Models.PublicProductsResponse_products> Products { get; set; }
 #endif
-        /// <summary>The site_ids property</summary>
+        /// <summary>Site ID filter applied to the request, if any.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? SiteIds { get; set; }

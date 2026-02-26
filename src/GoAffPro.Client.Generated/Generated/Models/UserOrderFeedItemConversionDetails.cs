@@ -7,29 +7,30 @@ using System.IO;
 using System;
 namespace GoAffPro.Client.Generated.Models
 {
+    /// <summary>
+    /// Conversion tracking details for an order. Shape is unknown; observed as `null` in all available real-world data. Reserved for future documentation.
+    /// </summary>
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
-    #pragma warning disable CS1591
-    public partial class UserOrderFeedItem_conversion_details : IAdditionalDataHolder, IParsable
-    #pragma warning restore CS1591
+    public partial class UserOrderFeedItemConversionDetails : IAdditionalDataHolder, IParsable
     {
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
         /// <summary>
-        /// Instantiates a new <see cref="global::GoAffPro.Client.Generated.Models.UserOrderFeedItem_conversion_details"/> and sets the default values.
+        /// Instantiates a new <see cref="global::GoAffPro.Client.Generated.Models.UserOrderFeedItemConversionDetails"/> and sets the default values.
         /// </summary>
-        public UserOrderFeedItem_conversion_details()
+        public UserOrderFeedItemConversionDetails()
         {
             AdditionalData = new Dictionary<string, object>();
         }
         /// <summary>
         /// Creates a new instance of the appropriate class based on discriminator value
         /// </summary>
-        /// <returns>A <see cref="global::GoAffPro.Client.Generated.Models.UserOrderFeedItem_conversion_details"/></returns>
+        /// <returns>A <see cref="global::GoAffPro.Client.Generated.Models.UserOrderFeedItemConversionDetails"/></returns>
         /// <param name="parseNode">The parse node to use to read the discriminator value and create the object</param>
-        public static global::GoAffPro.Client.Generated.Models.UserOrderFeedItem_conversion_details CreateFromDiscriminatorValue(IParseNode parseNode)
+        public static global::GoAffPro.Client.Generated.Models.UserOrderFeedItemConversionDetails CreateFromDiscriminatorValue(IParseNode parseNode)
         {
             if(ReferenceEquals(parseNode, null)) throw new ArgumentNullException(nameof(parseNode));
-            return new global::GoAffPro.Client.Generated.Models.UserOrderFeedItem_conversion_details();
+            return new global::GoAffPro.Client.Generated.Models.UserOrderFeedItemConversionDetails();
         }
         /// <summary>
         /// The deserialization information for the current model

@@ -34,7 +34,7 @@ namespace GoAffPro.Client.Generated.User.Payouts.Pending
         {
         }
         /// <summary>
-        /// Get pending payout amount (and its breakdown)
+        /// Returns the total amount pending payout and an optional breakdown of earnings components. The shape of `pending` varies — it may be an array of items or a single breakdown object; callers should handle both.
         /// </summary>
         /// <returns>A <see cref="global::GoAffPro.Client.Generated.Models.UserPendingPayoutsResponse"/></returns>
         /// <param name="cancellationToken">Cancellation token to use when cancelling requests</param>
@@ -61,7 +61,7 @@ namespace GoAffPro.Client.Generated.User.Payouts.Pending
             return await RequestAdapter.SendAsync<global::GoAffPro.Client.Generated.Models.UserPendingPayoutsResponse>(requestInfo, global::GoAffPro.Client.Generated.Models.UserPendingPayoutsResponse.CreateFromDiscriminatorValue, errorMapping, cancellationToken).ConfigureAwait(false);
         }
         /// <summary>
-        /// Get pending payout amount (and its breakdown)
+        /// Returns the total amount pending payout and an optional breakdown of earnings components. The shape of `pending` varies — it may be an array of items or a single breakdown object; callers should handle both.
         /// </summary>
         /// <returns>A <see cref="RequestInformation"/></returns>
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>

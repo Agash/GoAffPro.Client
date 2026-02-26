@@ -1,17 +1,37 @@
-openapi: 3.0.3
+openapi: 3.0.4
 info:
   title: GOAFFPRO Canonical API (User/Public)
-  version: 2026.2.25
+  version: 2026.2.26
   description: >
     Maintained canonical contract for GoAffPro user/public endpoints.
     This spec intentionally corrects known response-shape drift from upstream docs.
+
+    ## Pagination
+    Several endpoints (aggregate, orders, traffic) require `limit` and `offset`
+    to be provided or they silently return empty results. These are marked required
+    where confirmed empirically.
+
+    ## Date Format
+    All timestamp parameters (`start_time`, `end_time`, `created_at_min`,
+    `created_at_max`) accept ISO-8601 strings with UTC offset, e.g.
+    `2026-02-24T11:57:26.000Z`. The `created_at` fields in responses also follow
+    this format.
+
+    ## Monetary strings
+    Many monetary values are returned as decimal strings (e.g. `"1000.23"`) rather
+    than JSON numbers. Callers should parse these with invariant-culture decimal
+    parsing. Fields confirmed to be strings are noted in the schema descriptions.
 servers:
   - url: https://api.goaffpro.com/v1/
 
 paths:
   /user/login:
     post:
-      summary: Log in to get the access token
+      summary: Log in to obtain a bearer access token
+      description: >
+        Exchanges email + password for a short-lived access token.
+        Use the returned `access_token` as `Authorization: Bearer <token>` on
+        subsequent authenticated requests.
       requestBody:
         required: true
         content:
@@ -24,19 +44,34 @@ paths:
               properties:
                 email:
                   type: string
+                  description: Affiliate account email address.
                 password:
                   type: string
+                  description: Affiliate account password.
       responses:
         '200':
-          description: Success
+          description: Successful login.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/LoginResponse'
+        '401':
+          $ref: '#/components/responses/AuthErrorResponse'
 
   /user/sites:
     get:
-      summary: List of stores the user is enrolled in
+      summary: List affiliate programs the authenticated user is enrolled in
+      description: >
+        Returns stores the logged-in affiliate belongs to.
+        Filter by `status=approved` to get only active programs.
+        The `fields` parameter is required and controls which fields are returned.
+
+        **Real-data notes (2026-02):**
+        - Only the newest/primary ref code per store is returned; historical or
+          secondary codes are not included.
+        - `coupon.discount_value` may be an empty string even when a coupon exists.
+        - `id` is an integer in real responses despite being typed as string in
+          some older docs.
       parameters:
         - $ref: '#/components/parameters/LimitQuery'
         - $ref: '#/components/parameters/OffsetQuery'
@@ -44,15 +79,29 @@ paths:
         - in: query
           name: fields
           required: true
+          description: >
+            Comma-separated list of fields to include. All known field names are
+            enumerated here; pass as a comma-separated string or repeated params.
+          style: form
           explode: false
           schema:
             type: array
             items:
               type: string
-              enum: [id, name, logo, website, status, currency, affiliate_portal, ref_code, referral_link, coupon]
+              enum:
+                - id
+                - name
+                - logo
+                - website
+                - status
+                - currency
+                - affiliate_portal
+                - ref_code
+                - referral_link
+                - coupon
       responses:
         '200':
-          description: Success
+          description: Success.
           content:
             application/json:
               schema:
@@ -66,10 +115,14 @@ paths:
 
   /user:
     get:
-      summary: Get information about logged in user profile
+      summary: Get profile information for the authenticated user
+      description: >
+        Returns a free-form user profile object. The exact shape varies by account
+        configuration. Use `AdditionalData` to access any fields not captured in
+        the typed schema.
       responses:
         '200':
-          description: Success
+          description: Success.
           content:
             application/json:
               schema:
@@ -81,10 +134,14 @@ paths:
         '500':
           $ref: '#/components/responses/PlainTextErrorResponse'
     post:
-      summary: Update your profile
+      summary: Update authenticated user profile
+      description: >
+        Allows partial updates to the affiliate's profile. The exact accepted
+        fields are undocumented upstream; shape has not been confirmed from
+        real-world testing.
       responses:
         '200':
-          description: Success
+          description: Success.
           content:
             application/json:
               schema:
@@ -98,23 +155,43 @@ paths:
 
   /user/stats/aggregate:
     get:
-      summary: Aggregates of user stats
+      summary: Aggregated lifetime/period stats across enrolled stores
+      description: >
+        Returns per-store aggregate statistics. Monetary values are returned as
+        decimal strings (e.g. `"1000.23"`).
+
+        **IMPORTANT:** `limit` and `offset` must be provided or the endpoint
+        returns an empty result set (confirmed empirically on 2026-02).
+
+        The `fields` parameter is required and selects which stat columns to return.
+
+        **Note:** Date filtering via `start_time`/`end_time` has not been fully
+        verified; the endpoint may return all-time data regardless of these params.
       parameters:
         - $ref: '#/components/parameters/SiteIdsQuery'
         - $ref: '#/components/parameters/StartTimeQuery'
         - $ref: '#/components/parameters/EndTimeQuery'
+        - $ref: '#/components/parameters/LimitQueryRequired'
+        - $ref: '#/components/parameters/OffsetQueryRequired'
         - in: query
           name: fields
           required: true
+          description: Stat columns to include in each result item.
+          style: form
           explode: false
           schema:
             type: array
             items:
               type: string
-              enum: [total_sales, other_commission_earned, revenue_generated, sale_commission_earned, commission_paid]
+              enum:
+                - total_sales
+                - other_commission_earned
+                - revenue_generated
+                - sale_commission_earned
+                - commission_paid
       responses:
         '200':
-          description: Success
+          description: Success.
           content:
             application/json:
               schema:
@@ -128,27 +205,55 @@ paths:
 
   /user/feed/orders:
     get:
-      summary: Feed of user orders
+      summary: Paginated feed of affiliate orders
+      description: >
+        Returns orders attributed to the authenticated affiliate across enrolled stores.
+
+        **IMPORTANT:** `limit` and `offset` must be provided or the endpoint returns
+        an empty result set (confirmed empirically on 2026-02).
+
+        Date range filtering uses `created_at_min` / `created_at_max`, both accepting
+        ISO-8601 UTC timestamps (e.g. `2026-02-24T00:00:00.000Z`).
+
+        The `fields` parameter is required.
+
+        **Note:** `website` and `store_name` appear in order objects regardless of the
+        `fields` selection; they may always be returned.
       parameters:
         - $ref: '#/components/parameters/SiteIdsQuery'
         - $ref: '#/components/parameters/SinceIdStringQuery'
         - $ref: '#/components/parameters/MaxIdQuery'
         - $ref: '#/components/parameters/CreatedAtMaxQuery'
         - $ref: '#/components/parameters/CreatedAtMinQuery'
+        - $ref: '#/components/parameters/LimitQueryRequired'
+        - $ref: '#/components/parameters/OffsetQueryRequired'
         - in: query
           name: fields
           required: true
+          description: Order fields to include in each result item.
+          style: form
           explode: false
           schema:
             type: array
             items:
               type: string
-              enum: [id, number, total, subtotal, line_items, commission, created_at, currency, site_id, sub_id, conversion_details]
-        - $ref: '#/components/parameters/LimitQuery'
-        - $ref: '#/components/parameters/OffsetQuery'
+              enum:
+                - id
+                - number
+                - total
+                - subtotal
+                - line_items
+                - commission
+                - created_at
+                - currency
+                - site_id
+                - sub_id
+                - conversion_details
+                - website
+                - store_name
       responses:
         '200':
-          description: Success
+          description: Success.
           content:
             application/json:
               schema:
@@ -162,7 +267,10 @@ paths:
 
   /user/feed/payouts:
     get:
-      summary: Feed of user payouts
+      summary: Paginated feed of affiliate payouts
+      description: >
+        Returns completed and pending payout records for the authenticated affiliate.
+        Filtered by date range using `start_time` / `end_time`.
       parameters:
         - $ref: '#/components/parameters/SiteIdsQuery'
         - $ref: '#/components/parameters/StartTimeQuery'
@@ -172,7 +280,7 @@ paths:
         - $ref: '#/components/parameters/OffsetQuery'
       responses:
         '200':
-          description: Success
+          description: Success.
           content:
             application/json:
               schema:
@@ -190,12 +298,18 @@ paths:
     # Keep error mappings broad and preserve this note until behavior stabilizes.
     get:
       summary: Feed of products available for promotion
+      description: >
+        Returns a product catalog available for the affiliate to promote.
+
+        **Warning:** This endpoint has been observed to hang or timeout on valid
+        authenticated requests (observed 2026-02-25). Use a per-request timeout
+        shorter than the client default when calling this endpoint.
       parameters:
         - $ref: '#/components/parameters/LimitQuery'
         - $ref: '#/components/parameters/OffsetQuery'
       responses:
         '200':
-          description: Success
+          description: Success.
           content:
             application/json:
               schema:
@@ -214,7 +328,13 @@ paths:
     # endpoint responds as not found / non-JSON error payload for authenticated requests.
     # Leave modeled but treat as unstable until upstream fixes behavior.
     get:
-      summary: Feed of user rewards
+      summary: Feed of affiliate rewards (UNSTABLE - currently returns 404)
+      description: >
+        Intended to return reward records for the authenticated affiliate.
+
+        **Warning:** This endpoint returns HTTP 404 with a non-JSON response body
+        for valid authenticated requests as of 2026-02-18. It is modeled here for
+        completeness but should not be relied upon until upstream behavior stabilizes.
       parameters:
         - $ref: '#/components/parameters/SiteIdsQuery'
         - $ref: '#/components/parameters/StartTimeQuery'
@@ -224,7 +344,7 @@ paths:
         - $ref: '#/components/parameters/OffsetQuery'
       responses:
         '200':
-          description: Success
+          description: Success (when endpoint is operational).
           content:
             application/json:
               schema:
@@ -240,17 +360,30 @@ paths:
 
   /user/feed/traffic:
     get:
-      summary: Feed of user traffic
+      summary: Paginated feed of referral traffic (click) events
+      description: >
+        Returns referral click/traffic events attributed to the authenticated affiliate.
+        Each item represents a visit through a referral link.
+
+        **IMPORTANT:** `limit` and `offset` must be provided or the endpoint returns
+        an empty result set (confirmed empirically on 2026-02).
+
+        **Real-data notes (2026-02):**
+        - `landing_page` and `user_agent` were `null` in all observed records.
+        - `ip_address` may be IPv4 or IPv6.
+        - `order_id` links the traffic event to a resulting order when applicable.
+        - Many historic schema fields (`name`, `email`, etc.) were not present in
+          observed responses; they are retained here as unconfirmed.
       parameters:
         - $ref: '#/components/parameters/SiteIdsQuery'
         - $ref: '#/components/parameters/StartTimeQuery'
         - $ref: '#/components/parameters/EndTimeQuery'
         - $ref: '#/components/parameters/SinceIdIntegerQuery'
-        - $ref: '#/components/parameters/LimitQuery'
-        - $ref: '#/components/parameters/OffsetQuery'
+        - $ref: '#/components/parameters/LimitQueryRequired'
+        - $ref: '#/components/parameters/OffsetQueryRequired'
       responses:
         '200':
-          description: Success
+          description: Success.
           content:
             application/json:
               schema:
@@ -267,13 +400,19 @@ paths:
     # endpoint can return HTTP 500 with HTML/plain-text error payloads.
     # Error content may not match structured JSON schema.
     get:
-      summary: Feed of user transactions
+      summary: Paginated feed of ledger transactions (UNSTABLE)
+      description: >
+        Returns ledger transaction records for the authenticated affiliate.
+
+        **Warning:** This endpoint has been observed to return HTTP 500 with
+        non-JSON (HTML/plain-text) response bodies (observed 2026-02-25).
+        Callers should handle non-JSON 500 responses gracefully.
       parameters:
         - $ref: '#/components/parameters/LimitQuery'
         - $ref: '#/components/parameters/OffsetQuery'
       responses:
         '200':
-          description: Success
+          description: Success.
           content:
             application/json:
               schema:
@@ -287,12 +426,30 @@ paths:
 
   /user/commissions:
     get:
-      summary: Get commission structure
+      summary: Commission structure for the authenticated affiliate
+      description: >
+        Returns the commission tiers and rules applicable to the authenticated
+        affiliate per enrolled store. Returns the list in the same order as the
+        site_id list passed in the query parameter.
+
+        **IMPORTANT:** `site_id` must be provided or the endpoint returns
+        an empty result set (confirmed empirically on 2026-02).
+
+        **Real-data notes (2026-02):**
+        - Response wraps results in a `commissions` array; each item represents
+          one store's commission config with `standard`, `special`, and `royalties`.
+        - `standard.commission_value` may be `0` meaning the base rate is zero
+          and only `special`/`royalties` tiers apply.
+        - `special[].collection` may be an empty object `{}` when no collection
+          restriction applies.
+        - `royalties[].collection.name` appears to be an internal affiliate group
+          or segment name, not a public product collection.
+        - The `mlm` field has not been observed in real data; retained as unknown.
       parameters:
-        - $ref: '#/components/parameters/SiteIdsQuery'
+        - $ref: '#/components/parameters/SiteIdsQueryRequired'
       responses:
         '200':
-          description: Success
+          description: Success.
           content:
             application/json:
               schema:
@@ -309,10 +466,14 @@ paths:
     # observed to exist on /user while also exposed under /sdk/user paths.
     # Keep tracked here even if upstream /user docs omit or mis-document it.
     get:
-      summary: Get pending payout amount (and its breakdown)
+      summary: Pending payout amount and breakdown for the authenticated affiliate
+      description: >
+        Returns the total amount pending payout and an optional breakdown of
+        earnings components. The shape of `pending` varies — it may be an array
+        of items or a single breakdown object; callers should handle both.
       responses:
         '200':
-          description: Success
+          description: Success.
           content:
             application/json:
               schema:
@@ -326,7 +487,10 @@ paths:
 
   /public/sites:
     get:
-      summary: Public marketplace sites
+      summary: Public marketplace listing of affiliate programs
+      description: >
+        Returns publicly listed affiliate programs from the GoAffPro marketplace.
+        No authentication required. Supports filtering by currency and keyword.
       parameters:
         - $ref: '#/components/parameters/SiteIdsQuery'
         - $ref: '#/components/parameters/PublicCurrencyQuery'
@@ -335,7 +499,7 @@ paths:
         - $ref: '#/components/parameters/OffsetQuery'
       responses:
         '200':
-          description: Success
+          description: Success.
           content:
             application/json:
               schema:
@@ -347,14 +511,17 @@ paths:
 
   /public/products:
     get:
-      summary: Public marketplace products
+      summary: Public marketplace product listing
+      description: >
+        Returns products from publicly listed affiliate programs.
+        No authentication required.
       parameters:
         - $ref: '#/components/parameters/LimitQuery'
         - $ref: '#/components/parameters/OffsetQuery'
         - $ref: '#/components/parameters/SiteIdsQuery'
       responses:
         '200':
-          description: Success
+          description: Success.
           content:
             application/json:
               schema:
@@ -369,69 +536,129 @@ components:
     LimitQuery:
       in: query
       name: limit
+      description: Maximum number of items to return per page.
+      schema:
+        type: integer
+    LimitQueryRequired:
+      in: query
+      name: limit
+      required: true
+      description: >
+        Maximum number of items to return per page. **Required** — omitting this
+        parameter causes the endpoint to return an empty result set.
       schema:
         type: integer
     OffsetQuery:
       in: query
       name: offset
+      description: Number of items to skip (zero-based).
+      schema:
+        type: integer
+    OffsetQueryRequired:
+      in: query
+      name: offset
+      required: true
+      description: >
+        Number of items to skip (zero-based). **Required** — omitting this
+        parameter causes the endpoint to return an empty result set.
       schema:
         type: integer
     SiteIdsQuery:
       in: query
       name: site_ids
+      description: >
+        Comma-separated list of site IDs to filter results to specific enrolled stores.
+        When omitted, results span all enrolled stores.
+      schema:
+        type: string
+    SiteIdsQueryRequired:
+      in: query
+      name: site_ids
+      required: true
+      description: >
+        Comma-separated list of site IDs to filter results to specific enrolled stores.
+        **Required** — omitting this parameter causes the endpoint to return an empty result set or fail with a silent success.
       schema:
         type: string
     StartTimeQuery:
       in: query
       name: start_time
+      description: >
+        Start of the time window for filtering. ISO-8601 UTC timestamp,
+        e.g. `2026-02-01T00:00:00.000Z`. Exact filtering behaviour has not been
+        fully verified against the API.
       schema:
         type: string
+        format: date-time
     EndTimeQuery:
       in: query
       name: end_time
+      description: >
+        End of the time window for filtering. ISO-8601 UTC timestamp,
+        e.g. `2026-02-28T23:59:59.000Z`. Exact filtering behaviour has not been
+        fully verified against the API.
       schema:
         type: string
+        format: date-time
     SinceIdIntegerQuery:
       in: query
       name: since_id
+      description: Return only items with an ID greater than this value (integer form).
       schema:
         type: integer
     SinceIdStringQuery:
       in: query
       name: since_id
+      description: Return only items with an ID greater than this value (string form).
       schema:
         type: string
     MaxIdQuery:
       in: query
       name: max_id
+      description: Return only items with an ID less than or equal to this value.
       schema:
         type: string
     CreatedAtMaxQuery:
       in: query
       name: created_at_max
+      description: >
+        Upper bound for `created_at` filtering. ISO-8601 UTC timestamp,
+        e.g. `2026-02-28T23:59:59.000Z`.
       schema:
         type: string
+        format: date-time
     CreatedAtMinQuery:
       in: query
       name: created_at_min
+      description: >
+        Lower bound for `created_at` filtering. ISO-8601 UTC timestamp,
+        e.g. `2026-02-01T00:00:00.000Z`.
       schema:
         type: string
+        format: date-time
     PublicCurrencyQuery:
       in: query
       name: currency
+      description: Filter public sites by currency code (e.g. `USD`).
       schema:
         type: string
     PublicKeywordQuery:
       in: query
       name: keyword
+      description: Keyword to search public site listings.
       schema:
         type: string
     UserStatusQuery:
       in: query
       name: status
+      description: Filter sites by affiliate membership status.
       schema:
         type: string
-        enum: [approved, pending, blocked]
+        enum:
+          - approved
+          - pending
+          - blocked
+
   responses:
     AuthErrorResponse:
       description: Authentication or authorization failure.
@@ -443,7 +670,7 @@ components:
           schema:
             type: string
     PlainTextErrorResponse:
-      description: Upstream service error response in plain text.
+      description: Upstream service error; body may be JSON or plain text.
       content:
         application/json:
           schema:
@@ -451,463 +678,969 @@ components:
         text/plain:
           schema:
             type: string
+
   schemas:
+
+    # ---------------------------------------------------------------------------
+    # Auth
+    # ---------------------------------------------------------------------------
     LoginResponse:
       type: object
-      required: [access_token]
+      description: Response from a successful login request.
+      required:
+        - access_token
       properties:
         access_token:
           type: string
+          description: Bearer token to use in `Authorization` headers for subsequent requests.
 
+    # ---------------------------------------------------------------------------
+    # User profile
+    # ---------------------------------------------------------------------------
     UserProfileEnvelope:
       type: object
-      required: [user]
+      description: Wrapper around the authenticated user's profile data.
+      required:
+        - user
       properties:
         user:
           type: object
+          description: >
+            Free-form user profile object. Shape varies by account configuration.
+            Use `AdditionalData` to access unlisted fields.
           additionalProperties: true
       additionalProperties: true
 
     UserProfileUpdateResponse:
       type: object
-      required: [success]
+      description: Response from a profile update request.
+      required:
+        - success
       properties:
         success:
           type: integer
+          description: Non-zero indicates success.
       additionalProperties: true
 
+    # ---------------------------------------------------------------------------
+    # Sites (enrolled stores)
+    # ---------------------------------------------------------------------------
     UserSiteListResponse:
       type: object
-      required: [sites, count]
+      description: Paginated list of stores the affiliate is enrolled in.
+      required:
+        - sites
+        - count
       properties:
         sites:
           type: array
+          description: Array of enrolled store records.
           items:
             $ref: '#/components/schemas/UserSite'
         count:
           type: integer
+          description: Total number of enrolled stores matching the query.
       additionalProperties: true
 
     UserSite:
       type: object
+      description: A store (affiliate program) the authenticated user is enrolled in.
       properties:
         id:
-          type: string
+          type: integer
+          description: >
+            Unique GoAffPro store identifier. Confirmed as integer from real data
+            (e.g. 132230, 165328).
         name:
           type: string
+          description: Store display name (e.g. "GamerSupps.GG").
         logo:
           type: string
+          description: Absolute URL to the store's logo image hosted on GoAffPro CDN.
+          format: uri
         website:
           type: string
+          description: Store's primary website URL (e.g. "https://gamersupps.gg/").
+          format: uri
         status:
           type: string
+          description: Affiliate membership status for this store.
+          enum:
+            - approved
+            - pending
+            - blocked
         currency:
           type: string
+          description: ISO-4217 currency code used by this store (e.g. "USD").
         affiliate_portal:
           type: string
+          description: URL of the store's affiliate portal (e.g. "https://gamersupps.goaffpro.com").
+          format: uri
         ref_code:
           type: string
+          description: >
+            The affiliate's primary referral code for this store. Only the newest/active
+            code is returned; historical or secondary codes are not exposed by this endpoint.
         referral_link:
           type: string
+          description: Full referral URL including ref_code (e.g. "https://gamersupps.gg/?ref=CODE").
+          format: uri
         coupon:
-          type: object
-          additionalProperties: true
+          nullable: true
+          description: >
+            Coupon details when a coupon code is associated with this affiliate program.
+            `null` when no coupon applies.
+          allOf:
+            - $ref: '#/components/schemas/UserSiteCoupon'
       additionalProperties: true
 
+    UserSiteCoupon:
+      type: object
+      description: Coupon associated with an affiliate program enrollment.
+      properties:
+        code:
+          type: string
+          description: The coupon/discount code string.
+        discount_value:
+          type: string
+          description: >
+            The discount value as a string. May be an empty string `""` even when a
+            coupon exists (observed with GamerSupps); the actual discount may be
+            store-configured and not exposed here.
+        discount_type:
+          type: string
+          description: >
+            How the discount is applied. Confirmed value: `"percentage"`. Other
+            types (e.g. `"fixed"`) may exist but have not been observed.
+        can_change:
+          type: boolean
+          description: Whether the affiliate is permitted to change this coupon code.
+      additionalProperties: true
+
+    # ---------------------------------------------------------------------------
+    # Aggregate stats
+    # ---------------------------------------------------------------------------
     UserStatsAggregateResponse:
       type: object
+      description: >
+        Aggregated statistics across enrolled stores. Each entry in `data` represents
+        one store.
       properties:
         data:
           type: array
+          description: Per-store aggregate stat entries.
           items:
             $ref: '#/components/schemas/UserStatsAggregateItem'
       additionalProperties: true
 
     UserStatsAggregateItem:
       type: object
+      description: Aggregated stats for a single enrolled store.
       properties:
         site_id:
           type: integer
-        total_sales:
-          type: number
+          description: GoAffPro store identifier.
+        store_name:
+          type: string
+          description: Store display name (e.g. "GamerSupps.GG").
+        website:
+          type: string
+          description: Store's primary domain (e.g. "gamersupps.gg"). No protocol prefix.
+        default_currency:
+          type: string
+          description: Store's default ISO-4217 currency code.
         currency:
           type: string
-        sale_commission_earned:
-          type: number
-        revenue_generated:
-          type: number
+          description: Currency code for the monetary values in this record.
+        total_sales:
+          type: integer
+          description: Number (count) of sales attributed to the affiliate for this store.
         commission_paid:
-          type: number
+          type: string
+          description: >
+            Total commission already paid out, as a decimal string (e.g. "1000.23").
+            Parse with invariant-culture decimal parsing.
+        sale_commission_earned:
+          type: string
+          description: >
+            Total commission earned from sales (paid + pending), as a decimal string
+            (e.g. "2000.567000"). Parse with invariant-culture decimal parsing.
+        revenue_generated:
+          type: string
+          description: >
+            Total revenue generated through the affiliate's referrals, as a decimal
+            string (e.g. "5000.45"). Parse with invariant-culture decimal parsing.
       additionalProperties: true
 
+    # ---------------------------------------------------------------------------
+    # Envelope base types
+    # ---------------------------------------------------------------------------
     CountLimitOffsetEnvelope:
       type: object
-      required: [count, limit, offset]
+      description: Standard pagination envelope with integer offset.
+      required:
+        - count
+        - limit
+        - offset
       properties:
         count:
           type: integer
+          description: Total number of matching records.
         limit:
           type: integer
+          description: Number of records returned per page.
         offset:
           type: integer
+          description: Number of records skipped.
       additionalProperties: true
 
     CountLimitOffsetEnvelopeFlexibleOffset:
       type: object
-      required: [count, limit, offset]
+      description: Pagination envelope where offset may be integer or string.
+      required:
+        - count
+        - limit
+        - offset
       properties:
         count:
           type: integer
+          description: Total number of matching records.
         limit:
           type: integer
+          description: Number of records returned per page.
         offset:
           oneOf:
             - type: integer
             - type: string
+          description: Number of records skipped (may be integer or string depending on context).
       additionalProperties: true
 
-    SinceIdEcho:
-      type: object
-      properties:
-        since_id:
-          oneOf:
-            - type: integer
-            - type: string
-      additionalProperties: true
-
+    # ---------------------------------------------------------------------------
+    # Orders feed
+    # ---------------------------------------------------------------------------
     UserOrderFeedResponse:
+      description: Paginated feed response containing affiliate orders.
       allOf:
         - $ref: '#/components/schemas/CountLimitOffsetEnvelope'
         - type: object
-          required: [orders]
+          required:
+            - orders
           properties:
             orders:
               type: array
+              description: Array of order records attributed to the affiliate.
               items:
                 $ref: '#/components/schemas/UserOrderFeedItem'
           additionalProperties: true
 
     UserOrderFeedItem:
       type: object
+      description: A single order attributed to the authenticated affiliate.
       properties:
         id:
           oneOf:
-            - type: string
             - type: integer
+            - type: string
+          description: GoAffPro order identifier. Confirmed as integer from real data.
         order_id:
           oneOf:
-            - type: string
             - type: integer
+            - type: string
+          description: >
+            Store-native order identifier. May differ from `id`. Not always present.
         number:
           type: string
-        total:
-          type: number
+          description: >
+            Store-facing order number string (e.g. "#100001"). Includes hash prefix
+            in observed data.
         subtotal:
-          type: number
-        line_items:
-          type: array
-          items:
-            type: object
-            additionalProperties: true
+          type: string
+          description: >
+            Order subtotal as a decimal string (e.g. "40.72"). This is typically the
+            amount on which commission is calculated. Parse with invariant-culture
+            decimal parsing.
+        total:
+          type: string
+          description: >
+            Order grand total as a decimal string (e.g. "58.00"). May differ from
+            `subtotal` due to shipping, taxes etc. Parse with invariant-culture
+            decimal parsing.
         commission:
+          type: string
+          description: >
+            Commission amount earned by the affiliate for this order, as a decimal
+            string (e.g. "8.754800"). Parse with invariant-culture decimal parsing.
+        currency:
+          type: string
+          description: ISO-4217 currency code for all monetary values in this order.
+        site_id:
           oneOf:
-            - type: number
+            - type: integer
             - type: string
+          description: GoAffPro store identifier. Confirmed as integer from real data.
+        website:
+          type: string
+          description: Store domain (e.g. "uwumarket.us"). Appears to always be returned.
+        store_name:
+          type: string
+          description: Store display name (e.g. "UwU Market"). Appears to always be returned.
+        status:
+          type: string
+          description: >
+            Order approval status. Observed values: `"new"`, `"approved"`. Other
+            values (e.g. `"rejected"`, `"refunded"`) may exist.
         created_at:
           type: string
+          format: date-time
+          description: >
+            ISO-8601 UTC timestamp of when the order was created (e.g.
+            "2026-02-24T11:57:26.000Z").
         created:
           oneOf:
             - type: string
             - type: integer
-        currency:
-          type: string
-        site_id:
-          oneOf:
-            - type: string
-            - type: integer
+          description: >
+            Legacy/alternate timestamp field. Not present in all observed responses.
+            Prefer `created_at`.
         sub_id:
           type: string
-        status:
-          type: string
+          nullable: true
+          description: Sub-affiliate identifier. `null` when not applicable.
         affiliate_id:
           oneOf:
-            - type: string
             - type: integer
+            - type: string
+          description: ID of the affiliate. May appear on the order or only on line items.
         conversion_details:
-          type: object
-          additionalProperties: true
+          nullable: true
+          description: Additional conversion tracking details. `null` in observed data.
+          allOf:
+            - $ref: '#/components/schemas/UserOrderFeedItemConversionDetails'
+        line_items:
+          type: array
+          description: Individual products within this order.
+          items:
+            $ref: '#/components/schemas/UserOrderLineItem'
       additionalProperties: true
 
+    UserOrderFeedItemConversionDetails:
+      type: object
+      description: >
+        Conversion tracking details for an order. Shape is unknown; observed as `null`
+        in all available real-world data. Reserved for future documentation.
+      additionalProperties: true
+
+    UserOrderLineItem:
+      type: object
+      description: A single product line within an order.
+      properties:
+        id:
+          type: integer
+          description: GoAffPro line item identifier.
+        product_id:
+          type: integer
+          description: Store-native product identifier.
+        variation_id:
+          type: integer
+          description: >
+            Store-native product variation/variant identifier (e.g. size, color).
+        sku:
+          type: string
+          description: Stock-keeping unit code for the product variant.
+        vendor:
+          type: string
+          description: Vendor or brand name (often the store name).
+        name:
+          type: string
+          description: Product display name.
+        quantity:
+          type: integer
+          description: Number of units ordered.
+        refund_quantity:
+          type: integer
+          description: Number of units refunded. `0` when no refund has been issued.
+        price:
+          type: string
+          description: >
+            Unit price as a decimal string (e.g. "40.72"). Parse with invariant-culture
+            decimal parsing.
+        total_discount:
+          type: number
+          description: Total discount applied to this line item.
+        total_price:
+          type: number
+          description: Line total (quantity × price minus discounts) as a number.
+        total_tax:
+          type: number
+          description: Tax applied to this line item.
+        gift_card_amount_used:
+          type: number
+          description: Gift card credit applied to this line item.
+        gift_card_percentage:
+          type: number
+          description: >
+            Gift card percentage applied. Unknown exact semantics — not yet fully
+            understood from available data.
+        total:
+          type: number
+          description: Final total for this line item after all adjustments.
+        exclude_discounts:
+          type: boolean
+          description: >
+            Whether store-level discounts are excluded from commission calculation
+            for this line item.
+        commission:
+          type: number
+          description: Commission amount earned on this specific line item.
+        affiliate_id:
+          type: integer
+          description: ID of the affiliate associated with this line item's commission.
+        commission_value:
+          type: string
+          description: >
+            Commission rate as a decimal string (e.g. "21.50"). Parse with
+            invariant-culture decimal parsing.
+        commission_type:
+          type: string
+          description: "How the commission is calculated. Observed value: `\"percentage\"`."
+      additionalProperties: true
+
+    # ---------------------------------------------------------------------------
+    # Payouts feed
+    # ---------------------------------------------------------------------------
     UserPayoutFeedResponse:
+      description: Paginated feed response containing affiliate payouts.
       allOf:
         - $ref: '#/components/schemas/CountLimitOffsetEnvelope'
-        - $ref: '#/components/schemas/SinceIdEcho'
         - type: object
-          required: [payouts]
+          required:
+            - payouts
           properties:
+            since_id:
+              oneOf:
+                - type: integer
+                - type: string
+              description: The `since_id` value used for this request, echoed in the response.
             payouts:
               type: array
+              description: Array of payout records.
               items:
                 $ref: '#/components/schemas/UserPayoutFeedItem'
           additionalProperties: true
 
     UserPayoutFeedItem:
       type: object
+      description: A single payout record for the authenticated affiliate.
       properties:
         id:
           oneOf:
-            - type: string
             - type: integer
+            - type: string
+          description: GoAffPro payout identifier.
         payout_id:
           oneOf:
-            - type: string
             - type: integer
+            - type: string
+          description: Alternate payout identifier field. May coincide with `id`.
         affiliate_id:
           oneOf:
-            - type: string
             - type: integer
+            - type: string
+          description: ID of the affiliate who received the payout.
         amount:
           oneOf:
             - type: number
             - type: string
+          description: Payout amount (number or decimal string depending on response).
         status:
           type: string
+          description: Payout status (e.g. `"paid"`, `"pending"`).
         payment_method:
           type: string
+          description: Payment method used for the payout (e.g. `"paypal"`, `"bank_transfer"`).
         transaction_id:
           type: string
+          description: External transaction identifier for the payout.
         currency:
           type: string
+          description: ISO-4217 currency code for the payout amount.
         created_at:
           type: string
+          format: date-time
+          description: ISO-8601 UTC timestamp of when the payout was created.
         created:
           oneOf:
             - type: string
             - type: integer
+          description: Legacy timestamp field. Prefer `created_at`.
       additionalProperties: true
 
+    # ---------------------------------------------------------------------------
+    # Products feed
+    # ---------------------------------------------------------------------------
     UserProductFeedResponse:
+      description: Paginated feed response containing promotable products.
       allOf:
         - $ref: '#/components/schemas/CountLimitOffsetEnvelopeFlexibleOffset'
         - type: object
-          required: [products]
+          required:
+            - products
           properties:
             products:
               type: array
+              description: Array of product records available for promotion.
               items:
                 $ref: '#/components/schemas/UserProductFeedItem'
           additionalProperties: true
 
     UserProductFeedItem:
       type: object
+      description: >
+        A product available for the affiliate to promote. Shape may vary by store.
       properties:
         id:
           oneOf:
-            - type: string
             - type: integer
+            - type: string
+          description: GoAffPro product feed item identifier.
         product_id:
           oneOf:
-            - type: string
             - type: integer
+            - type: string
+          description: Store-native product identifier.
         name:
           type: string
+          description: Product display name.
         description:
           type: string
+          description: Product description (may contain HTML).
         price:
           oneOf:
             - type: number
             - type: string
+          description: Product price.
         sale_price:
           oneOf:
             - type: number
             - type: string
+          description: Sale/discounted price when applicable.
         image_url:
           type: string
+          format: uri
+          description: URL of the product's primary image.
         product_url:
           type: string
+          format: uri
+          description: URL of the product's page on the store.
         category:
           type: string
+          description: Product category.
         sku:
           type: string
+          description: Product SKU.
         currency:
           type: string
+          description: ISO-4217 currency code for price fields.
       additionalProperties: true
 
+    # ---------------------------------------------------------------------------
+    # Rewards feed
+    # ---------------------------------------------------------------------------
     UserRewardFeedResponse:
+      description: >
+        Paginated feed response containing affiliate reward records. Currently
+        returns HTTP 404 in practice (observed 2026-02).
       allOf:
         - $ref: '#/components/schemas/CountLimitOffsetEnvelope'
         - type: object
-          required: [rewards]
+          required:
+            - rewards
           properties:
             rewards:
               type: array
+              description: Array of reward records.
               items:
                 $ref: '#/components/schemas/UserRewardFeedItem'
           additionalProperties: true
 
     UserRewardFeedItem:
       type: object
+      description: >
+        A reward record. Schema is speculative — this endpoint is not currently
+        functional (returns 404 in observed testing).
       properties:
         id:
           type: string
+          description: Reward identifier.
         affiliate_id:
           type: string
+          description: ID of the affiliate who earned the reward.
         type:
           type: string
+          description: Reward type. Exact values unknown.
         metadata:
           type: string
+          description: Additional reward metadata. Shape unknown.
         order_id:
           type: string
+          description: Order ID that triggered this reward, when applicable.
         level:
           type: integer
+          description: MLM/tier level for the reward, when applicable.
         amount:
           type: number
+          description: Reward monetary value.
         status:
           type: string
+          description: Reward status.
         created:
           type: string
+          description: Creation timestamp.
       additionalProperties: true
 
+    # ---------------------------------------------------------------------------
+    # Traffic feed
+    # ---------------------------------------------------------------------------
     UserTrafficFeedResponse:
+      description: Paginated feed response containing referral traffic (click) events.
       allOf:
         - $ref: '#/components/schemas/CountLimitOffsetEnvelope'
-        - $ref: '#/components/schemas/SinceIdEcho'
         - type: object
-          required: [traffic]
+          required:
+            - traffic
           properties:
+            since_id:
+              oneOf:
+                - type: integer
+                - type: string
+              description: The `since_id` value used for this request, echoed in the response.
             traffic:
               type: array
+              description: Array of traffic/click event records.
               items:
                 $ref: '#/components/schemas/UserTrafficFeedItem'
           additionalProperties: true
 
     UserTrafficFeedItem:
       type: object
+      description: >
+        A single referral traffic (click) event attributed to the authenticated affiliate.
+        Represents a visitor who clicked the affiliate's referral link.
       properties:
         id:
           oneOf:
-            - type: string
             - type: integer
+            - type: string
+          description: Unique traffic event identifier. Confirmed as large integer from real data.
+        ip_address:
+          type: string
+          description: >
+            IP address of the visitor. May be IPv4 or IPv6. Confirmed present in real data.
+        landing_page:
+          type: string
+          nullable: true
+          description: >
+            URL of the landing page the visitor reached. Observed as `null` in all
+            available real data; may be populated in some configurations.
+        user_agent:
+          type: string
+          nullable: true
+          description: >
+            Browser user-agent string of the visitor. Observed as `null` in all
+            available real data; may be populated in some configurations.
+        created_at:
+          type: string
+          format: date-time
+          description: ISO-8601 UTC timestamp of the traffic event (e.g. "2026-02-24T12:00:31.000Z").
+        order_id:
+          oneOf:
+            - type: integer
+            - type: string
+          nullable: true
+          description: >
+            ID of an order that resulted from this traffic event, when applicable.
+            Confirmed present in real data.
+        sub_id:
+          type: string
+          nullable: true
+          description: Sub-affiliate tracking ID. `null` when not applicable.
+        # The following fields were present in the previous schema but were NOT
+        # observed in real data (2026-02). They are retained here as unconfirmed
+        # and may reflect a different API mode or account configuration.
         affiliate_id:
           oneOf:
-            - type: string
             - type: integer
+            - type: string
+          description: >
+            [UNCONFIRMED] Affiliate identifier. Not observed in real traffic feed
+            responses; may only appear in admin-facing endpoints.
+        site_id:
+          oneOf:
+            - type: integer
+            - type: string
+          description: >
+            [UNCONFIRMED] Store identifier. Not observed in real traffic feed
+            responses.
         customer_id:
           oneOf:
-            - type: string
             - type: integer
+            - type: string
+          description: >
+            [UNCONFIRMED] Customer identifier. Not observed in real traffic feed
+            responses.
         name:
           type: string
+          description: "[UNCONFIRMED] Full name. Not observed in real traffic feed responses."
         first_name:
           type: string
+          description: "[UNCONFIRMED] First name. Not observed in real traffic feed responses."
         last_name:
           type: string
+          description: "[UNCONFIRMED] Last name. Not observed in real traffic feed responses."
         email:
           type: string
+          description: "[UNCONFIRMED] Email address. Not observed in real traffic feed responses."
         ref_code:
           type: string
+          description: "[UNCONFIRMED] Referral code. Not observed in real traffic feed responses."
         phone:
           type: string
+          description: "[UNCONFIRMED] Phone number. Not observed in real traffic feed responses."
         country:
           type: string
+          description: "[UNCONFIRMED] Country code. Not observed in real traffic feed responses."
         group_id:
           oneOf:
             - type: integer
             - type: string
-        site_id:
-          oneOf:
-            - type: string
-            - type: integer
-        sub_id:
-          type: string
-        created_at:
-          type: string
+          description: "[UNCONFIRMED] Affiliate group ID. Not observed in real traffic feed responses."
         created:
           oneOf:
             - type: string
             - type: integer
+          description: "Legacy timestamp field. Prefer `created_at`."
       additionalProperties: true
 
+    # ---------------------------------------------------------------------------
+    # Commissions
+    # ---------------------------------------------------------------------------
     UserCommissionsResponse:
       type: object
+      description: >
+        Commission structure for the authenticated affiliate. Results are wrapped in
+        a `commissions` array; each element represents one enrolled store's commission
+        configuration.
+      required:
+        - commissions
       properties:
-        standard:
-          type: object
-          additionalProperties: true
-        special:
-          type: array
-          items:
-            type: object
-            additionalProperties: true
-        royalties:
-          type: array
-          items:
-            type: object
-            additionalProperties: true
-        mlm:
-          type: object
-          additionalProperties: true
         commissions:
           type: array
+          description: Per-store commission configurations.
           items:
-            nullable: true
+            $ref: '#/components/schemas/UserCommissionsItem'
       additionalProperties: true
 
+    UserCommissionsItem:
+      type: object
+      description: Commission configuration for a single enrolled store.
+      properties:
+        standard:
+          $ref: '#/components/schemas/UserCommissionsStandard'
+        special:
+          type: array
+          description: >
+            Special commission tiers that override or supplement the standard rate.
+            May be empty.
+          items:
+            $ref: '#/components/schemas/UserCommissionsSpecialEntry'
+        royalties:
+          type: array
+          description: >
+            Royalty-based commission tiers, typically tied to product collections or
+            affiliate groups. May be empty.
+          items:
+            $ref: '#/components/schemas/UserCommissionsRoyaltyEntry'
+        mlm:
+          type: object
+          description: >
+            [UNCONFIRMED] Multi-level marketing commission configuration. Not observed
+            in real data. Shape unknown.
+          additionalProperties: true
+      additionalProperties: true
+
+    UserCommissionsStandard:
+      type: object
+      description: Base/default commission configuration for an enrolled store.
+      properties:
+        commission_type:
+          type: string
+          description: >
+            How the commission is calculated. Observed value: `"percentage"`.
+            Other values (e.g. `"fixed"`) may exist.
+        commission_value:
+          oneOf:
+            - type: number
+            - type: string
+          description: >
+            The commission rate. May be `0` when only special/royalty tiers apply.
+            May be a number or decimal string depending on the API response.
+        commission_on:
+          type: string
+          description: >
+            What the commission is calculated on. Observed value: `"order"`. Other
+            values (e.g. `"product"`) may exist.
+      additionalProperties: true
+
+    UserCommissionsSpecialEntry:
+      type: object
+      description: A special (tiered/override) commission rule.
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for this special commission rule.
+        commission_value:
+          type: string
+          description: Commission rate as a decimal string (e.g. "10.00000").
+        commission_type:
+          type: string
+          description: How the commission is calculated (e.g. `"percentage"`).
+        collection:
+          type: object
+          description: >
+            Product collection this rule applies to. May be an empty object `{}`
+            when the rule applies to all products.
+          additionalProperties: true
+      additionalProperties: true
+
+    UserCommissionsRoyaltyEntry:
+      type: object
+      description: A royalty-based commission rule, typically tied to an affiliate group or product collection.
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for this royalty rule.
+        commission_value:
+          type: string
+          description: Commission rate as a decimal string (e.g. "21.50").
+        commission_type:
+          type: string
+          description: How the commission is calculated (e.g. `"percentage"`).
+        collection:
+          $ref: '#/components/schemas/UserCommissionsCollection'
+      additionalProperties: true
+
+    UserCommissionsCollection:
+      type: object
+      description: >
+        A product collection or affiliate group that scopes a commission rule.
+        May be empty `{}` when not restricted to a specific collection.
+      properties:
+        id:
+          type: integer
+          description: Collection or group identifier.
+        name:
+          type: string
+          description: >
+            Collection or group name. In observed data this appears to be an internal
+            affiliate group/segment name (e.g. the affiliate's username), not a public
+            product collection name.
+      additionalProperties: true
+
+    # ---------------------------------------------------------------------------
+    # Transactions feed
+    # ---------------------------------------------------------------------------
     UserTransactionFeedResponse:
       type: object
-      required: [transactions]
+      description: Paginated feed response containing affiliate ledger transactions.
+      required:
+        - transactions
       properties:
         transactions:
           type: array
+          description: Array of transaction records.
           items:
             $ref: '#/components/schemas/UserTransactionItem'
         count:
           type: integer
+          description: Total number of transactions.
         limit:
           type: integer
+          description: Page size used for this request.
         offset:
           oneOf:
             - type: integer
             - type: string
+          description: Offset used for this request.
       additionalProperties: true
 
     UserTransactionItem:
       type: object
+      description: A single ledger transaction affecting the affiliate's balance.
       properties:
         id:
           type: string
+          description: Transaction identifier.
         tx_id:
           type: integer
+          description: Sequential transaction ID used for pagination tracking.
         affiliate_id:
           type: integer
+          description: ID of the affiliate whose balance was affected.
         amount:
           type: number
+          description: Amount of this transaction (positive for credits, negative for debits).
         currency:
           type: string
+          description: ISO-4217 currency code.
         startingBalance:
           type: number
+          description: Affiliate's balance before this transaction.
         endingBalance:
           type: number
+          description: Affiliate's balance after this transaction.
         created_at:
           type: string
+          format: date-time
+          description: ISO-8601 UTC timestamp of when the transaction was recorded.
         entity_type:
           type: string
-          enum: [orders, rewards, payouts, ORDERS, REWARDS, PAYOUTS]
+          description: Type of entity that triggered this transaction.
+          enum:
+            - orders
+            - rewards
+            - payouts
+            - ORDERS
+            - REWARDS
+            - PAYOUTS
         event_type:
           type: string
-          enum: [insert, update, delete]
+          description: The operation that created this transaction.
+          enum:
+            - insert
+            - update
+            - delete
         entity_id:
           type: string
+          description: ID of the entity (order, reward, payout) that triggered this transaction.
         is_paid:
           type: boolean
+          description: Whether this transaction has been included in a payout.
         metadata:
           type: object
+          description: Additional transaction metadata. Shape varies by entity type.
           additionalProperties: true
       additionalProperties: true
 
+    # ---------------------------------------------------------------------------
+    # Pending payouts
+    # ---------------------------------------------------------------------------
     UserPendingPayoutsResponse:
       type: object
-      required: [pending]
+      description: >
+        Pending payout information for the authenticated affiliate. The `pending`
+        field may be an array of items or a single breakdown object.
+      required:
+        - pending
       properties:
         pending:
           oneOf:
@@ -915,117 +1648,164 @@ components:
               items:
                 $ref: '#/components/schemas/PendingPayoutItem'
             - $ref: '#/components/schemas/PendingPayoutBreakdown'
+          description: Pending payout amount(s) and breakdown.
       additionalProperties: true
 
     PendingPayoutItem:
       type: object
+      description: Pending payout amount for one affiliate or currency.
       properties:
         affiliate_id:
           oneOf:
             - type: integer
             - type: string
+          description: Affiliate identifier.
         amount:
           oneOf:
             - type: number
             - type: string
+          description: Pending payout amount.
         total_earned:
           oneOf:
             - type: number
             - type: string
+          description: Total commission earned (all time or for period).
         total_paid:
           oneOf:
             - type: number
             - type: string
+          description: Total commission already paid out.
       additionalProperties: true
 
     PendingPayoutBreakdown:
       type: object
+      description: Detailed breakdown of pending payout by earnings category.
       properties:
         sale_earnings:
           type: number
+          description: Earnings from sales commissions.
         other_earnings:
           type: number
+          description: Earnings from non-sale sources (bonuses, rewards, etc.).
         paid_earnings:
           type: number
+          description: Portion of earnings already paid out.
         amount_pending:
           type: number
+          description: Net amount pending payout.
       additionalProperties: true
 
+    # ---------------------------------------------------------------------------
+    # Public marketplace
+    # ---------------------------------------------------------------------------
     PublicSitesResponse:
+      description: Paginated list of publicly listed affiliate programs.
       allOf:
         - $ref: '#/components/schemas/CountLimitOffsetEnvelopeFlexibleOffset'
         - type: object
-          required: [stores]
+          required:
+            - stores
           properties:
             stores:
               type: array
+              description: Array of publicly listed store records.
               items:
                 $ref: '#/components/schemas/PublicStore'
             currency:
               type: string
+              description: Currency filter applied to the request, if any.
             keyword:
               type: string
+              description: Keyword filter applied to the request, if any.
           additionalProperties: true
 
     PublicStore:
       type: object
+      description: A publicly listed affiliate program in the GoAffPro marketplace.
       properties:
         id:
           type: integer
+          description: GoAffPro store identifier.
         name:
           type: string
+          description: Store display name.
         website:
           type: string
+          format: uri
+          description: Store's primary website URL.
         logo:
           type: string
+          format: uri
+          description: Store logo URL.
         currency:
           type: string
+          description: ISO-4217 currency code.
         affiliatePortal:
           type: string
+          format: uri
+          description: URL of the store's affiliate portal.
         cookieDuration:
           type: integer
+          description: Affiliate tracking cookie lifetime in days.
         areRegistrationsOpen:
           type: integer
+          description: Non-zero when the affiliate program is accepting new registrations.
         isApprovedAutomatically:
           type: integer
+          description: Non-zero when new affiliates are approved automatically without manual review.
         commission:
           $ref: '#/components/schemas/CommissionLike'
       additionalProperties: true
 
     PublicProductsResponse:
+      description: Paginated list of products from publicly listed affiliate programs.
       allOf:
         - $ref: '#/components/schemas/CountLimitOffsetEnvelopeFlexibleOffset'
         - type: object
-          required: [products]
+          required:
+            - products
           properties:
             products:
               type: array
+              description: Array of product records.
               items:
                 type: object
                 additionalProperties: true
             site_ids:
               type: string
+              description: Site ID filter applied to the request, if any.
           additionalProperties: true
 
+    # ---------------------------------------------------------------------------
+    # Shared primitives
+    # ---------------------------------------------------------------------------
     CommissionLike:
       type: object
+      description: A simple commission descriptor used in public store listings.
       properties:
         type:
           type: string
+          description: Commission calculation type (e.g. `"percentage"`, `"fixed"`).
         amount:
           type: number
+          description: Commission rate or fixed amount.
         on:
           type: string
+          description: What the commission applies to (e.g. `"order"`, `"product"`).
       additionalProperties: true
 
     ErrorResponse:
       type: object
-      required: [error]
+      description: Structured error response returned by the API.
+      required:
+        - error
       properties:
         error:
           type: string
+          description: Human-readable error message.
         code:
           oneOf:
             - type: integer
             - type: string
+          description: Machine-readable error code when provided.
       additionalProperties: true

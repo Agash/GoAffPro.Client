@@ -3,21 +3,21 @@ using System.Runtime.Serialization;
 using System;
 namespace GoAffPro.Client.Generated.Models
 {
-    /// <summary>Type of entity that triggered this transaction.</summary>
+    /// <summary>Affiliate membership status for this store.</summary>
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
-    public enum UserTransactionItem_entity_type
+    public enum UserSite_status
     {
-        [EnumMember(Value = "orders")]
+        [EnumMember(Value = "approved")]
         #pragma warning disable CS1591
-        Orders,
+        Approved,
         #pragma warning restore CS1591
-        [EnumMember(Value = "rewards")]
+        [EnumMember(Value = "pending")]
         #pragma warning disable CS1591
-        Rewards,
+        Pending,
         #pragma warning restore CS1591
-        [EnumMember(Value = "payouts")]
+        [EnumMember(Value = "blocked")]
         #pragma warning disable CS1591
-        Payouts,
+        Blocked,
         #pragma warning restore CS1591
     }
 }

@@ -8,47 +8,55 @@ using System;
 namespace GoAffPro.Client.Generated.Models
 {
     /// <summary>
-    /// A simple commission descriptor used in public store listings.
+    /// Coupon associated with an affiliate program enrollment.
     /// </summary>
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
-    public partial class CommissionLike : IAdditionalDataHolder, IParsable
+    public partial class UserSiteCoupon : IAdditionalDataHolder, IParsable
     {
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
-        /// <summary>Commission rate or fixed amount.</summary>
-        public double? Amount { get; set; }
-        /// <summary>What the commission applies to (e.g. `&quot;order&quot;`, `&quot;product&quot;`).</summary>
+        /// <summary>Whether the affiliate is permitted to change this coupon code.</summary>
+        public bool? CanChange { get; set; }
+        /// <summary>The coupon/discount code string.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public string? On { get; set; }
+        public string? Code { get; set; }
 #nullable restore
 #else
-        public string On { get; set; }
+        public string Code { get; set; }
 #endif
-        /// <summary>Commission calculation type (e.g. `&quot;percentage&quot;`, `&quot;fixed&quot;`).</summary>
+        /// <summary>How the discount is applied. Confirmed value: `&quot;percentage&quot;`. Other types (e.g. `&quot;fixed&quot;`) may exist but have not been observed.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public string? Type { get; set; }
+        public string? DiscountType { get; set; }
 #nullable restore
 #else
-        public string Type { get; set; }
+        public string DiscountType { get; set; }
+#endif
+        /// <summary>The discount value as a string. May be an empty string `&quot;&quot;` even when a coupon exists (observed with GamerSupps); the actual discount may be store-configured and not exposed here.</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? DiscountValue { get; set; }
+#nullable restore
+#else
+        public string DiscountValue { get; set; }
 #endif
         /// <summary>
-        /// Instantiates a new <see cref="global::GoAffPro.Client.Generated.Models.CommissionLike"/> and sets the default values.
+        /// Instantiates a new <see cref="global::GoAffPro.Client.Generated.Models.UserSiteCoupon"/> and sets the default values.
         /// </summary>
-        public CommissionLike()
+        public UserSiteCoupon()
         {
             AdditionalData = new Dictionary<string, object>();
         }
         /// <summary>
         /// Creates a new instance of the appropriate class based on discriminator value
         /// </summary>
-        /// <returns>A <see cref="global::GoAffPro.Client.Generated.Models.CommissionLike"/></returns>
+        /// <returns>A <see cref="global::GoAffPro.Client.Generated.Models.UserSiteCoupon"/></returns>
         /// <param name="parseNode">The parse node to use to read the discriminator value and create the object</param>
-        public static global::GoAffPro.Client.Generated.Models.CommissionLike CreateFromDiscriminatorValue(IParseNode parseNode)
+        public static global::GoAffPro.Client.Generated.Models.UserSiteCoupon CreateFromDiscriminatorValue(IParseNode parseNode)
         {
             if(ReferenceEquals(parseNode, null)) throw new ArgumentNullException(nameof(parseNode));
-            return new global::GoAffPro.Client.Generated.Models.CommissionLike();
+            return new global::GoAffPro.Client.Generated.Models.UserSiteCoupon();
         }
         /// <summary>
         /// The deserialization information for the current model
@@ -58,9 +66,10 @@ namespace GoAffPro.Client.Generated.Models
         {
             return new Dictionary<string, Action<IParseNode>>
             {
-                { "amount", n => { Amount = n.GetDoubleValue(); } },
-                { "on", n => { On = n.GetStringValue(); } },
-                { "type", n => { Type = n.GetStringValue(); } },
+                { "can_change", n => { CanChange = n.GetBoolValue(); } },
+                { "code", n => { Code = n.GetStringValue(); } },
+                { "discount_type", n => { DiscountType = n.GetStringValue(); } },
+                { "discount_value", n => { DiscountValue = n.GetStringValue(); } },
             };
         }
         /// <summary>
@@ -70,9 +79,10 @@ namespace GoAffPro.Client.Generated.Models
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
-            writer.WriteDoubleValue("amount", Amount);
-            writer.WriteStringValue("on", On);
-            writer.WriteStringValue("type", Type);
+            writer.WriteBoolValue("can_change", CanChange);
+            writer.WriteStringValue("code", Code);
+            writer.WriteStringValue("discount_type", DiscountType);
+            writer.WriteStringValue("discount_value", DiscountValue);
             writer.WriteAdditionalData(AdditionalData);
         }
     }

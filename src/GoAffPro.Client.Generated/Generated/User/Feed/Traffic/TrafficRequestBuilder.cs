@@ -22,7 +22,7 @@ namespace GoAffPro.Client.Generated.User.Feed.Traffic
         /// </summary>
         /// <param name="pathParameters">Path parameters for the request</param>
         /// <param name="requestAdapter">The request adapter to use to execute the requests.</param>
-        public TrafficRequestBuilder(Dictionary<string, object> pathParameters, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/user/feed/traffic{?end_time*,limit*,offset*,since_id*,site_ids*,start_time*}", pathParameters)
+        public TrafficRequestBuilder(Dictionary<string, object> pathParameters, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/user/feed/traffic?limit={limit}&offset={offset}{&end_time*,since_id*,site_ids*,start_time*}", pathParameters)
         {
         }
         /// <summary>
@@ -30,11 +30,11 @@ namespace GoAffPro.Client.Generated.User.Feed.Traffic
         /// </summary>
         /// <param name="rawUrl">The raw URL to use for the request builder.</param>
         /// <param name="requestAdapter">The request adapter to use to execute the requests.</param>
-        public TrafficRequestBuilder(string rawUrl, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/user/feed/traffic{?end_time*,limit*,offset*,since_id*,site_ids*,start_time*}", rawUrl)
+        public TrafficRequestBuilder(string rawUrl, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/user/feed/traffic?limit={limit}&offset={offset}{&end_time*,since_id*,site_ids*,start_time*}", rawUrl)
         {
         }
         /// <summary>
-        /// Feed of user traffic
+        /// Returns referral click/traffic events attributed to the authenticated affiliate. Each item represents a visit through a referral link.**IMPORTANT:** `limit` and `offset` must be provided or the endpoint returns an empty result set (confirmed empirically on 2026-02).**Real-data notes (2026-02):** - `landing_page` and `user_agent` were `null` in all observed records. - `ip_address` may be IPv4 or IPv6. - `order_id` links the traffic event to a resulting order when applicable. - Many historic schema fields (`name`, `email`, etc.) were not present in  observed responses; they are retained here as unconfirmed.
         /// </summary>
         /// <returns>A <see cref="global::GoAffPro.Client.Generated.Models.UserTrafficFeedResponse"/></returns>
         /// <param name="cancellationToken">Cancellation token to use when cancelling requests</param>
@@ -61,7 +61,7 @@ namespace GoAffPro.Client.Generated.User.Feed.Traffic
             return await RequestAdapter.SendAsync<global::GoAffPro.Client.Generated.Models.UserTrafficFeedResponse>(requestInfo, global::GoAffPro.Client.Generated.Models.UserTrafficFeedResponse.CreateFromDiscriminatorValue, errorMapping, cancellationToken).ConfigureAwait(false);
         }
         /// <summary>
-        /// Feed of user traffic
+        /// Returns referral click/traffic events attributed to the authenticated affiliate. Each item represents a visit through a referral link.**IMPORTANT:** `limit` and `offset` must be provided or the endpoint returns an empty result set (confirmed empirically on 2026-02).**Real-data notes (2026-02):** - `landing_page` and `user_agent` were `null` in all observed records. - `ip_address` may be IPv4 or IPv6. - `order_id` links the traffic event to a resulting order when applicable. - Many historic schema fields (`name`, `email`, etc.) were not present in  observed responses; they are retained here as unconfirmed.
         /// </summary>
         /// <returns>A <see cref="RequestInformation"/></returns>
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
@@ -89,26 +89,24 @@ namespace GoAffPro.Client.Generated.User.Feed.Traffic
             return new global::GoAffPro.Client.Generated.User.Feed.Traffic.TrafficRequestBuilder(rawUrl, RequestAdapter);
         }
         /// <summary>
-        /// Feed of user traffic
+        /// Returns referral click/traffic events attributed to the authenticated affiliate. Each item represents a visit through a referral link.**IMPORTANT:** `limit` and `offset` must be provided or the endpoint returns an empty result set (confirmed empirically on 2026-02).**Real-data notes (2026-02):** - `landing_page` and `user_agent` were `null` in all observed records. - `ip_address` may be IPv4 or IPv6. - `order_id` links the traffic event to a resulting order when applicable. - Many historic schema fields (`name`, `email`, etc.) were not present in  observed responses; they are retained here as unconfirmed.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
         public partial class TrafficRequestBuilderGetQueryParameters 
         {
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
+            /// <summary>End of the time window for filtering. ISO-8601 UTC timestamp, e.g. `2026-02-28T23:59:59.000Z`. Exact filtering behaviour has not been fully verified against the API.</summary>
             [QueryParameter("end_time")]
-            public string? EndTime { get; set; }
-#nullable restore
-#else
-            [QueryParameter("end_time")]
-            public string EndTime { get; set; }
-#endif
+            public DateTimeOffset? EndTime { get; set; }
+            /// <summary>Maximum number of items to return per page. **Required** — omitting this parameter causes the endpoint to return an empty result set.</summary>
             [QueryParameter("limit")]
             public int? Limit { get; set; }
+            /// <summary>Number of items to skip (zero-based). **Required** — omitting this parameter causes the endpoint to return an empty result set.</summary>
             [QueryParameter("offset")]
             public int? Offset { get; set; }
+            /// <summary>Return only items with an ID greater than this value (integer form).</summary>
             [QueryParameter("since_id")]
             public int? SinceId { get; set; }
+            /// <summary>Comma-separated list of site IDs to filter results to specific enrolled stores. When omitted, results span all enrolled stores.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
             [QueryParameter("site_ids")]
@@ -118,15 +116,9 @@ namespace GoAffPro.Client.Generated.User.Feed.Traffic
             [QueryParameter("site_ids")]
             public string SiteIds { get; set; }
 #endif
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
+            /// <summary>Start of the time window for filtering. ISO-8601 UTC timestamp, e.g. `2026-02-01T00:00:00.000Z`. Exact filtering behaviour has not been fully verified against the API.</summary>
             [QueryParameter("start_time")]
-            public string? StartTime { get; set; }
-#nullable restore
-#else
-            [QueryParameter("start_time")]
-            public string StartTime { get; set; }
-#endif
+            public DateTimeOffset? StartTime { get; set; }
         }
         /// <summary>
         /// Configuration for the request such as headers, query parameters, and middleware options.

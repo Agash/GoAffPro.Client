@@ -7,29 +7,30 @@ using System.IO;
 using System;
 namespace GoAffPro.Client.Generated.Models
 {
+    /// <summary>
+    /// Product collection this rule applies to. May be an empty object `{}` when the rule applies to all products.
+    /// </summary>
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
-    #pragma warning disable CS1591
-    public partial class UserCommissionsResponse_standard : IAdditionalDataHolder, IParsable
-    #pragma warning restore CS1591
+    public partial class UserCommissionsSpecialEntry_collection : IAdditionalDataHolder, IParsable
     {
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
         /// <summary>
-        /// Instantiates a new <see cref="global::GoAffPro.Client.Generated.Models.UserCommissionsResponse_standard"/> and sets the default values.
+        /// Instantiates a new <see cref="global::GoAffPro.Client.Generated.Models.UserCommissionsSpecialEntry_collection"/> and sets the default values.
         /// </summary>
-        public UserCommissionsResponse_standard()
+        public UserCommissionsSpecialEntry_collection()
         {
             AdditionalData = new Dictionary<string, object>();
         }
         /// <summary>
         /// Creates a new instance of the appropriate class based on discriminator value
         /// </summary>
-        /// <returns>A <see cref="global::GoAffPro.Client.Generated.Models.UserCommissionsResponse_standard"/></returns>
+        /// <returns>A <see cref="global::GoAffPro.Client.Generated.Models.UserCommissionsSpecialEntry_collection"/></returns>
         /// <param name="parseNode">The parse node to use to read the discriminator value and create the object</param>
-        public static global::GoAffPro.Client.Generated.Models.UserCommissionsResponse_standard CreateFromDiscriminatorValue(IParseNode parseNode)
+        public static global::GoAffPro.Client.Generated.Models.UserCommissionsSpecialEntry_collection CreateFromDiscriminatorValue(IParseNode parseNode)
         {
             if(ReferenceEquals(parseNode, null)) throw new ArgumentNullException(nameof(parseNode));
-            return new global::GoAffPro.Client.Generated.Models.UserCommissionsResponse_standard();
+            return new global::GoAffPro.Client.Generated.Models.UserCommissionsSpecialEntry_collection();
         }
         /// <summary>
         /// The deserialization information for the current model

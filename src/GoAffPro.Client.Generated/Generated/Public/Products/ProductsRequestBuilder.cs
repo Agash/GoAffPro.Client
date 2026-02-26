@@ -34,7 +34,7 @@ namespace GoAffPro.Client.Generated.Public.Products
         {
         }
         /// <summary>
-        /// Public marketplace products
+        /// Returns products from publicly listed affiliate programs. No authentication required.
         /// </summary>
         /// <returns>A <see cref="global::GoAffPro.Client.Generated.Models.PublicProductsResponse"/></returns>
         /// <param name="cancellationToken">Cancellation token to use when cancelling requests</param>
@@ -59,7 +59,7 @@ namespace GoAffPro.Client.Generated.Public.Products
             return await RequestAdapter.SendAsync<global::GoAffPro.Client.Generated.Models.PublicProductsResponse>(requestInfo, global::GoAffPro.Client.Generated.Models.PublicProductsResponse.CreateFromDiscriminatorValue, errorMapping, cancellationToken).ConfigureAwait(false);
         }
         /// <summary>
-        /// Public marketplace products
+        /// Returns products from publicly listed affiliate programs. No authentication required.
         /// </summary>
         /// <returns>A <see cref="RequestInformation"/></returns>
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
@@ -87,15 +87,18 @@ namespace GoAffPro.Client.Generated.Public.Products
             return new global::GoAffPro.Client.Generated.Public.Products.ProductsRequestBuilder(rawUrl, RequestAdapter);
         }
         /// <summary>
-        /// Public marketplace products
+        /// Returns products from publicly listed affiliate programs. No authentication required.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
         public partial class ProductsRequestBuilderGetQueryParameters 
         {
+            /// <summary>Maximum number of items to return per page.</summary>
             [QueryParameter("limit")]
             public int? Limit { get; set; }
+            /// <summary>Number of items to skip (zero-based).</summary>
             [QueryParameter("offset")]
             public int? Offset { get; set; }
+            /// <summary>Comma-separated list of site IDs to filter results to specific enrolled stores. When omitted, results span all enrolled stores.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
             [QueryParameter("site_ids")]

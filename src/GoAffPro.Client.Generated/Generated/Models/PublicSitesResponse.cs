@@ -7,12 +7,13 @@ using System.IO;
 using System;
 namespace GoAffPro.Client.Generated.Models
 {
+    /// <summary>
+    /// Paginated list of publicly listed affiliate programs.
+    /// </summary>
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
-    #pragma warning disable CS1591
     public partial class PublicSitesResponse : global::GoAffPro.Client.Generated.Models.CountLimitOffsetEnvelopeFlexibleOffset, IParsable
-    #pragma warning restore CS1591
     {
-        /// <summary>The currency property</summary>
+        /// <summary>Currency filter applied to the request, if any.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? Currency { get; set; }
@@ -20,7 +21,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string Currency { get; set; }
 #endif
-        /// <summary>The keyword property</summary>
+        /// <summary>Keyword filter applied to the request, if any.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? Keyword { get; set; }
@@ -28,7 +29,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string Keyword { get; set; }
 #endif
-        /// <summary>The stores property</summary>
+        /// <summary>Array of publicly listed store records.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public List<global::GoAffPro.Client.Generated.Models.PublicStore>? Stores { get; set; }

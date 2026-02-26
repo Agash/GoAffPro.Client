@@ -34,7 +34,7 @@ namespace GoAffPro.Client.Generated.Public.Sites
         {
         }
         /// <summary>
-        /// Public marketplace sites
+        /// Returns publicly listed affiliate programs from the GoAffPro marketplace. No authentication required. Supports filtering by currency and keyword.
         /// </summary>
         /// <returns>A <see cref="global::GoAffPro.Client.Generated.Models.PublicSitesResponse"/></returns>
         /// <param name="cancellationToken">Cancellation token to use when cancelling requests</param>
@@ -59,7 +59,7 @@ namespace GoAffPro.Client.Generated.Public.Sites
             return await RequestAdapter.SendAsync<global::GoAffPro.Client.Generated.Models.PublicSitesResponse>(requestInfo, global::GoAffPro.Client.Generated.Models.PublicSitesResponse.CreateFromDiscriminatorValue, errorMapping, cancellationToken).ConfigureAwait(false);
         }
         /// <summary>
-        /// Public marketplace sites
+        /// Returns publicly listed affiliate programs from the GoAffPro marketplace. No authentication required. Supports filtering by currency and keyword.
         /// </summary>
         /// <returns>A <see cref="RequestInformation"/></returns>
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
@@ -87,11 +87,12 @@ namespace GoAffPro.Client.Generated.Public.Sites
             return new global::GoAffPro.Client.Generated.Public.Sites.SitesRequestBuilder(rawUrl, RequestAdapter);
         }
         /// <summary>
-        /// Public marketplace sites
+        /// Returns publicly listed affiliate programs from the GoAffPro marketplace. No authentication required. Supports filtering by currency and keyword.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
         public partial class SitesRequestBuilderGetQueryParameters 
         {
+            /// <summary>Filter public sites by currency code (e.g. `USD`).</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
             [QueryParameter("currency")]
@@ -101,6 +102,7 @@ namespace GoAffPro.Client.Generated.Public.Sites
             [QueryParameter("currency")]
             public string Currency { get; set; }
 #endif
+            /// <summary>Keyword to search public site listings.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
             [QueryParameter("keyword")]
@@ -110,10 +112,13 @@ namespace GoAffPro.Client.Generated.Public.Sites
             [QueryParameter("keyword")]
             public string Keyword { get; set; }
 #endif
+            /// <summary>Maximum number of items to return per page.</summary>
             [QueryParameter("limit")]
             public int? Limit { get; set; }
+            /// <summary>Number of items to skip (zero-based).</summary>
             [QueryParameter("offset")]
             public int? Offset { get; set; }
+            /// <summary>Comma-separated list of site IDs to filter results to specific enrolled stores. When omitted, results span all enrolled stores.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
             [QueryParameter("site_ids")]

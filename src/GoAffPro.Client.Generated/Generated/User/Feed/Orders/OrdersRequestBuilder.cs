@@ -22,7 +22,7 @@ namespace GoAffPro.Client.Generated.User.Feed.Orders
         /// </summary>
         /// <param name="pathParameters">Path parameters for the request</param>
         /// <param name="requestAdapter">The request adapter to use to execute the requests.</param>
-        public OrdersRequestBuilder(Dictionary<string, object> pathParameters, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/user/feed/orders?fields={fields}{&created_at_max*,created_at_min*,limit*,max_id*,offset*,since_id*,site_ids*}", pathParameters)
+        public OrdersRequestBuilder(Dictionary<string, object> pathParameters, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/user/feed/orders?fields={fields}&limit={limit}&offset={offset}{&created_at_max*,created_at_min*,max_id*,since_id*,site_ids*}", pathParameters)
         {
         }
         /// <summary>
@@ -30,11 +30,11 @@ namespace GoAffPro.Client.Generated.User.Feed.Orders
         /// </summary>
         /// <param name="rawUrl">The raw URL to use for the request builder.</param>
         /// <param name="requestAdapter">The request adapter to use to execute the requests.</param>
-        public OrdersRequestBuilder(string rawUrl, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/user/feed/orders?fields={fields}{&created_at_max*,created_at_min*,limit*,max_id*,offset*,since_id*,site_ids*}", rawUrl)
+        public OrdersRequestBuilder(string rawUrl, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/user/feed/orders?fields={fields}&limit={limit}&offset={offset}{&created_at_max*,created_at_min*,max_id*,since_id*,site_ids*}", rawUrl)
         {
         }
         /// <summary>
-        /// Feed of user orders
+        /// Returns orders attributed to the authenticated affiliate across enrolled stores.**IMPORTANT:** `limit` and `offset` must be provided or the endpoint returns an empty result set (confirmed empirically on 2026-02).Date range filtering uses `created_at_min` / `created_at_max`, both accepting ISO-8601 UTC timestamps (e.g. `2026-02-24T00:00:00.000Z`).The `fields` parameter is required.**Note:** `website` and `store_name` appear in order objects regardless of the `fields` selection; they may always be returned.
         /// </summary>
         /// <returns>A <see cref="global::GoAffPro.Client.Generated.Models.UserOrderFeedResponse"/></returns>
         /// <param name="cancellationToken">Cancellation token to use when cancelling requests</param>
@@ -61,7 +61,7 @@ namespace GoAffPro.Client.Generated.User.Feed.Orders
             return await RequestAdapter.SendAsync<global::GoAffPro.Client.Generated.Models.UserOrderFeedResponse>(requestInfo, global::GoAffPro.Client.Generated.Models.UserOrderFeedResponse.CreateFromDiscriminatorValue, errorMapping, cancellationToken).ConfigureAwait(false);
         }
         /// <summary>
-        /// Feed of user orders
+        /// Returns orders attributed to the authenticated affiliate across enrolled stores.**IMPORTANT:** `limit` and `offset` must be provided or the endpoint returns an empty result set (confirmed empirically on 2026-02).Date range filtering uses `created_at_min` / `created_at_max`, both accepting ISO-8601 UTC timestamps (e.g. `2026-02-24T00:00:00.000Z`).The `fields` parameter is required.**Note:** `website` and `store_name` appear in order objects regardless of the `fields` selection; they may always be returned.
         /// </summary>
         /// <returns>A <see cref="RequestInformation"/></returns>
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
@@ -89,29 +89,18 @@ namespace GoAffPro.Client.Generated.User.Feed.Orders
             return new global::GoAffPro.Client.Generated.User.Feed.Orders.OrdersRequestBuilder(rawUrl, RequestAdapter);
         }
         /// <summary>
-        /// Feed of user orders
+        /// Returns orders attributed to the authenticated affiliate across enrolled stores.**IMPORTANT:** `limit` and `offset` must be provided or the endpoint returns an empty result set (confirmed empirically on 2026-02).Date range filtering uses `created_at_min` / `created_at_max`, both accepting ISO-8601 UTC timestamps (e.g. `2026-02-24T00:00:00.000Z`).The `fields` parameter is required.**Note:** `website` and `store_name` appear in order objects regardless of the `fields` selection; they may always be returned.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
         public partial class OrdersRequestBuilderGetQueryParameters 
         {
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
+            /// <summary>Upper bound for `created_at` filtering. ISO-8601 UTC timestamp, e.g. `2026-02-28T23:59:59.000Z`.</summary>
             [QueryParameter("created_at_max")]
-            public string? CreatedAtMax { get; set; }
-#nullable restore
-#else
-            [QueryParameter("created_at_max")]
-            public string CreatedAtMax { get; set; }
-#endif
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
+            public DateTimeOffset? CreatedAtMax { get; set; }
+            /// <summary>Lower bound for `created_at` filtering. ISO-8601 UTC timestamp, e.g. `2026-02-01T00:00:00.000Z`.</summary>
             [QueryParameter("created_at_min")]
-            public string? CreatedAtMin { get; set; }
-#nullable restore
-#else
-            [QueryParameter("created_at_min")]
-            public string CreatedAtMin { get; set; }
-#endif
+            public DateTimeOffset? CreatedAtMin { get; set; }
+            /// <summary>Order fields to include in each result item.</summary>
             [Obsolete("This property is deprecated, use FieldsAsGetFieldsQueryParameterType instead")]
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -122,6 +111,7 @@ namespace GoAffPro.Client.Generated.User.Feed.Orders
             [QueryParameter("fields")]
             public string[] Fields { get; set; }
 #endif
+            /// <summary>Order fields to include in each result item.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
             [QueryParameter("fields")]
@@ -131,8 +121,10 @@ namespace GoAffPro.Client.Generated.User.Feed.Orders
             [QueryParameter("fields")]
             public global::GoAffPro.Client.Generated.User.Feed.Orders.GetFieldsQueryParameterType[] FieldsAsGetFieldsQueryParameterType { get; set; }
 #endif
+            /// <summary>Maximum number of items to return per page. **Required** — omitting this parameter causes the endpoint to return an empty result set.</summary>
             [QueryParameter("limit")]
             public int? Limit { get; set; }
+            /// <summary>Return only items with an ID less than or equal to this value.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
             [QueryParameter("max_id")]
@@ -142,8 +134,10 @@ namespace GoAffPro.Client.Generated.User.Feed.Orders
             [QueryParameter("max_id")]
             public string MaxId { get; set; }
 #endif
+            /// <summary>Number of items to skip (zero-based). **Required** — omitting this parameter causes the endpoint to return an empty result set.</summary>
             [QueryParameter("offset")]
             public int? Offset { get; set; }
+            /// <summary>Return only items with an ID greater than this value (string form).</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
             [QueryParameter("since_id")]
@@ -153,6 +147,7 @@ namespace GoAffPro.Client.Generated.User.Feed.Orders
             [QueryParameter("since_id")]
             public string SinceId { get; set; }
 #endif
+            /// <summary>Comma-separated list of site IDs to filter results to specific enrolled stores. When omitted, results span all enrolled stores.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
             [QueryParameter("site_ids")]

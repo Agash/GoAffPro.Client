@@ -8,49 +8,53 @@ using System;
 namespace GoAffPro.Client.Generated.Models
 {
     /// <summary>
-    /// Paginated feed response containing affiliate ledger transactions.
+    /// Base/default commission configuration for an enrolled store.
     /// </summary>
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
-    public partial class UserTransactionFeedResponse : IAdditionalDataHolder, IParsable
+    public partial class UserCommissionsStandard : IAdditionalDataHolder, IParsable
     {
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
-        /// <summary>Total number of transactions.</summary>
-        public int? Count { get; set; }
-        /// <summary>Page size used for this request.</summary>
-        public int? Limit { get; set; }
-        /// <summary>Offset used for this request.</summary>
+        /// <summary>What the commission is calculated on. Observed value: `&quot;order&quot;`. Other values (e.g. `&quot;product&quot;`) may exist.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public global::GoAffPro.Client.Generated.Models.UserTransactionFeedResponse.UserTransactionFeedResponse_offset? Offset { get; set; }
+        public string? CommissionOn { get; set; }
 #nullable restore
 #else
-        public global::GoAffPro.Client.Generated.Models.UserTransactionFeedResponse.UserTransactionFeedResponse_offset Offset { get; set; }
+        public string CommissionOn { get; set; }
 #endif
-        /// <summary>Array of transaction records.</summary>
+        /// <summary>How the commission is calculated. Observed value: `&quot;percentage&quot;`. Other values (e.g. `&quot;fixed&quot;`) may exist.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public List<global::GoAffPro.Client.Generated.Models.UserTransactionItem>? Transactions { get; set; }
+        public string? CommissionType { get; set; }
 #nullable restore
 #else
-        public List<global::GoAffPro.Client.Generated.Models.UserTransactionItem> Transactions { get; set; }
+        public string CommissionType { get; set; }
+#endif
+        /// <summary>The commission rate. May be `0` when only special/royalty tiers apply. May be a number or decimal string depending on the API response.</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public global::GoAffPro.Client.Generated.Models.UserCommissionsStandard.UserCommissionsStandard_commission_value? CommissionValue { get; set; }
+#nullable restore
+#else
+        public global::GoAffPro.Client.Generated.Models.UserCommissionsStandard.UserCommissionsStandard_commission_value CommissionValue { get; set; }
 #endif
         /// <summary>
-        /// Instantiates a new <see cref="global::GoAffPro.Client.Generated.Models.UserTransactionFeedResponse"/> and sets the default values.
+        /// Instantiates a new <see cref="global::GoAffPro.Client.Generated.Models.UserCommissionsStandard"/> and sets the default values.
         /// </summary>
-        public UserTransactionFeedResponse()
+        public UserCommissionsStandard()
         {
             AdditionalData = new Dictionary<string, object>();
         }
         /// <summary>
         /// Creates a new instance of the appropriate class based on discriminator value
         /// </summary>
-        /// <returns>A <see cref="global::GoAffPro.Client.Generated.Models.UserTransactionFeedResponse"/></returns>
+        /// <returns>A <see cref="global::GoAffPro.Client.Generated.Models.UserCommissionsStandard"/></returns>
         /// <param name="parseNode">The parse node to use to read the discriminator value and create the object</param>
-        public static global::GoAffPro.Client.Generated.Models.UserTransactionFeedResponse CreateFromDiscriminatorValue(IParseNode parseNode)
+        public static global::GoAffPro.Client.Generated.Models.UserCommissionsStandard CreateFromDiscriminatorValue(IParseNode parseNode)
         {
             if(ReferenceEquals(parseNode, null)) throw new ArgumentNullException(nameof(parseNode));
-            return new global::GoAffPro.Client.Generated.Models.UserTransactionFeedResponse();
+            return new global::GoAffPro.Client.Generated.Models.UserCommissionsStandard();
         }
         /// <summary>
         /// The deserialization information for the current model
@@ -60,10 +64,9 @@ namespace GoAffPro.Client.Generated.Models
         {
             return new Dictionary<string, Action<IParseNode>>
             {
-                { "count", n => { Count = n.GetIntValue(); } },
-                { "limit", n => { Limit = n.GetIntValue(); } },
-                { "offset", n => { Offset = n.GetObjectValue<global::GoAffPro.Client.Generated.Models.UserTransactionFeedResponse.UserTransactionFeedResponse_offset>(global::GoAffPro.Client.Generated.Models.UserTransactionFeedResponse.UserTransactionFeedResponse_offset.CreateFromDiscriminatorValue); } },
-                { "transactions", n => { Transactions = n.GetCollectionOfObjectValues<global::GoAffPro.Client.Generated.Models.UserTransactionItem>(global::GoAffPro.Client.Generated.Models.UserTransactionItem.CreateFromDiscriminatorValue)?.AsList(); } },
+                { "commission_on", n => { CommissionOn = n.GetStringValue(); } },
+                { "commission_type", n => { CommissionType = n.GetStringValue(); } },
+                { "commission_value", n => { CommissionValue = n.GetObjectValue<global::GoAffPro.Client.Generated.Models.UserCommissionsStandard.UserCommissionsStandard_commission_value>(global::GoAffPro.Client.Generated.Models.UserCommissionsStandard.UserCommissionsStandard_commission_value.CreateFromDiscriminatorValue); } },
             };
         }
         /// <summary>
@@ -73,20 +76,19 @@ namespace GoAffPro.Client.Generated.Models
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
-            writer.WriteIntValue("count", Count);
-            writer.WriteIntValue("limit", Limit);
-            writer.WriteObjectValue<global::GoAffPro.Client.Generated.Models.UserTransactionFeedResponse.UserTransactionFeedResponse_offset>("offset", Offset);
-            writer.WriteCollectionOfObjectValues<global::GoAffPro.Client.Generated.Models.UserTransactionItem>("transactions", Transactions);
+            writer.WriteStringValue("commission_on", CommissionOn);
+            writer.WriteStringValue("commission_type", CommissionType);
+            writer.WriteObjectValue<global::GoAffPro.Client.Generated.Models.UserCommissionsStandard.UserCommissionsStandard_commission_value>("commission_value", CommissionValue);
             writer.WriteAdditionalData(AdditionalData);
         }
         /// <summary>
-        /// Composed type wrapper for classes <see cref="int"/>, <see cref="string"/>
+        /// Composed type wrapper for classes <see cref="double"/>, <see cref="string"/>
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
-        public partial class UserTransactionFeedResponse_offset : IComposedTypeWrapper, IParsable
+        public partial class UserCommissionsStandard_commission_value : IComposedTypeWrapper, IParsable
         {
-            /// <summary>Composed type representation for type <see cref="int"/></summary>
-            public int? Integer { get; set; }
+            /// <summary>Composed type representation for type <see cref="double"/></summary>
+            public double? Double { get; set; }
             /// <summary>Composed type representation for type <see cref="string"/></summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -98,16 +100,16 @@ namespace GoAffPro.Client.Generated.Models
             /// <summary>
             /// Creates a new instance of the appropriate class based on discriminator value
             /// </summary>
-            /// <returns>A <see cref="global::GoAffPro.Client.Generated.Models.UserTransactionFeedResponse.UserTransactionFeedResponse_offset"/></returns>
+            /// <returns>A <see cref="global::GoAffPro.Client.Generated.Models.UserCommissionsStandard.UserCommissionsStandard_commission_value"/></returns>
             /// <param name="parseNode">The parse node to use to read the discriminator value and create the object</param>
-            public static global::GoAffPro.Client.Generated.Models.UserTransactionFeedResponse.UserTransactionFeedResponse_offset CreateFromDiscriminatorValue(IParseNode parseNode)
+            public static global::GoAffPro.Client.Generated.Models.UserCommissionsStandard.UserCommissionsStandard_commission_value CreateFromDiscriminatorValue(IParseNode parseNode)
             {
                 if(ReferenceEquals(parseNode, null)) throw new ArgumentNullException(nameof(parseNode));
                 var mappingValue = parseNode.GetChildNode("")?.GetStringValue();
-                var result = new global::GoAffPro.Client.Generated.Models.UserTransactionFeedResponse.UserTransactionFeedResponse_offset();
-                if(parseNode.GetIntValue() is int integerValue)
+                var result = new global::GoAffPro.Client.Generated.Models.UserCommissionsStandard.UserCommissionsStandard_commission_value();
+                if(parseNode.GetDoubleValue() is double doubleValue)
                 {
-                    result.Integer = integerValue;
+                    result.Double = doubleValue;
                 }
                 else if(parseNode.GetStringValue() is string stringValue)
                 {
@@ -130,9 +132,9 @@ namespace GoAffPro.Client.Generated.Models
             public virtual void Serialize(ISerializationWriter writer)
             {
                 if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
-                if(Integer != null)
+                if(Double != null)
                 {
-                    writer.WriteIntValue(null, Integer);
+                    writer.WriteDoubleValue(null, Double);
                 }
                 else if(String != null)
                 {

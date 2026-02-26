@@ -7,18 +7,19 @@ using System.IO;
 using System;
 namespace GoAffPro.Client.Generated.Models
 {
+    /// <summary>
+    /// Standard pagination envelope with integer offset.
+    /// </summary>
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
-    #pragma warning disable CS1591
     public partial class CountLimitOffsetEnvelope : IAdditionalDataHolder, IParsable
-    #pragma warning restore CS1591
     {
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
-        /// <summary>The count property</summary>
+        /// <summary>Total number of matching records.</summary>
         public int? Count { get; set; }
-        /// <summary>The limit property</summary>
+        /// <summary>Number of records returned per page.</summary>
         public int? Limit { get; set; }
-        /// <summary>The offset property</summary>
+        /// <summary>Number of records skipped.</summary>
         public int? Offset { get; set; }
         /// <summary>
         /// Instantiates a new <see cref="global::GoAffPro.Client.Generated.Models.CountLimitOffsetEnvelope"/> and sets the default values.

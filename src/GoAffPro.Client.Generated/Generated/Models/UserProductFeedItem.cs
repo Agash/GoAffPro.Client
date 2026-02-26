@@ -7,14 +7,15 @@ using System.IO;
 using System;
 namespace GoAffPro.Client.Generated.Models
 {
+    /// <summary>
+    /// A product available for the affiliate to promote. Shape may vary by store.
+    /// </summary>
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
-    #pragma warning disable CS1591
     public partial class UserProductFeedItem : IAdditionalDataHolder, IParsable
-    #pragma warning restore CS1591
     {
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
-        /// <summary>The category property</summary>
+        /// <summary>Product category.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? Category { get; set; }
@@ -22,7 +23,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string Category { get; set; }
 #endif
-        /// <summary>The currency property</summary>
+        /// <summary>ISO-4217 currency code for price fields.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? Currency { get; set; }
@@ -30,7 +31,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string Currency { get; set; }
 #endif
-        /// <summary>The description property</summary>
+        /// <summary>Product description (may contain HTML).</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? Description { get; set; }
@@ -38,7 +39,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string Description { get; set; }
 #endif
-        /// <summary>The id property</summary>
+        /// <summary>GoAffPro product feed item identifier.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public global::GoAffPro.Client.Generated.Models.UserProductFeedItem.UserProductFeedItem_id? Id { get; set; }
@@ -46,7 +47,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public global::GoAffPro.Client.Generated.Models.UserProductFeedItem.UserProductFeedItem_id Id { get; set; }
 #endif
-        /// <summary>The image_url property</summary>
+        /// <summary>URL of the product&apos;s primary image.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? ImageUrl { get; set; }
@@ -54,7 +55,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string ImageUrl { get; set; }
 #endif
-        /// <summary>The name property</summary>
+        /// <summary>Product display name.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? Name { get; set; }
@@ -62,7 +63,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string Name { get; set; }
 #endif
-        /// <summary>The price property</summary>
+        /// <summary>Product price.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public global::GoAffPro.Client.Generated.Models.UserProductFeedItem.UserProductFeedItem_price? Price { get; set; }
@@ -70,7 +71,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public global::GoAffPro.Client.Generated.Models.UserProductFeedItem.UserProductFeedItem_price Price { get; set; }
 #endif
-        /// <summary>The product_id property</summary>
+        /// <summary>Store-native product identifier.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public global::GoAffPro.Client.Generated.Models.UserProductFeedItem.UserProductFeedItem_product_id? ProductId { get; set; }
@@ -78,7 +79,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public global::GoAffPro.Client.Generated.Models.UserProductFeedItem.UserProductFeedItem_product_id ProductId { get; set; }
 #endif
-        /// <summary>The product_url property</summary>
+        /// <summary>URL of the product&apos;s page on the store.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? ProductUrl { get; set; }
@@ -86,7 +87,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string ProductUrl { get; set; }
 #endif
-        /// <summary>The sale_price property</summary>
+        /// <summary>Sale/discounted price when applicable.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public global::GoAffPro.Client.Generated.Models.UserProductFeedItem.UserProductFeedItem_sale_price? SalePrice { get; set; }
@@ -94,7 +95,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public global::GoAffPro.Client.Generated.Models.UserProductFeedItem.UserProductFeedItem_sale_price SalePrice { get; set; }
 #endif
-        /// <summary>The sku property</summary>
+        /// <summary>Product SKU.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? Sku { get; set; }

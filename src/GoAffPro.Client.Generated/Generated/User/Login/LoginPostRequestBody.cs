@@ -14,7 +14,7 @@ namespace GoAffPro.Client.Generated.User.Login
     {
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
-        /// <summary>The email property</summary>
+        /// <summary>Affiliate account email address.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? Email { get; set; }
@@ -22,7 +22,7 @@ namespace GoAffPro.Client.Generated.User.Login
 #else
         public string Email { get; set; }
 #endif
-        /// <summary>The password property</summary>
+        /// <summary>Affiliate account password.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? Password { get; set; }

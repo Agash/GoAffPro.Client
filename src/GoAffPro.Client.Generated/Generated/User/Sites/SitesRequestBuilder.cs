@@ -34,7 +34,7 @@ namespace GoAffPro.Client.Generated.User.Sites
         {
         }
         /// <summary>
-        /// List of stores the user is enrolled in
+        /// Returns stores the logged-in affiliate belongs to. Filter by `status=approved` to get only active programs. The `fields` parameter is required and controls which fields are returned.**Real-data notes (2026-02):** - Only the newest/primary ref code per store is returned; historical or  secondary codes are not included.- `coupon.discount_value` may be an empty string even when a coupon exists. - `id` is an integer in real responses despite being typed as string in  some older docs.
         /// </summary>
         /// <returns>A <see cref="global::GoAffPro.Client.Generated.Models.UserSiteListResponse"/></returns>
         /// <param name="cancellationToken">Cancellation token to use when cancelling requests</param>
@@ -61,7 +61,7 @@ namespace GoAffPro.Client.Generated.User.Sites
             return await RequestAdapter.SendAsync<global::GoAffPro.Client.Generated.Models.UserSiteListResponse>(requestInfo, global::GoAffPro.Client.Generated.Models.UserSiteListResponse.CreateFromDiscriminatorValue, errorMapping, cancellationToken).ConfigureAwait(false);
         }
         /// <summary>
-        /// List of stores the user is enrolled in
+        /// Returns stores the logged-in affiliate belongs to. Filter by `status=approved` to get only active programs. The `fields` parameter is required and controls which fields are returned.**Real-data notes (2026-02):** - Only the newest/primary ref code per store is returned; historical or  secondary codes are not included.- `coupon.discount_value` may be an empty string even when a coupon exists. - `id` is an integer in real responses despite being typed as string in  some older docs.
         /// </summary>
         /// <returns>A <see cref="RequestInformation"/></returns>
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
@@ -89,11 +89,12 @@ namespace GoAffPro.Client.Generated.User.Sites
             return new global::GoAffPro.Client.Generated.User.Sites.SitesRequestBuilder(rawUrl, RequestAdapter);
         }
         /// <summary>
-        /// List of stores the user is enrolled in
+        /// Returns stores the logged-in affiliate belongs to. Filter by `status=approved` to get only active programs. The `fields` parameter is required and controls which fields are returned.**Real-data notes (2026-02):** - Only the newest/primary ref code per store is returned; historical or  secondary codes are not included.- `coupon.discount_value` may be an empty string even when a coupon exists. - `id` is an integer in real responses despite being typed as string in  some older docs.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
         public partial class SitesRequestBuilderGetQueryParameters 
         {
+            /// <summary>Comma-separated list of fields to include. All known field names are enumerated here; pass as a comma-separated string or repeated params.</summary>
             [Obsolete("This property is deprecated, use FieldsAsGetFieldsQueryParameterType instead")]
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -104,6 +105,7 @@ namespace GoAffPro.Client.Generated.User.Sites
             [QueryParameter("fields")]
             public string[] Fields { get; set; }
 #endif
+            /// <summary>Comma-separated list of fields to include. All known field names are enumerated here; pass as a comma-separated string or repeated params.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
             [QueryParameter("fields")]
@@ -113,10 +115,13 @@ namespace GoAffPro.Client.Generated.User.Sites
             [QueryParameter("fields")]
             public global::GoAffPro.Client.Generated.User.Sites.GetFieldsQueryParameterType[] FieldsAsGetFieldsQueryParameterType { get; set; }
 #endif
+            /// <summary>Maximum number of items to return per page.</summary>
             [QueryParameter("limit")]
             public int? Limit { get; set; }
+            /// <summary>Number of items to skip (zero-based).</summary>
             [QueryParameter("offset")]
             public int? Offset { get; set; }
+            /// <summary>Filter sites by affiliate membership status.</summary>
             [Obsolete("This property is deprecated, use StatusAsGetStatusQueryParameterType instead")]
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -127,6 +132,7 @@ namespace GoAffPro.Client.Generated.User.Sites
             [QueryParameter("status")]
             public string Status { get; set; }
 #endif
+            /// <summary>Filter sites by affiliate membership status.</summary>
             [QueryParameter("status")]
             public global::GoAffPro.Client.Generated.User.Sites.GetStatusQueryParameterType? StatusAsGetStatusQueryParameterType { get; set; }
         }

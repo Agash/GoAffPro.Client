@@ -34,7 +34,7 @@ namespace GoAffPro.Client.Generated.User.Feed.Payouts
         {
         }
         /// <summary>
-        /// Feed of user payouts
+        /// Returns completed and pending payout records for the authenticated affiliate. Filtered by date range using `start_time` / `end_time`.
         /// </summary>
         /// <returns>A <see cref="global::GoAffPro.Client.Generated.Models.UserPayoutFeedResponse"/></returns>
         /// <param name="cancellationToken">Cancellation token to use when cancelling requests</param>
@@ -61,7 +61,7 @@ namespace GoAffPro.Client.Generated.User.Feed.Payouts
             return await RequestAdapter.SendAsync<global::GoAffPro.Client.Generated.Models.UserPayoutFeedResponse>(requestInfo, global::GoAffPro.Client.Generated.Models.UserPayoutFeedResponse.CreateFromDiscriminatorValue, errorMapping, cancellationToken).ConfigureAwait(false);
         }
         /// <summary>
-        /// Feed of user payouts
+        /// Returns completed and pending payout records for the authenticated affiliate. Filtered by date range using `start_time` / `end_time`.
         /// </summary>
         /// <returns>A <see cref="RequestInformation"/></returns>
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
@@ -89,26 +89,24 @@ namespace GoAffPro.Client.Generated.User.Feed.Payouts
             return new global::GoAffPro.Client.Generated.User.Feed.Payouts.PayoutsRequestBuilder(rawUrl, RequestAdapter);
         }
         /// <summary>
-        /// Feed of user payouts
+        /// Returns completed and pending payout records for the authenticated affiliate. Filtered by date range using `start_time` / `end_time`.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
         public partial class PayoutsRequestBuilderGetQueryParameters 
         {
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
+            /// <summary>End of the time window for filtering. ISO-8601 UTC timestamp, e.g. `2026-02-28T23:59:59.000Z`. Exact filtering behaviour has not been fully verified against the API.</summary>
             [QueryParameter("end_time")]
-            public string? EndTime { get; set; }
-#nullable restore
-#else
-            [QueryParameter("end_time")]
-            public string EndTime { get; set; }
-#endif
+            public DateTimeOffset? EndTime { get; set; }
+            /// <summary>Maximum number of items to return per page.</summary>
             [QueryParameter("limit")]
             public int? Limit { get; set; }
+            /// <summary>Number of items to skip (zero-based).</summary>
             [QueryParameter("offset")]
             public int? Offset { get; set; }
+            /// <summary>Return only items with an ID greater than this value (integer form).</summary>
             [QueryParameter("since_id")]
             public int? SinceId { get; set; }
+            /// <summary>Comma-separated list of site IDs to filter results to specific enrolled stores. When omitted, results span all enrolled stores.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
             [QueryParameter("site_ids")]
@@ -118,15 +116,9 @@ namespace GoAffPro.Client.Generated.User.Feed.Payouts
             [QueryParameter("site_ids")]
             public string SiteIds { get; set; }
 #endif
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
+            /// <summary>Start of the time window for filtering. ISO-8601 UTC timestamp, e.g. `2026-02-01T00:00:00.000Z`. Exact filtering behaviour has not been fully verified against the API.</summary>
             [QueryParameter("start_time")]
-            public string? StartTime { get; set; }
-#nullable restore
-#else
-            [QueryParameter("start_time")]
-            public string StartTime { get; set; }
-#endif
+            public DateTimeOffset? StartTime { get; set; }
         }
         /// <summary>
         /// Configuration for the request such as headers, query parameters, and middleware options.

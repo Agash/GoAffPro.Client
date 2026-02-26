@@ -34,7 +34,7 @@ namespace GoAffPro.Client.Generated.User.Feed.Products
         {
         }
         /// <summary>
-        /// Feed of products available for promotion
+        /// Returns a product catalog available for the affiliate to promote.**Warning:** This endpoint has been observed to hang or timeout on valid authenticated requests (observed 2026-02-25). Use a per-request timeout shorter than the client default when calling this endpoint.
         /// </summary>
         /// <returns>A <see cref="global::GoAffPro.Client.Generated.Models.UserProductFeedResponse"/></returns>
         /// <param name="cancellationToken">Cancellation token to use when cancelling requests</param>
@@ -63,7 +63,7 @@ namespace GoAffPro.Client.Generated.User.Feed.Products
             return await RequestAdapter.SendAsync<global::GoAffPro.Client.Generated.Models.UserProductFeedResponse>(requestInfo, global::GoAffPro.Client.Generated.Models.UserProductFeedResponse.CreateFromDiscriminatorValue, errorMapping, cancellationToken).ConfigureAwait(false);
         }
         /// <summary>
-        /// Feed of products available for promotion
+        /// Returns a product catalog available for the affiliate to promote.**Warning:** This endpoint has been observed to hang or timeout on valid authenticated requests (observed 2026-02-25). Use a per-request timeout shorter than the client default when calling this endpoint.
         /// </summary>
         /// <returns>A <see cref="RequestInformation"/></returns>
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
@@ -91,13 +91,15 @@ namespace GoAffPro.Client.Generated.User.Feed.Products
             return new global::GoAffPro.Client.Generated.User.Feed.Products.ProductsRequestBuilder(rawUrl, RequestAdapter);
         }
         /// <summary>
-        /// Feed of products available for promotion
+        /// Returns a product catalog available for the affiliate to promote.**Warning:** This endpoint has been observed to hang or timeout on valid authenticated requests (observed 2026-02-25). Use a per-request timeout shorter than the client default when calling this endpoint.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
         public partial class ProductsRequestBuilderGetQueryParameters 
         {
+            /// <summary>Maximum number of items to return per page.</summary>
             [QueryParameter("limit")]
             public int? Limit { get; set; }
+            /// <summary>Number of items to skip (zero-based).</summary>
             [QueryParameter("offset")]
             public int? Offset { get; set; }
         }

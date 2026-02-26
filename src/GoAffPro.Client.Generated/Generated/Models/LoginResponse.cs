@@ -7,12 +7,13 @@ using System.IO;
 using System;
 namespace GoAffPro.Client.Generated.Models
 {
+    /// <summary>
+    /// Response from a successful login request.
+    /// </summary>
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
-    #pragma warning disable CS1591
     public partial class LoginResponse : IAdditionalDataHolder, IParsable
-    #pragma warning restore CS1591
     {
-        /// <summary>The access_token property</summary>
+        /// <summary>Bearer token to use in `Authorization` headers for subsequent requests.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? AccessToken { get; set; }

@@ -52,5 +52,13 @@ namespace GoAffPro.Client.Generated.User.Feed.Orders
         #pragma warning disable CS1591
         Conversion_details,
         #pragma warning restore CS1591
+        [EnumMember(Value = "website")]
+        #pragma warning disable CS1591
+        Website,
+        #pragma warning restore CS1591
+        [EnumMember(Value = "store_name")]
+        #pragma warning disable CS1591
+        Store_name,
+        #pragma warning restore CS1591
     }
 }

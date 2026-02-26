@@ -7,14 +7,15 @@ using System.IO;
 using System;
 namespace GoAffPro.Client.Generated.Models
 {
+    /// <summary>
+    /// A reward record. Schema is speculative — this endpoint is not currently functional (returns 404 in observed testing).
+    /// </summary>
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
-    #pragma warning disable CS1591
     public partial class UserRewardFeedItem : IAdditionalDataHolder, IParsable
-    #pragma warning restore CS1591
     {
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
-        /// <summary>The affiliate_id property</summary>
+        /// <summary>ID of the affiliate who earned the reward.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? AffiliateId { get; set; }
@@ -22,9 +23,9 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string AffiliateId { get; set; }
 #endif
-        /// <summary>The amount property</summary>
+        /// <summary>Reward monetary value.</summary>
         public double? Amount { get; set; }
-        /// <summary>The created property</summary>
+        /// <summary>Creation timestamp.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? Created { get; set; }
@@ -32,7 +33,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string Created { get; set; }
 #endif
-        /// <summary>The id property</summary>
+        /// <summary>Reward identifier.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? Id { get; set; }
@@ -40,9 +41,9 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string Id { get; set; }
 #endif
-        /// <summary>The level property</summary>
+        /// <summary>MLM/tier level for the reward, when applicable.</summary>
         public int? Level { get; set; }
-        /// <summary>The metadata property</summary>
+        /// <summary>Additional reward metadata. Shape unknown.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? Metadata { get; set; }
@@ -50,7 +51,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string Metadata { get; set; }
 #endif
-        /// <summary>The order_id property</summary>
+        /// <summary>Order ID that triggered this reward, when applicable.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? OrderId { get; set; }
@@ -58,7 +59,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string OrderId { get; set; }
 #endif
-        /// <summary>The status property</summary>
+        /// <summary>Reward status.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? Status { get; set; }
@@ -66,7 +67,7 @@ namespace GoAffPro.Client.Generated.Models
 #else
         public string Status { get; set; }
 #endif
-        /// <summary>The type property</summary>
+        /// <summary>Reward type. Exact values unknown.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public string? Type { get; set; }

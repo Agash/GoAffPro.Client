@@ -8,7 +8,7 @@ public sealed class GoAffProClientIntegrationTests
 {
     [Fact]
     [Trait("Category", "Integration")]
-    public async Task CoreEndpoints_WhenAuthIsConfigured_ReturnWithoutThrowing()
+    public async Task CoreEndpoints_WhenAuthIsConfigured_ReturnWithoutThrowingAsync()
     {
         var settings = IntegrationTestSettings.Load();
         string? token = await ResolveTokenAsync(settings);

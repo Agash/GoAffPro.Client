@@ -7,12 +7,13 @@ using System.IO;
 using System;
 namespace GoAffPro.Client.Generated.Models
 {
+    /// <summary>
+    /// Paginated feed response containing promotable products.
+    /// </summary>
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
-    #pragma warning disable CS1591
     public partial class UserProductFeedResponse : global::GoAffPro.Client.Generated.Models.CountLimitOffsetEnvelopeFlexibleOffset, IParsable
-    #pragma warning restore CS1591
     {
-        /// <summary>The products property</summary>
+        /// <summary>Array of product records available for promotion.</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
         public List<global::GoAffPro.Client.Generated.Models.UserProductFeedItem>? Products { get; set; }

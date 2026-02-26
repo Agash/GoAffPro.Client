@@ -1,2 +1,9 @@
-Warning: KiotaBuilder Discriminator UserTrafficFeedResponse is not inherited from CountLimitOffsetEnvelope.
-Warning: KiotaBuilder Discriminator UserPayoutFeedResponse is not inherited from CountLimitOffsetEnvelope.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/UserSite/properties/logo - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/UserSite/properties/website - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/UserSite/properties/affiliate_portal - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/UserSite/properties/referral_link - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/UserProductFeedItem/properties/image_url - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/UserProductFeedItem/properties/product_url - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/PublicStore/properties/website - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/PublicStore/properties/logo - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/PublicStore/properties/affiliatePortal - The format uri is not supported by Kiota and the string type will be used.

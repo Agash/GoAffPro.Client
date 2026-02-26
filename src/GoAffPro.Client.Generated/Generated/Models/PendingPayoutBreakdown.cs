@@ -7,20 +7,21 @@ using System.IO;
 using System;
 namespace GoAffPro.Client.Generated.Models
 {
+    /// <summary>
+    /// Detailed breakdown of pending payout by earnings category.
+    /// </summary>
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
-    #pragma warning disable CS1591
     public partial class PendingPayoutBreakdown : IAdditionalDataHolder, IParsable
-    #pragma warning restore CS1591
     {
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
-        /// <summary>The amount_pending property</summary>
+        /// <summary>Net amount pending payout.</summary>
         public double? AmountPending { get; set; }
-        /// <summary>The other_earnings property</summary>
+        /// <summary>Earnings from non-sale sources (bonuses, rewards, etc.).</summary>
         public double? OtherEarnings { get; set; }
-        /// <summary>The paid_earnings property</summary>
+        /// <summary>Portion of earnings already paid out.</summary>
         public double? PaidEarnings { get; set; }
-        /// <summary>The sale_earnings property</summary>
+        /// <summary>Earnings from sales commissions.</summary>
         public double? SaleEarnings { get; set; }
         /// <summary>
         /// Instantiates a new <see cref="global::GoAffPro.Client.Generated.Models.PendingPayoutBreakdown"/> and sets the default values.

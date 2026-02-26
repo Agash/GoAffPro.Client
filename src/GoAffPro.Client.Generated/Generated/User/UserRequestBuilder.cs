@@ -70,7 +70,7 @@ namespace GoAffPro.Client.Generated.User
         {
         }
         /// <summary>
-        /// Get information about logged in user profile
+        /// Returns a free-form user profile object. The exact shape varies by account configuration. Use `AdditionalData` to access any fields not captured in the typed schema.
         /// </summary>
         /// <returns>A <see cref="global::GoAffPro.Client.Generated.Models.UserProfileEnvelope"/></returns>
         /// <param name="cancellationToken">Cancellation token to use when cancelling requests</param>
@@ -97,7 +97,7 @@ namespace GoAffPro.Client.Generated.User
             return await RequestAdapter.SendAsync<global::GoAffPro.Client.Generated.Models.UserProfileEnvelope>(requestInfo, global::GoAffPro.Client.Generated.Models.UserProfileEnvelope.CreateFromDiscriminatorValue, errorMapping, cancellationToken).ConfigureAwait(false);
         }
         /// <summary>
-        /// Update your profile
+        /// Allows partial updates to the affiliate&apos;s profile. The exact accepted fields are undocumented upstream; shape has not been confirmed from real-world testing.
         /// </summary>
         /// <returns>A <see cref="global::GoAffPro.Client.Generated.Models.UserProfileUpdateResponse"/></returns>
         /// <param name="cancellationToken">Cancellation token to use when cancelling requests</param>
@@ -124,7 +124,7 @@ namespace GoAffPro.Client.Generated.User
             return await RequestAdapter.SendAsync<global::GoAffPro.Client.Generated.Models.UserProfileUpdateResponse>(requestInfo, global::GoAffPro.Client.Generated.Models.UserProfileUpdateResponse.CreateFromDiscriminatorValue, errorMapping, cancellationToken).ConfigureAwait(false);
         }
         /// <summary>
-        /// Get information about logged in user profile
+        /// Returns a free-form user profile object. The exact shape varies by account configuration. Use `AdditionalData` to access any fields not captured in the typed schema.
         /// </summary>
         /// <returns>A <see cref="RequestInformation"/></returns>
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
@@ -143,7 +143,7 @@ namespace GoAffPro.Client.Generated.User
             return requestInfo;
         }
         /// <summary>
-        /// Update your profile
+        /// Allows partial updates to the affiliate&apos;s profile. The exact accepted fields are undocumented upstream; shape has not been confirmed from real-world testing.
         /// </summary>
         /// <returns>A <see cref="RequestInformation"/></returns>
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>

@@ -3,10 +3,9 @@ using System.Runtime.Serialization;
 using System;
 namespace GoAffPro.Client.Generated.Models
 {
+    /// <summary>The operation that created this transaction.</summary>
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
-    #pragma warning disable CS1591
     public enum UserTransactionItem_event_type
-    #pragma warning restore CS1591
     {
         [EnumMember(Value = "insert")]
         #pragma warning disable CS1591

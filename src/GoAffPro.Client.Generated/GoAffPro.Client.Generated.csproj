@@ -5,13 +5,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>true</IsPackable>
-
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageId>GoAffPro.Client.Generated</PackageId>
     <MinVerTagPrefix>v</MinVerTagPrefix>
     <Description>Kiota-generated .NET client for the GoAffPro API (internal dependency of GoAffPro.Client).</Description>
     <PackageProjectUrl>https://github.com/Agash/GoAffPro.Client</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Agash/GoAffPro.Client</RepositoryUrl>
-    <PackageTags>goaffpro;kiota;api;client;dotnet</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>goaffpro;affiliate;marketing;api;client;dotnet</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <RunKiotaOnBuild Condition="'$(RunKiotaOnBuild)' == ''">true</RunKiotaOnBuild>
     <GoAffProOpenApiSpecPath Condition="'$(GoAffProOpenApiSpecPath)' == ''">$(MSBuildProjectDirectory)\..\..\openapi\goaffpro-canonical.yaml</GoAffProOpenApiSpecPath>
@@ -44,5 +45,10 @@
           WorkingDirectory="$(GoAffProRepoRoot)"
           ConsoleToMSBuild="true" />
   </Target>
+
+
+  <ItemGroup>
+      <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 
 </Project>

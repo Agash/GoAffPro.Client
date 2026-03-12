@@ -14,8 +14,10 @@ info:
     ## Date Format
     All timestamp parameters (`start_time`, `end_time`, `created_at_min`,
     `created_at_max`) accept ISO-8601 strings with UTC offset, e.g.
-    `2026-02-24T11:57:26.000Z`. The `created_at` fields in responses also follow
-    this format.
+    `2026-02-24T11:57:26.000Z`. Preferred wire form for requests is
+    `yyyy-MM-ddTHH:mm:ss.000Z`, though equivalent RFC 3339 / OpenAPI `date-time`
+    values may also be accepted by the upstream API. The `created_at` fields in
+    responses also follow this format.
 
     ## Monetary strings
     Many monetary values are returned as decimal strings (e.g. `"1000.23"`) rather
@@ -213,7 +215,8 @@ paths:
         an empty result set (confirmed empirically on 2026-02).
 
         Date range filtering uses `created_at_min` / `created_at_max`, both accepting
-        ISO-8601 UTC timestamps (e.g. `2026-02-24T00:00:00.000Z`).
+        ISO-8601 UTC timestamps (e.g. `2026-02-24T00:00:00.000Z`). Preferred wire
+        form is `yyyy-MM-ddTHH:mm:ss.000Z`.
 
         The `fields` parameter is required.
 
@@ -585,8 +588,9 @@ components:
       name: start_time
       description: >
         Start of the time window for filtering. ISO-8601 UTC timestamp,
-        e.g. `2026-02-01T00:00:00.000Z`. Exact filtering behaviour has not been
-        fully verified against the API.
+        e.g. `2026-02-01T00:00:00.000Z`. Preferred wire form is
+        `yyyy-MM-ddTHH:mm:ss.000Z`. Exact filtering behaviour has not been fully
+        verified against the API.
       schema:
         type: string
         format: date-time
@@ -595,8 +599,9 @@ components:
       name: end_time
       description: >
         End of the time window for filtering. ISO-8601 UTC timestamp,
-        e.g. `2026-02-28T23:59:59.000Z`. Exact filtering behaviour has not been
-        fully verified against the API.
+        e.g. `2026-02-28T23:59:59.000Z`. Preferred wire form is
+        `yyyy-MM-ddTHH:mm:ss.000Z`. Exact filtering behaviour has not been fully
+        verified against the API.
       schema:
         type: string
         format: date-time
@@ -623,7 +628,8 @@ components:
       name: created_at_max
       description: >
         Upper bound for `created_at` filtering. ISO-8601 UTC timestamp,
-        e.g. `2026-02-28T23:59:59.000Z`.
+        e.g. `2026-02-28T23:59:59.000Z`. Preferred wire form is
+        `yyyy-MM-ddTHH:mm:ss.000Z`.
       schema:
         type: string
         format: date-time
@@ -632,7 +638,8 @@ components:
       name: created_at_min
       description: >
         Lower bound for `created_at` filtering. ISO-8601 UTC timestamp,
-        e.g. `2026-02-01T00:00:00.000Z`.
+        e.g. `2026-02-01T00:00:00.000Z`. Preferred wire form is
+        `yyyy-MM-ddTHH:mm:ss.000Z`.
       schema:
         type: string
         format: date-time

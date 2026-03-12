@@ -67,4 +67,37 @@ public sealed class GoAffProClientTests
         _ = observedRequest.Headers.Authorization!.Scheme.Should().Be("Bearer");
         _ = observedRequest.Headers.Authorization.Parameter.Should().Be("token-123");
     }
+
+    [Fact]
+    public async Task OrdersFeed_WhenDateFiltersAreProvided_UsesPreferredUtcWireFormat()
+    {
+        HttpRequestMessage? observedRequest = null;
+        var createdAtMin = new DateTimeOffset(2026, 1, 14, 23, 54, 3, TimeSpan.FromHours(1));
+        var createdAtMax = new DateTimeOffset(2026, 1, 15, 0, 4, 3, TimeSpan.FromHours(1));
+
+        using var handler = new TestHttpMessageHandler((request, _) =>
+        {
+            observedRequest = request;
+            return TestHttpMessageHandler.JsonResponse("""{"orders":[],"count":0,"limit":5,"offset":0}""");
+        });
+
+        using var httpClient = new HttpClient(handler);
+        using var client = new GoAffProClient(httpClient, new GoAffProClientOptions { BaseUrl = new Uri("https://example.test/v1/", UriKind.Absolute) });
+
+        _ = await client.Api.User.Feed.Orders.GetAsync(config =>
+        {
+            config.QueryParameters.CreatedAtMin = createdAtMin;
+            config.QueryParameters.CreatedAtMax = createdAtMax;
+            config.QueryParameters.FieldsAsGetFieldsQueryParameterType = [GoAffPro.Client.Generated.User.Feed.Orders.GetFieldsQueryParameterType.Id];
+            config.QueryParameters.Limit = 5;
+            config.QueryParameters.Offset = 0;
+        });
+
+        _ = observedRequest.Should().NotBeNull();
+        string requestUri = observedRequest!.RequestUri!.ToString();
+        _ = requestUri.Should().Contain("created_at_min=2026-01-14T22%3A54%3A03.000Z");
+        _ = requestUri.Should().Contain("created_at_max=2026-01-14T23%3A04%3A03.000Z");
+        _ = requestUri.Should().NotContain("%2B00%3A00");
+        _ = requestUri.Should().NotContain(".0000000");
+    }
 }

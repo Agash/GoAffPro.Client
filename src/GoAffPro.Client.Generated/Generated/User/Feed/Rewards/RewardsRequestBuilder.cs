@@ -96,7 +96,7 @@ namespace GoAffPro.Client.Generated.User.Feed.Rewards
         [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
         public partial class RewardsRequestBuilderGetQueryParameters 
         {
-            /// <summary>End of the time window for filtering. ISO-8601 UTC timestamp, e.g. `2026-02-28T23:59:59.000Z`. Exact filtering behaviour has not been fully verified against the API.</summary>
+            /// <summary>End of the time window for filtering. ISO-8601 UTC timestamp, e.g. `2026-02-28T23:59:59.000Z`. Preferred wire form is `yyyy-MM-ddTHH:mm:ss.000Z`. Exact filtering behaviour has not been fully verified against the API.</summary>
             [QueryParameter("end_time")]
             public DateTimeOffset? EndTime { get; set; }
             /// <summary>Maximum number of items to return per page.</summary>
@@ -118,7 +118,7 @@ namespace GoAffPro.Client.Generated.User.Feed.Rewards
             [QueryParameter("site_ids")]
             public string SiteIds { get; set; }
 #endif
-            /// <summary>Start of the time window for filtering. ISO-8601 UTC timestamp, e.g. `2026-02-01T00:00:00.000Z`. Exact filtering behaviour has not been fully verified against the API.</summary>
+            /// <summary>Start of the time window for filtering. ISO-8601 UTC timestamp, e.g. `2026-02-01T00:00:00.000Z`. Preferred wire form is `yyyy-MM-ddTHH:mm:ss.000Z`. Exact filtering behaviour has not been fully verified against the API.</summary>
             [QueryParameter("start_time")]
             public DateTimeOffset? StartTime { get; set; }
         }

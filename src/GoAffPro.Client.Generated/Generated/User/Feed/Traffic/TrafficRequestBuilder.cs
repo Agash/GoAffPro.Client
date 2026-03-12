@@ -94,7 +94,7 @@ namespace GoAffPro.Client.Generated.User.Feed.Traffic
         [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
         public partial class TrafficRequestBuilderGetQueryParameters 
         {
-            /// <summary>End of the time window for filtering. ISO-8601 UTC timestamp, e.g. `2026-02-28T23:59:59.000Z`. Exact filtering behaviour has not been fully verified against the API.</summary>
+            /// <summary>End of the time window for filtering. ISO-8601 UTC timestamp, e.g. `2026-02-28T23:59:59.000Z`. Preferred wire form is `yyyy-MM-ddTHH:mm:ss.000Z`. Exact filtering behaviour has not been fully verified against the API.</summary>
             [QueryParameter("end_time")]
             public DateTimeOffset? EndTime { get; set; }
             /// <summary>Maximum number of items to return per page. **Required** — omitting this parameter causes the endpoint to return an empty result set.</summary>
@@ -116,7 +116,7 @@ namespace GoAffPro.Client.Generated.User.Feed.Traffic
             [QueryParameter("site_ids")]
             public string SiteIds { get; set; }
 #endif
-            /// <summary>Start of the time window for filtering. ISO-8601 UTC timestamp, e.g. `2026-02-01T00:00:00.000Z`. Exact filtering behaviour has not been fully verified against the API.</summary>
+            /// <summary>Start of the time window for filtering. ISO-8601 UTC timestamp, e.g. `2026-02-01T00:00:00.000Z`. Preferred wire form is `yyyy-MM-ddTHH:mm:ss.000Z`. Exact filtering behaviour has not been fully verified against the API.</summary>
             [QueryParameter("start_time")]
             public DateTimeOffset? StartTime { get; set; }
         }

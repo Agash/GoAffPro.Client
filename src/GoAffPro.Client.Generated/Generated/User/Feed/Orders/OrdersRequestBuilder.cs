@@ -34,7 +34,7 @@ namespace GoAffPro.Client.Generated.User.Feed.Orders
         {
         }
         /// <summary>
-        /// Returns orders attributed to the authenticated affiliate across enrolled stores.**IMPORTANT:** `limit` and `offset` must be provided or the endpoint returns an empty result set (confirmed empirically on 2026-02).Date range filtering uses `created_at_min` / `created_at_max`, both accepting ISO-8601 UTC timestamps (e.g. `2026-02-24T00:00:00.000Z`).The `fields` parameter is required.**Note:** `website` and `store_name` appear in order objects regardless of the `fields` selection; they may always be returned.
+        /// Returns orders attributed to the authenticated affiliate across enrolled stores.**IMPORTANT:** `limit` and `offset` must be provided or the endpoint returns an empty result set (confirmed empirically on 2026-02).Date range filtering uses `created_at_min` / `created_at_max`, both accepting ISO-8601 UTC timestamps (e.g. `2026-02-24T00:00:00.000Z`). Preferred wire form is `yyyy-MM-ddTHH:mm:ss.000Z`.The `fields` parameter is required.**Note:** `website` and `store_name` appear in order objects regardless of the `fields` selection; they may always be returned.
         /// </summary>
         /// <returns>A <see cref="global::GoAffPro.Client.Generated.Models.UserOrderFeedResponse"/></returns>
         /// <param name="cancellationToken">Cancellation token to use when cancelling requests</param>
@@ -61,7 +61,7 @@ namespace GoAffPro.Client.Generated.User.Feed.Orders
             return await RequestAdapter.SendAsync<global::GoAffPro.Client.Generated.Models.UserOrderFeedResponse>(requestInfo, global::GoAffPro.Client.Generated.Models.UserOrderFeedResponse.CreateFromDiscriminatorValue, errorMapping, cancellationToken).ConfigureAwait(false);
         }
         /// <summary>
-        /// Returns orders attributed to the authenticated affiliate across enrolled stores.**IMPORTANT:** `limit` and `offset` must be provided or the endpoint returns an empty result set (confirmed empirically on 2026-02).Date range filtering uses `created_at_min` / `created_at_max`, both accepting ISO-8601 UTC timestamps (e.g. `2026-02-24T00:00:00.000Z`).The `fields` parameter is required.**Note:** `website` and `store_name` appear in order objects regardless of the `fields` selection; they may always be returned.
+        /// Returns orders attributed to the authenticated affiliate across enrolled stores.**IMPORTANT:** `limit` and `offset` must be provided or the endpoint returns an empty result set (confirmed empirically on 2026-02).Date range filtering uses `created_at_min` / `created_at_max`, both accepting ISO-8601 UTC timestamps (e.g. `2026-02-24T00:00:00.000Z`). Preferred wire form is `yyyy-MM-ddTHH:mm:ss.000Z`.The `fields` parameter is required.**Note:** `website` and `store_name` appear in order objects regardless of the `fields` selection; they may always be returned.
         /// </summary>
         /// <returns>A <see cref="RequestInformation"/></returns>
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
@@ -89,15 +89,15 @@ namespace GoAffPro.Client.Generated.User.Feed.Orders
             return new global::GoAffPro.Client.Generated.User.Feed.Orders.OrdersRequestBuilder(rawUrl, RequestAdapter);
         }
         /// <summary>
-        /// Returns orders attributed to the authenticated affiliate across enrolled stores.**IMPORTANT:** `limit` and `offset` must be provided or the endpoint returns an empty result set (confirmed empirically on 2026-02).Date range filtering uses `created_at_min` / `created_at_max`, both accepting ISO-8601 UTC timestamps (e.g. `2026-02-24T00:00:00.000Z`).The `fields` parameter is required.**Note:** `website` and `store_name` appear in order objects regardless of the `fields` selection; they may always be returned.
+        /// Returns orders attributed to the authenticated affiliate across enrolled stores.**IMPORTANT:** `limit` and `offset` must be provided or the endpoint returns an empty result set (confirmed empirically on 2026-02).Date range filtering uses `created_at_min` / `created_at_max`, both accepting ISO-8601 UTC timestamps (e.g. `2026-02-24T00:00:00.000Z`). Preferred wire form is `yyyy-MM-ddTHH:mm:ss.000Z`.The `fields` parameter is required.**Note:** `website` and `store_name` appear in order objects regardless of the `fields` selection; they may always be returned.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
         public partial class OrdersRequestBuilderGetQueryParameters 
         {
-            /// <summary>Upper bound for `created_at` filtering. ISO-8601 UTC timestamp, e.g. `2026-02-28T23:59:59.000Z`.</summary>
+            /// <summary>Upper bound for `created_at` filtering. ISO-8601 UTC timestamp, e.g. `2026-02-28T23:59:59.000Z`. Preferred wire form is `yyyy-MM-ddTHH:mm:ss.000Z`.</summary>
             [QueryParameter("created_at_max")]
             public DateTimeOffset? CreatedAtMax { get; set; }
-            /// <summary>Lower bound for `created_at` filtering. ISO-8601 UTC timestamp, e.g. `2026-02-01T00:00:00.000Z`.</summary>
+            /// <summary>Lower bound for `created_at` filtering. ISO-8601 UTC timestamp, e.g. `2026-02-01T00:00:00.000Z`. Preferred wire form is `yyyy-MM-ddTHH:mm:ss.000Z`.</summary>
             [QueryParameter("created_at_min")]
             public DateTimeOffset? CreatedAtMin { get; set; }
             /// <summary>Order fields to include in each result item.</summary>

@@ -1,10 +1,12 @@
 using System.Globalization;
 using System.Net;
 using System.Net.Http.Headers;
+using System.Diagnostics.CodeAnalysis;
 using GoAffPro.Client.Events;
 using GoAffPro.Client.Exceptions;
 using GoAffPro.Client.Generated.Models;
 using GoAffPro.Client.Generated.User.Sites;
+using GoAffPro.Client.Kiota;
 using GoAffPro.Client.Policies;
 using Microsoft.Extensions.Http;
 using Microsoft.Kiota.Abstractions;
@@ -120,10 +122,7 @@ public sealed class GoAffProClient : IGoAffProClient
                          ?? throw new InvalidOperationException("HttpClient.BaseAddress was not initialized.");
 
         IAuthenticationProvider authProvider = new AnonymousAuthenticationProvider();
-        _requestAdapter = new HttpClientRequestAdapter(authProvider, httpClient: _httpClient)
-        {
-            BaseUrl = baseUrl.TrimEnd('/'),
-        };
+        _requestAdapter = CreateRequestAdapter(authProvider, _httpClient, baseUrl);
 
         Api = new global::GoAffPro.Client.Generated.GoAffProApiClient(_requestAdapter);
 
@@ -512,6 +511,21 @@ public sealed class GoAffProClient : IGoAffProClient
         }
 
         return new Uri(normalized, UriKind.Absolute);
+    }
+
+    [SuppressMessage(
+        "Reliability",
+        "CA2000:Dispose objects before losing scope",
+        Justification = "Ownership of the inner adapter is transferred to StrictUtcDateQueryRequestAdapter, which disposes it.")]
+    private static StrictUtcDateQueryRequestAdapter CreateRequestAdapter(
+        IAuthenticationProvider authProvider,
+        HttpClient httpClient,
+        string baseUrl)
+    {
+        return new StrictUtcDateQueryRequestAdapter(new HttpClientRequestAdapter(authProvider, httpClient: httpClient)
+        {
+            BaseUrl = baseUrl.TrimEnd('/'),
+        });
     }
 
     private async Task<IReadOnlyList<UserOrderFeedItem>> PollOrdersAsync(

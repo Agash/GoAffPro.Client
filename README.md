@@ -137,6 +137,10 @@ Integration auth sources:
 - `GOAFFPRO_TEST_EMAIL` + `GOAFFPRO_TEST_PASSWORD`
 - `tests/GoAffPro.Client.IntegrationTests/appsettings.Test.local.json` (template: `appsettings.Test.local.example.json`)
 
+## Acknowledgements
+
+- [**WolfwithSword**](https://github.com/WolfwithSword) — real-world data and testing
+
 ## Known Upstream Instability
 
 Tracked in `openapi/goaffpro-canonical.yaml` comments:

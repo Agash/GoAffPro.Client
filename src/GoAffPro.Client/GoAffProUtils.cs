@@ -12,7 +12,7 @@ namespace GoAffPro.Client;
 /// </remarks>
 public static class GoAffProUtils
 {
-    private const string StrictUtcIsoTimestampQueryFormat = "yyyy-MM-dd'T'HH:mm:ss'.000Z'";
+    private const string _strictUtcIsoTimestampQueryFormat = "yyyy-MM-dd'T'HH:mm:ss'.000Z'";
 
     /// <summary>
     /// Parses a monetary decimal string returned by the GoAffPro API using
@@ -72,6 +72,6 @@ public static class GoAffProUtils
     /// <returns>A UTC timestamp string formatted as <c>yyyy-MM-ddTHH:mm:ss.000Z</c>.</returns>
     public static string FormatTimestampQuery(DateTimeOffset value)
     {
-        return value.ToUniversalTime().ToString(StrictUtcIsoTimestampQueryFormat, CultureInfo.InvariantCulture);
+        return value.ToUniversalTime().ToString(_strictUtcIsoTimestampQueryFormat, CultureInfo.InvariantCulture);
     }
 }

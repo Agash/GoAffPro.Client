@@ -505,7 +505,7 @@ public sealed class GoAffProClient : IGoAffProClient
     internal static Uri BuildBaseUri(Uri? baseUrl)
     {
         string normalized = baseUrl?.ToString() ?? "https://api.goaffpro.com/v1/";
-        if (!normalized.EndsWith('/'))
+        if (normalized.Length == 0 || normalized[^1] != '/')
         {
             normalized += "/";
         }

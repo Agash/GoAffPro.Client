@@ -7,9 +7,9 @@ namespace GoAffPro.Client.Kiota;
 /// <summary>
 /// Normalizes GoAffPro date-filter query parameters to the preferred UTC wire form.
 /// </summary>
-internal sealed class StrictUtcDateQueryRequestAdapter : IRequestAdapter, IDisposable, IAsyncDisposable
+internal sealed class StrictUtcDateQueryRequestAdapter(IRequestAdapter inner) : IRequestAdapter, IDisposable, IAsyncDisposable
 {
-    private static readonly HashSet<string> DateQueryParameterNames =
+    private static readonly HashSet<string> _dateQueryParameterNames =
     [
         "created_at_max",
         "created_at_min",
@@ -17,12 +17,7 @@ internal sealed class StrictUtcDateQueryRequestAdapter : IRequestAdapter, IDispo
         "start_time",
     ];
 
-    private readonly IRequestAdapter _inner;
-
-    public StrictUtcDateQueryRequestAdapter(IRequestAdapter inner)
-    {
-        _inner = inner ?? throw new ArgumentNullException(nameof(inner));
-    }
+    private readonly IRequestAdapter _inner = inner ?? throw new ArgumentNullException(nameof(inner));
 
     public string? BaseUrl
     {
@@ -109,7 +104,7 @@ internal sealed class StrictUtcDateQueryRequestAdapter : IRequestAdapter, IDispo
     {
         ArgumentNullException.ThrowIfNull(requestInfo);
 
-        foreach (string parameterName in DateQueryParameterNames)
+        foreach (string parameterName in _dateQueryParameterNames)
         {
             if (!requestInfo.QueryParameters.TryGetValue(parameterName, out object? rawValue))
             {

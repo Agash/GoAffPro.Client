@@ -186,7 +186,7 @@ static void SetBearerToken(GoAffProClient client)
 
 static async Task LoginAsync(GoAffProClient client)
 {
-    string email = AnsiConsole.Ask<string>("Email");
+    string email = await AnsiConsole.AskAsync<string>("Email").ConfigureAwait(false);
     string password = AnsiConsole.Prompt(new TextPrompt<string>("Password").Secret());
 
     string token = await client.LoginAsync(email, password).ConfigureAwait(false);

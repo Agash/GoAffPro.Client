@@ -63,8 +63,8 @@ public sealed class GoAffProClientTests
         _ = await client.Api.Public.Sites.GetAsync();
 
         _ = observedRequest.Should().NotBeNull();
-        _ = observedRequest!.Headers.Authorization.Should().NotBeNull();
-        _ = observedRequest.Headers.Authorization!.Scheme.Should().Be("Bearer");
+        _ = observedRequest.Headers.Authorization.Should().NotBeNull();
+        _ = observedRequest.Headers.Authorization.Scheme.Should().Be("Bearer");
         _ = observedRequest.Headers.Authorization.Parameter.Should().Be("token-123");
     }
 

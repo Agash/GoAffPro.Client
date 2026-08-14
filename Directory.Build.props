@@ -1,5 +1,11 @@
 ﻿<Project>
   <PropertyGroup>
+    <!-- Reproducibility is delegated to DotNet.ReproducibleBuilds rather than restated here.
+         It sets DebugType to embedded (so the portable PDB with its Source Link map travels
+         inside the assembly and no symbol package is needed), turns on
+         ContinuousIntegrationBuild for every CI provider it recognises, and publishes the
+         repository URL, branch and commit into the nuspec. Source Link itself ships in the
+         SDK. Deterministic is already the SDK default. -->
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -12,12 +18,9 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/Agash/GoAffPro.Client</RepositoryUrl>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IsPackable>false</IsPackable>
 
     <!-- Deterministic builds -->
-    <Deterministic>true</Deterministic>
-    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
   </PropertyGroup>
 
   <!-- Test projects get extra settings -->

@@ -25,12 +25,14 @@ public sealed class GeneratedClientContractTests
         string userPathSegment = $"{Path.DirectorySeparatorChar}Generated{Path.DirectorySeparatorChar}User{Path.DirectorySeparatorChar}";
         string publicPathSegment = $"{Path.DirectorySeparatorChar}Generated{Path.DirectorySeparatorChar}Public{Path.DirectorySeparatorChar}";
 
-        string[] userFiles = files
-            .Where(path => path.Contains(userPathSegment, StringComparison.OrdinalIgnoreCase))
-            .ToArray();
-        string[] publicFiles = files
-            .Where(path => path.Contains(publicPathSegment, StringComparison.OrdinalIgnoreCase))
-            .ToArray();
+        string[] userFiles =
+        [
+            .. files.Where(path => path.Contains(userPathSegment, StringComparison.OrdinalIgnoreCase)),
+        ];
+        string[] publicFiles =
+        [
+            .. files.Where(path => path.Contains(publicPathSegment, StringComparison.OrdinalIgnoreCase)),
+        ];
 
         var builder = new StringBuilder();
         AppendSignatureBlock(builder, "GoAffProUserClient", userFiles);
@@ -58,10 +60,12 @@ public sealed class GeneratedClientContractTests
             signatures.AddRange(matches.Select(static match => Regex.Replace(match.Value, @"\s+", " ").Trim()));
         }
 
-        return signatures
-            .Distinct(StringComparer.Ordinal)
-            .OrderBy(static signature => signature, StringComparer.Ordinal)
-            .ToArray();
+        return
+        [
+            .. signatures
+                .Distinct(StringComparer.Ordinal)
+                .OrderBy(static signature => signature, StringComparer.Ordinal),
+        ];
     }
 
     private static string FindRepositoryRoot()

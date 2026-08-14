@@ -8,7 +8,10 @@
     <IsTestProject>true</IsTestProject>
     <OutputType>Exe</OutputType>
     <EnableMSTestRunner>true</EnableMSTestRunner>
-    <NoWarn>$(NoWarn);CA1707;CA2007;CA1515;IDE0005;IDE1006;IDE0290;IDE0305</NoWarn>
+    <!-- IDE0005 cannot run without GenerateDocumentationFile, which tests do not produce;
+         Roslyn errors asking for it rather than staying silent. CA1707/IDE1006 cover test naming,
+         CA1515 fires only because OutputType=Exe, CA2007 is noise in test bodies. -->
+    <NoWarn>$(NoWarn);IDE0005;CA1707;CA2007;CA1515;IDE1006</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

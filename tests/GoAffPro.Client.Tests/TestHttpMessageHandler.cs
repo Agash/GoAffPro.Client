@@ -3,14 +3,9 @@ using System.Text;
 
 namespace GoAffPro.Client.Tests;
 
-internal sealed class TestHttpMessageHandler : HttpMessageHandler
+internal sealed class TestHttpMessageHandler(Func<HttpRequestMessage, CancellationToken, HttpResponseMessage> responseFactory) : HttpMessageHandler
 {
-    private readonly Func<HttpRequestMessage, CancellationToken, HttpResponseMessage> _responseFactory;
-
-    public TestHttpMessageHandler(Func<HttpRequestMessage, CancellationToken, HttpResponseMessage> responseFactory)
-    {
-        _responseFactory = responseFactory;
-    }
+    private readonly Func<HttpRequestMessage, CancellationToken, HttpResponseMessage> _responseFactory = responseFactory;
 
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {

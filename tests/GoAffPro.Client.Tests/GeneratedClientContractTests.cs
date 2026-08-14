@@ -1,12 +1,12 @@
 using System.Text;
 using System.Text.RegularExpressions;
-using FluentAssertions;
 
 namespace GoAffPro.Client.Tests;
 
+[TestClass]
 public sealed class GeneratedClientContractTests
 {
-    [Fact]
+    [TestMethod]
     public void GeneratedClientSignatures_WhenComparedToSnapshot_MatchCommittedSnapshot()
     {
         string repositoryRoot = FindRepositoryRoot();
@@ -16,7 +16,7 @@ public sealed class GeneratedClientContractTests
         string actualSnapshot = BuildSnapshot(generatedDirectory);
         string expectedSnapshot = File.ReadAllText(snapshotPath, Encoding.UTF8).Replace("\r\n", "\n", StringComparison.Ordinal);
 
-        _ = NormalizeSnapshot(actualSnapshot).Should().Be(NormalizeSnapshot(expectedSnapshot));
+        Assert.AreEqual(NormalizeSnapshot(expectedSnapshot), NormalizeSnapshot(actualSnapshot));
     }
 
     private static string BuildSnapshot(string generatedDirectory)

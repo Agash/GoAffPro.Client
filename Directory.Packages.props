@@ -21,11 +21,8 @@
     <PackageVersion Include="Microsoft.Kiota.Serialization.Text" Version="2.0.0" />
   </ItemGroup>
   <ItemGroup Label="Testing">
-    <PackageVersion Include="xunit" Version="2.9.3" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.8.1" />
-    <PackageVersion Include="FluentAssertions" Version="8.10.0" />
+    <PackageVersion Include="MSTest" Version="4.3.3" />
     <PackageVersion Include="NSubstitute" Version="6.2.0" />
-    <PackageVersion Include="coverlet.collector" Version="10.0.1" />
+    <PackageVersion Include="coverlet.MTP" Version="10.0.1" />
   </ItemGroup>
 </Project>

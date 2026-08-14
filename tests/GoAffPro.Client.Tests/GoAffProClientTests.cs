@@ -1,12 +1,12 @@
 using System.Net;
-using FluentAssertions;
 using GoAffPro.Client.Exceptions;
 
 namespace GoAffPro.Client.Tests;
 
+[TestClass]
 public sealed class GoAffProClientTests
 {
-    [Fact]
+    [TestMethod]
     public async Task LoginAsync_WhenCredentialsAreValid_ReturnsAndStoresAccessToken()
     {
         HttpRequestMessage? observedRequest = null;
@@ -23,16 +23,17 @@ public sealed class GoAffProClientTests
 
         string token = await client.LoginAsync("demo@example.test", "secret");
 
-        _ = token.Should().Be("abc123");
-        _ = client.BearerToken.Should().Be("abc123");
-        _ = observedRequest.Should().NotBeNull();
-        _ = observedRequest!.Method.Should().Be(HttpMethod.Post);
-        _ = observedRequest.RequestUri!.ToString().Should().Contain("user/login");
-        _ = observedBody.Should().Contain("email=demo%40example.test");
-        _ = observedBody.Should().Contain("password=secret");
+        Assert.AreEqual("abc123", token);
+        Assert.AreEqual("abc123", client.BearerToken);
+        Assert.IsNotNull(observedRequest);
+        Assert.AreEqual(HttpMethod.Post, observedRequest!.Method);
+        Assert.Contains("user/login", observedRequest.RequestUri!.ToString());
+        Assert.IsNotNull(observedBody);
+        Assert.Contains("email=demo%40example.test", observedBody);
+        Assert.Contains("password=secret", observedBody);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task LoginAsync_WhenApiReturnsError_ThrowsGoAffProApiException()
     {
         using var handler = new TestHttpMessageHandler((_, _) =>
@@ -41,12 +42,11 @@ public sealed class GoAffProClientTests
         using var httpClient = new HttpClient(handler);
         using var client = new GoAffProClient(httpClient, new GoAffProClientOptions { BaseUrl = new Uri("https://example.test/v1/", UriKind.Absolute) });
 
-        Func<Task> action = async () => await client.LoginAsync("demo", "wrong");
-
-        _ = await action.Should().ThrowAsync<GoAffProApiException>();
+        _ = await Assert.ThrowsAsync<GoAffProApiException>(
+            () => client.LoginAsync("demo", "wrong"));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task SetBearerToken_WhenCalled_SendsAuthorizationHeaderOnGeneratedRequests()
     {
         HttpRequestMessage? observedRequest = null;
@@ -62,13 +62,13 @@ public sealed class GoAffProClientTests
 
         _ = await client.Api.Public.Sites.GetAsync();
 
-        _ = observedRequest.Should().NotBeNull();
-        _ = observedRequest.Headers.Authorization.Should().NotBeNull();
-        _ = observedRequest.Headers.Authorization.Scheme.Should().Be("Bearer");
-        _ = observedRequest.Headers.Authorization.Parameter.Should().Be("token-123");
+        Assert.IsNotNull(observedRequest);
+        Assert.IsNotNull(observedRequest.Headers.Authorization);
+        Assert.AreEqual("Bearer", observedRequest.Headers.Authorization.Scheme);
+        Assert.AreEqual("token-123", observedRequest.Headers.Authorization.Parameter);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task OrdersFeed_WhenDateFiltersAreProvided_UsesPreferredUtcWireFormat()
     {
         HttpRequestMessage? observedRequest = null;
@@ -93,11 +93,11 @@ public sealed class GoAffProClientTests
             config.QueryParameters.Offset = 0;
         });
 
-        _ = observedRequest.Should().NotBeNull();
+        Assert.IsNotNull(observedRequest);
         string requestUri = observedRequest!.RequestUri!.ToString();
-        _ = requestUri.Should().Contain("created_at_min=2026-01-14T22%3A54%3A03.000Z");
-        _ = requestUri.Should().Contain("created_at_max=2026-01-14T23%3A04%3A03.000Z");
-        _ = requestUri.Should().NotContain("%2B00%3A00");
-        _ = requestUri.Should().NotContain(".0000000");
+        Assert.Contains("created_at_min=2026-01-14T22%3A54%3A03.000Z", requestUri);
+        Assert.Contains("created_at_max=2026-01-14T23%3A04%3A03.000Z", requestUri);
+        Assert.DoesNotContain("%2B00%3A00", requestUri);
+        Assert.DoesNotContain(".0000000", requestUri);
     }
 }

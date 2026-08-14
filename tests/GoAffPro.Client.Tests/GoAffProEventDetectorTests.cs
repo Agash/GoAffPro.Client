@@ -1,11 +1,11 @@
-using FluentAssertions;
 using GoAffPro.Client.Generated.Models;
 
 namespace GoAffPro.Client.Tests;
 
+[TestClass]
 public sealed class GoAffProEventDetectorTests
 {
-    [Fact]
+    [TestMethod]
     public async Task NewOrdersAsync_TracksLastPollTimeAsync()
     {
         int ordersCallCount = 0;
@@ -30,12 +30,12 @@ public sealed class GoAffProEventDetectorTests
         await Task.Delay(10);
         IReadOnlyList<UserOrderFeedItem> secondBatch = await TakeAsync(client.NewOrdersAsync(pollingInterval: TimeSpan.FromMilliseconds(5), pageSize: 100), expectedCount: 1);
 
-        _ = firstBatch.Count.Should().Be(1);
-        _ = firstBatch[0].Id?.String.Should().Be("o-1");
-        _ = secondBatch.Count.Should().Be(0);
+        Assert.HasCount(1, firstBatch);
+        Assert.AreEqual("o-1", firstBatch[0].Id?.String);
+        Assert.IsEmpty(secondBatch);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task NewAffiliatesAsync_TracksLastPollTimeAsync()
     {
         int trafficCallCount = 0;
@@ -58,11 +58,11 @@ public sealed class GoAffProEventDetectorTests
 
         IReadOnlyList<UserTrafficFeedItem> events = await TakeAsync(client.NewTrafficAsync(pollingInterval: TimeSpan.FromMilliseconds(5), pageSize: 100), expectedCount: 1);
 
-        _ = events.Count.Should().Be(1);
-        _ = events[0].AffiliateId?.String.Should().Be("a-1");
+        Assert.HasCount(1, events);
+        Assert.AreEqual("a-1", events[0].AffiliateId?.String);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task NewOrdersAsync_WithStartTime_UsesStartTimeForFirstPollAsync()
     {
         bool startTimeUsed = false;
@@ -85,10 +85,10 @@ public sealed class GoAffProEventDetectorTests
 
         _ = await TakeAsync(client.NewOrdersAsync(pollingInterval: TimeSpan.FromMilliseconds(5), pageSize: 100), expectedCount: 0);
 
-        _ = startTimeUsed.Should().BeTrue();
+        Assert.IsTrue(startTimeUsed);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task NewOrdersAsync_SendsRequiredFieldsQueryAsync()
     {
         string? query = null;
@@ -109,11 +109,11 @@ public sealed class GoAffProEventDetectorTests
 
         _ = await TakeAsync(client.NewOrdersAsync(pollingInterval: TimeSpan.FromMilliseconds(5), pageSize: 100), expectedCount: 0);
 
-        _ = query.Should().NotBeNull();
-        _ = query.Should().Contain("fields=id,number,total,subtotal,line_items,commission,created_at,currency,site_id,sub_id,conversion_details");
+        Assert.IsNotNull(query);
+        Assert.Contains("fields=id,number,total,subtotal,line_items,commission,created_at,currency,site_id,sub_id,conversion_details", query);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task NewPayoutsAsync_TracksLastPollTimeAsync()
     {
         int payoutsCallCount = 0;
@@ -138,12 +138,12 @@ public sealed class GoAffProEventDetectorTests
         await Task.Delay(10);
         IReadOnlyList<UserPayoutFeedItem> secondBatch = await TakeAsync(client.NewPayoutsAsync(pollingInterval: TimeSpan.FromMilliseconds(5), pageSize: 100), expectedCount: 1);
 
-        _ = firstBatch.Count.Should().Be(1);
-        _ = firstBatch[0].Id?.String.Should().Be("p-1");
-        _ = secondBatch.Count.Should().Be(0);
+        Assert.HasCount(1, firstBatch);
+        Assert.AreEqual("p-1", firstBatch[0].Id?.String);
+        Assert.IsEmpty(secondBatch);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task NewProductsAsync_DetectsIdsAboveInitialBaselineAsync()
     {
         int productsCallCount = 0;
@@ -168,11 +168,11 @@ public sealed class GoAffProEventDetectorTests
             client.NewProductsAsync(pollingInterval: TimeSpan.FromMilliseconds(5), pageSize: 100),
             expectedCount: 1);
 
-        _ = products.Count.Should().Be(1);
-        _ = products[0].Id?.Integer.Should().Be(3);
+        Assert.HasCount(1, products);
+        Assert.AreEqual(3, products[0].Id?.Integer);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task NewTransactionsAsync_DetectsIdsAboveInitialBaselineAsync()
     {
         int transactionsCallCount = 0;
@@ -197,11 +197,11 @@ public sealed class GoAffProEventDetectorTests
             client.NewTransactionsAsync(pollingInterval: TimeSpan.FromMilliseconds(5), pageSize: 100),
             expectedCount: 1);
 
-        _ = transactions.Count.Should().Be(1);
-        _ = transactions[0].TxId.Should().Be(11);
+        Assert.HasCount(1, transactions);
+        Assert.AreEqual(11, transactions[0].TxId);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task StartEventObserverAsync_WhenNewEventsAreDetected_RaisesEventHandlersAsync()
     {
         int ordersCallCount = 0;
@@ -309,9 +309,9 @@ public sealed class GoAffProEventDetectorTests
             // Expected when cancellation is observed during Task.Delay.
         }
 
-        _ = orderIds.Should().Contain("o-1");
-        _ = affiliateIds.Should().Contain("a-1");
-        _ = payoutIds.Should().Contain("p-1");
+        Assert.Contains("o-1", orderIds);
+        Assert.Contains("a-1", affiliateIds);
+        Assert.Contains("p-1", payoutIds);
     }
 
     private static async Task<IReadOnlyList<T>> TakeAsync<T>(IAsyncEnumerable<T> source, int expectedCount)

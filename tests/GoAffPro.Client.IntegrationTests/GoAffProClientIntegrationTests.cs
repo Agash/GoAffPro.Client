@@ -4,10 +4,11 @@ using AggregateField = GoAffPro.Client.Generated.User.Stats.Aggregate.GetFieldsQ
 
 namespace GoAffPro.Client.IntegrationTests;
 
+[TestClass]
 public sealed class GoAffProClientIntegrationTests
 {
-    [Fact]
-    [Trait("Category", "Integration")]
+    [TestMethod]
+    [TestCategory("Integration")]
     public async Task CoreEndpoints_WhenAuthIsConfigured_ReturnWithoutThrowingAsync()
     {
         var settings = IntegrationTestSettings.Load();

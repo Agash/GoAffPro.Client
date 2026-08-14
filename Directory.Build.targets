@@ -1,0 +1,11 @@
+<Project>
+
+  <!-- Evaluated after each project, so IsPackable is already set here; in Directory.Build.props
+       it is not, and the condition would never be true. -->
+  <ItemGroup Condition="'$(IsPackable)' == 'true'">
+    <!-- Source Link plus a deterministic, source-indexed build: the package page advertises
+         it, and a consumer can step into this code from their own debugger. -->
+    <PackageReference Include="DotNet.ReproducibleBuilds" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>

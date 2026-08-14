@@ -2,6 +2,10 @@
 
   <PropertyGroup>
     <TargetFrameworks>net9.0;net10.0;net11.0</TargetFrameworks>
+    <IsAotCompatible>true</IsAotCompatible>
+    <!-- Intercepts IConfiguration.Bind with generated code; the reflection binder is neither
+         trim-safe nor AOT-safe. -->
+    <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>true</IsPackable>

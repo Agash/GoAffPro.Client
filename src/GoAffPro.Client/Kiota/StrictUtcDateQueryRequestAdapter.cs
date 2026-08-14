@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Kiota.Abstractions;
 using Microsoft.Kiota.Abstractions.Serialization;
 using Microsoft.Kiota.Abstractions.Store;
@@ -52,7 +53,10 @@ internal sealed class StrictUtcDateQueryRequestAdapter(IRequestAdapter inner) : 
         return _inner.SendCollectionAsync(requestInfo, factory, errorMapping, cancellationToken);
     }
 
-    public Task<ModelType?> SendPrimitiveAsync<ModelType>(
+    // The primitive overloads keep the interface's PublicFields annotation so the trimmer keeps enum
+    // members reachable: Kiota parses enum primitives by field name. A pass-through wrapper has to
+    // restate it, because the analyzer compares annotations per declaration, not through the forward.
+    public Task<ModelType?> SendPrimitiveAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)] ModelType>(
         RequestInformation requestInfo,
         Dictionary<string, ParsableFactory<IParsable>>? errorMapping = null,
         CancellationToken cancellationToken = default)
@@ -61,7 +65,7 @@ internal sealed class StrictUtcDateQueryRequestAdapter(IRequestAdapter inner) : 
         return _inner.SendPrimitiveAsync<ModelType>(requestInfo, errorMapping, cancellationToken);
     }
 
-    public Task<IEnumerable<ModelType>?> SendPrimitiveCollectionAsync<ModelType>(
+    public Task<IEnumerable<ModelType>?> SendPrimitiveCollectionAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)] ModelType>(
         RequestInformation requestInfo,
         Dictionary<string, ParsableFactory<IParsable>>? errorMapping = null,
         CancellationToken cancellationToken = default)

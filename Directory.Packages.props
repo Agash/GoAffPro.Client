@@ -23,6 +23,6 @@
   <ItemGroup Label="Testing">
     <PackageVersion Include="MSTest" Version="4.3.3" />
     <PackageVersion Include="NSubstitute" Version="6.2.0" />
-    <PackageVersion Include="coverlet.MTP" Version="10.0.1" />
+    <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.10.0" />
   </ItemGroup>
 </Project>

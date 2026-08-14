@@ -51,8 +51,13 @@ jobs:
       run: dotnet build GoAffPro.Client.slnx --configuration Release --no-restore
 
     - name: Run unit tests
+      # Scoped to the unit-test project rather than the solution. Every test in
+      # GoAffPro.Client.IntegrationTests carries the Integration category, so running the solution
+      # under this filter leaves that module with nothing to run and it reports "Zero tests ran"
+      # with exit code 8 on each target framework. The overall run still passes, which is the
+      # problem: it trains us to read a real zero-tests regression as normal.
       run: >
-        dotnet test GoAffPro.Client.slnx
+        dotnet test tests/GoAffPro.Client.Tests/GoAffPro.Client.Tests.csproj
         --configuration Release
         --no-build
         --verbosity normal

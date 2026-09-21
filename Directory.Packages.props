@@ -22,7 +22,7 @@
     <PackageVersion Include="Microsoft.Kiota.Serialization.Text" Version="2.1.2" />
   </ItemGroup>
   <ItemGroup Label="Testing">
-    <PackageVersion Include="MSTest" Version="4.4.0" />
+    <PackageVersion Include="MSTest" Version="4.4.1" />
     <PackageVersion Include="NSubstitute" Version="6.2.0" />
     <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.11.2" />
   </ItemGroup>

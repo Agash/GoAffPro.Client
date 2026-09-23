@@ -18,49 +18,63 @@ public sealed class GoAffProClientIntegrationTests
             return;
         }
 
-        await using var client = new GoAffProClient(new GoAffProClientOptions
-        {
-            BaseUrl = settings.BaseUrl,
-            BearerToken = token,
-        });
+        await using var client = new GoAffProClient(
+            new GoAffProClientOptions { BaseUrl = settings.BaseUrl, BearerToken = token }
+        );
 
         _ = await client.Api.User.GetAsync(cancellationToken: CancellationToken.None);
-        _ = await client.Api.User.Sites.GetAsync(config =>
-        {
-            config.QueryParameters.Limit = 1;
-            config.QueryParameters.Offset = 0;
-            config.QueryParameters.StatusAsGetStatusQueryParameterType = GetStatusQueryParameterType.Approved;
-            config.QueryParameters.FieldsAsGetFieldsQueryParameterType =
-            [
-                GetFieldsQueryParameterType.Id,
-                GetFieldsQueryParameterType.Name,
-                GetFieldsQueryParameterType.Logo,
-            ];
-        }, CancellationToken.None);
-        _ = await client.Api.User.Stats.Aggregate.GetAsync(config =>
-        {
-            config.QueryParameters.FieldsAsGetFieldsQueryParameterType =
-            [
-                AggregateField.Total_sales,
-                AggregateField.Revenue_generated,
-            ];
-        }, CancellationToken.None);
-        _ = await client.Api.User.Feed.Orders.GetAsync(config =>
-        {
-            config.QueryParameters.Limit = 1;
-            config.QueryParameters.Offset = 0;
-        }, CancellationToken.None);
-        _ = await client.Api.User.Feed.Traffic.GetAsync(config =>
-        {
-            config.QueryParameters.Limit = 1;
-            config.QueryParameters.Offset = 0;
-        }, CancellationToken.None);
+        _ = await client.Api.User.Sites.GetAsync(
+            config =>
+            {
+                config.QueryParameters.Limit = 1;
+                config.QueryParameters.Offset = 0;
+                config.QueryParameters.StatusAsGetStatusQueryParameterType =
+                    GetStatusQueryParameterType.Approved;
+                config.QueryParameters.FieldsAsGetFieldsQueryParameterType =
+                [
+                    GetFieldsQueryParameterType.Id,
+                    GetFieldsQueryParameterType.Name,
+                    GetFieldsQueryParameterType.Logo,
+                ];
+            },
+            CancellationToken.None
+        );
+        _ = await client.Api.User.Stats.Aggregate.GetAsync(
+            config =>
+            {
+                config.QueryParameters.FieldsAsGetFieldsQueryParameterType =
+                [
+                    AggregateField.Total_sales,
+                    AggregateField.Revenue_generated,
+                ];
+            },
+            CancellationToken.None
+        );
+        _ = await client.Api.User.Feed.Orders.GetAsync(
+            config =>
+            {
+                config.QueryParameters.Limit = 1;
+                config.QueryParameters.Offset = 0;
+            },
+            CancellationToken.None
+        );
+        _ = await client.Api.User.Feed.Traffic.GetAsync(
+            config =>
+            {
+                config.QueryParameters.Limit = 1;
+                config.QueryParameters.Offset = 0;
+            },
+            CancellationToken.None
+        );
         _ = await client.Api.User.Commissions.GetAsync(cancellationToken: CancellationToken.None);
-        _ = await client.Api.Public.Sites.GetAsync(config =>
-        {
-            config.QueryParameters.Limit = 1;
-            config.QueryParameters.Offset = 0;
-        }, CancellationToken.None);
+        _ = await client.Api.Public.Sites.GetAsync(
+            config =>
+            {
+                config.QueryParameters.Limit = 1;
+                config.QueryParameters.Offset = 0;
+            },
+            CancellationToken.None
+        );
     }
 
     private static async Task<string?> ResolveTokenAsync(IntegrationTestSettings settings)
@@ -77,28 +91,30 @@ public sealed class GoAffProClientIntegrationTests
         }
 
         string? email = Environment.GetEnvironmentVariable("GOAFFPRO_TEST_EMAIL") ?? settings.Email;
-        string? password = Environment.GetEnvironmentVariable("GOAFFPRO_TEST_PASSWORD") ?? settings.Password;
+        string? password =
+            Environment.GetEnvironmentVariable("GOAFFPRO_TEST_PASSWORD") ?? settings.Password;
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
         {
             return null;
         }
 
-        await using var authClient = new GoAffProClient(new GoAffProClientOptions
-        {
-            BaseUrl = settings.BaseUrl,
-        });
+        await using var authClient = new GoAffProClient(
+            new GoAffProClientOptions { BaseUrl = settings.BaseUrl }
+        );
 
         return await authClient.LoginAsync(email, password, CancellationToken.None);
     }
 }
 
-internal sealed record IntegrationTestSettings(Uri BaseUrl, string? Token, string? Email, string? Password)
+internal sealed record IntegrationTestSettings(
+    Uri BaseUrl,
+    string? Token,
+    string? Email,
+    string? Password
+)
 {
-    public static IntegrationTestSettings Default { get; } = new(
-        new Uri("https://api.goaffpro.com/v1/", UriKind.Absolute),
-        null,
-        null,
-        null);
+    public static IntegrationTestSettings Default { get; } =
+        new(new Uri("https://api.goaffpro.com/v1/", UriKind.Absolute), null, null, null);
 
     public static IntegrationTestSettings Load()
     {
@@ -124,9 +140,15 @@ internal sealed record IntegrationTestSettings(Uri BaseUrl, string? Token, strin
                 ? parsed
                 : Default.BaseUrl;
 
-            string? token = root.TryGetProperty(nameof(Token), out JsonElement tokenNode) ? tokenNode.GetString() : null;
-            string? email = root.TryGetProperty(nameof(Email), out JsonElement emailNode) ? emailNode.GetString() : null;
-            string? password = root.TryGetProperty(nameof(Password), out JsonElement passwordNode) ? passwordNode.GetString() : null;
+            string? token = root.TryGetProperty(nameof(Token), out JsonElement tokenNode)
+                ? tokenNode.GetString()
+                : null;
+            string? email = root.TryGetProperty(nameof(Email), out JsonElement emailNode)
+                ? emailNode.GetString()
+                : null;
+            string? password = root.TryGetProperty(nameof(Password), out JsonElement passwordNode)
+                ? passwordNode.GetString()
+                : null;
             return new IntegrationTestSettings(baseUrl, token, email, password);
         }
         catch (IOException)
@@ -151,7 +173,12 @@ internal sealed record IntegrationTestSettings(Uri BaseUrl, string? Token, strin
                 return candidate;
             }
 
-            string repoCandidate = Path.Combine(current, "tests", "GoAffPro.Client.IntegrationTests", fileName);
+            string repoCandidate = Path.Combine(
+                current,
+                "tests",
+                "GoAffPro.Client.IntegrationTests",
+                fileName
+            );
             if (File.Exists(repoCandidate))
             {
                 return repoCandidate;

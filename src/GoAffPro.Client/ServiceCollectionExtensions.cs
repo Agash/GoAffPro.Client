@@ -32,7 +32,8 @@ public static class ServiceCollectionExtensions
     /// <returns>The same <see cref="IServiceCollection"/> for chaining.</returns>
     public static IServiceCollection AddGoAffProClient(
         this IServiceCollection services,
-        Action<GoAffProClientOptions>? configureOptions = null)
+        Action<GoAffProClientOptions>? configureOptions = null
+    )
     {
         ArgumentNullException.ThrowIfNull(services);
         GoAffProClientOptions options = new();
@@ -58,7 +59,8 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddGoAffProClient(
         this IServiceCollection services,
         IConfiguration configuration,
-        Action<GoAffProClientOptions>? configureOptions = null)
+        Action<GoAffProClientOptions>? configureOptions = null
+    )
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
@@ -68,7 +70,10 @@ public static class ServiceCollectionExtensions
         return RegisterCore(services, options);
     }
 
-    private static IServiceCollection RegisterCore(IServiceCollection services, GoAffProClientOptions options)
+    private static IServiceCollection RegisterCore(
+        IServiceCollection services,
+        GoAffProClientOptions options
+    )
     {
         _ = services.AddSingleton(options);
 
@@ -81,16 +86,28 @@ public static class ServiceCollectionExtensions
                     GoAffProClientOptions opts = sp.GetRequiredService<GoAffProClientOptions>();
                     http.BaseAddress = GoAffProClient.BuildBaseUri(opts.BaseUrl);
                     http.Timeout = opts.Timeout;
-                })
-            .AddPolicyHandler((sp, _) =>
-                RetryPolicies.CreateTransientRetryPolicy(sp.GetRequiredService<GoAffProClientOptions>().MaxRetries))
-            .AddPolicyHandler((sp, _) =>
-            {
-                GoAffProClientOptions opts = sp.GetRequiredService<GoAffProClientOptions>();
-                return RetryPolicies.CreateCircuitBreakerPolicy(opts.CircuitBreakerThreshold, opts.CircuitBreakerDuration);
-            });
+                }
+            )
+            .AddPolicyHandler(
+                (sp, _) =>
+                    RetryPolicies.CreateTransientRetryPolicy(
+                        sp.GetRequiredService<GoAffProClientOptions>().MaxRetries
+                    )
+            )
+            .AddPolicyHandler(
+                (sp, _) =>
+                {
+                    GoAffProClientOptions opts = sp.GetRequiredService<GoAffProClientOptions>();
+                    return RetryPolicies.CreateCircuitBreakerPolicy(
+                        opts.CircuitBreakerThreshold,
+                        opts.CircuitBreakerDuration
+                    );
+                }
+            );
 
-        _ = services.AddSingleton<IGoAffProClient>(static sp => sp.GetRequiredService<GoAffProClient>());
+        _ = services.AddSingleton<IGoAffProClient>(static sp =>
+            sp.GetRequiredService<GoAffProClient>()
+        );
         return services;
     }
 }

@@ -64,7 +64,11 @@ public interface IGoAffProClient : IDisposable, IAsyncDisposable
     /// <exception cref="Exceptions.GoAffProApiException">
     /// Thrown when the login request fails or the response contains no token.
     /// </exception>
-    Task<string> LoginAsync(string email, string password, CancellationToken cancellationToken = default);
+    Task<string> LoginAsync(
+        string email,
+        string password,
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Applies a bearer token directly, bypassing the login flow. Useful when
@@ -98,7 +102,8 @@ public interface IGoAffProClient : IDisposable, IAsyncDisposable
     /// </remarks>
     Task<IReadOnlyList<UserSite>> GetSitesAsync(
         string? status = "APPROVED",
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Retrieves aggregated statistics across all enrolled stores (or a subset).
@@ -120,7 +125,8 @@ public interface IGoAffProClient : IDisposable, IAsyncDisposable
     /// </remarks>
     Task<IReadOnlyList<UserStatsAggregateItem>> GetAggregateStatsAsync(
         string? siteIds = null,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Retrieves the commission structure for the authenticated affiliate.
@@ -140,7 +146,8 @@ public interface IGoAffProClient : IDisposable, IAsyncDisposable
     /// </returns>
     Task<UserCommissionsResponse?> GetCommissionsAsync(
         string siteIds,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     // =========================================================================
     // Observer timestamps
@@ -189,7 +196,9 @@ public interface IGoAffProClient : IDisposable, IAsyncDisposable
     /// Raised when a new reward item is detected.
     /// Currently disabled — <c>/user/feed/rewards</c> returns HTTP 404 (observed 2026-02-18).
     /// </summary>
-    [Obsolete("Disabled because /user/feed/rewards currently returns HTTP 404 (observed on 2026-02-18).")]
+    [Obsolete(
+        "Disabled because /user/feed/rewards currently returns HTTP 404 (observed on 2026-02-18)."
+    )]
     event EventHandler<RewardDetectedEventArgs>? RewardDetected;
 
     // =========================================================================
@@ -210,7 +219,8 @@ public interface IGoAffProClient : IDisposable, IAsyncDisposable
     Task StartEventObserverAsync(
         TimeSpan? pollingInterval = null,
         int pageSize = 100,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     // =========================================================================
     // Async streaming
@@ -226,7 +236,8 @@ public interface IGoAffProClient : IDisposable, IAsyncDisposable
     IAsyncEnumerable<UserOrderFeedItem> NewOrdersAsync(
         TimeSpan? pollingInterval = null,
         int pageSize = 100,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Streams new <see cref="UserTrafficFeedItem"/> (referral click) events
@@ -238,7 +249,8 @@ public interface IGoAffProClient : IDisposable, IAsyncDisposable
     IAsyncEnumerable<UserTrafficFeedItem> NewTrafficAsync(
         TimeSpan? pollingInterval = null,
         int pageSize = 100,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Streams new <see cref="UserPayoutFeedItem"/> objects using time-window polling.
@@ -249,7 +261,8 @@ public interface IGoAffProClient : IDisposable, IAsyncDisposable
     IAsyncEnumerable<UserPayoutFeedItem> NewPayoutsAsync(
         TimeSpan? pollingInterval = null,
         int pageSize = 100,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Streams new <see cref="UserProductFeedItem"/> objects using ID-based polling.
@@ -264,7 +277,8 @@ public interface IGoAffProClient : IDisposable, IAsyncDisposable
     IAsyncEnumerable<UserProductFeedItem> NewProductsAsync(
         TimeSpan? pollingInterval = null,
         int pageSize = 100,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Streams new <see cref="UserTransactionItem"/> objects using ID-based polling.
@@ -279,11 +293,16 @@ public interface IGoAffProClient : IDisposable, IAsyncDisposable
     IAsyncEnumerable<UserTransactionItem> NewTransactionsAsync(
         TimeSpan? pollingInterval = null,
         int pageSize = 100,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Currently a no-op. <c>/user/feed/rewards</c> returns HTTP 404 (observed 2026-02-18).
     /// </summary>
-    [Obsolete("Disabled because /user/feed/rewards currently returns HTTP 404 (observed on 2026-02-18).")]
-    IAsyncEnumerable<UserRewardFeedItem> NewRewardsAsync(CancellationToken cancellationToken = default);
+    [Obsolete(
+        "Disabled because /user/feed/rewards currently returns HTTP 404 (observed on 2026-02-18)."
+    )]
+    IAsyncEnumerable<UserRewardFeedItem> NewRewardsAsync(
+        CancellationToken cancellationToken = default
+    );
 }

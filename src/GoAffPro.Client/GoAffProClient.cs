@@ -1,7 +1,7 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net;
 using System.Net.Http.Headers;
-using System.Diagnostics.CodeAnalysis;
 using GoAffPro.Client.Events;
 using GoAffPro.Client.Exceptions;
 using GoAffPro.Client.Generated.Models;
@@ -91,9 +91,11 @@ public sealed class GoAffProClient : IGoAffProClient
     /// </summary>
     /// <param name="options">Runtime client options.</param>
     public GoAffProClient(GoAffProClientOptions options)
-        : this(CreateHttpClient(ValidateOptions(options)), ValidateOptions(options), disposeHttpClient: true)
-    {
-    }
+        : this(
+            CreateHttpClient(ValidateOptions(options)),
+            ValidateOptions(options),
+            disposeHttpClient: true
+        ) { }
 
     /// <summary>
     /// Initializes a new client instance using an externally managed
@@ -102,11 +104,13 @@ public sealed class GoAffProClient : IGoAffProClient
     /// <param name="httpClient">Pre-configured HTTP client instance.</param>
     /// <param name="options">Runtime client options.</param>
     public GoAffProClient(HttpClient httpClient, GoAffProClientOptions options)
-        : this(httpClient, ValidateOptions(options), disposeHttpClient: false)
-    {
-    }
+        : this(httpClient, ValidateOptions(options), disposeHttpClient: false) { }
 
-    private GoAffProClient(HttpClient httpClient, GoAffProClientOptions options, bool disposeHttpClient)
+    private GoAffProClient(
+        HttpClient httpClient,
+        GoAffProClientOptions options,
+        bool disposeHttpClient
+    )
     {
         ArgumentNullException.ThrowIfNull(httpClient);
         ArgumentNullException.ThrowIfNull(options);
@@ -118,8 +122,9 @@ public sealed class GoAffProClient : IGoAffProClient
         _httpClient.BaseAddress = BuildBaseUri(options.BaseUrl);
         _httpClient.Timeout = options.Timeout;
 
-        string baseUrl = _httpClient.BaseAddress?.ToString()
-                         ?? throw new InvalidOperationException("HttpClient.BaseAddress was not initialized.");
+        string baseUrl =
+            _httpClient.BaseAddress?.ToString()
+            ?? throw new InvalidOperationException("HttpClient.BaseAddress was not initialized.");
 
         IAuthenticationProvider authProvider = new AnonymousAuthenticationProvider();
         _requestAdapter = CreateRequestAdapter(authProvider, _httpClient, baseUrl);
@@ -157,7 +162,9 @@ public sealed class GoAffProClient : IGoAffProClient
     public event EventHandler<PayoutDetectedEventArgs>? PayoutDetected;
 
     /// <inheritdoc />
-    [Obsolete("Disabled because /user/feed/rewards currently returns HTTP 404 (observed on 2026-02-18).")]
+    [Obsolete(
+        "Disabled because /user/feed/rewards currently returns HTTP 404 (observed on 2026-02-18)."
+    )]
     public event EventHandler<RewardDetectedEventArgs>? RewardDetected;
 
     // =========================================================================
@@ -176,7 +183,8 @@ public sealed class GoAffProClient : IGoAffProClient
         string email,
         string password,
         GoAffProClientOptions? options = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         GoAffProClient client = new(options ?? new GoAffProClientOptions());
         _ = await client.LoginAsync(email, password, cancellationToken).ConfigureAwait(false);
@@ -188,22 +196,36 @@ public sealed class GoAffProClient : IGoAffProClient
     // =========================================================================
 
     /// <inheritdoc />
-    public async Task<string> LoginAsync(string email, string password, CancellationToken cancellationToken = default)
+    public async Task<string> LoginAsync(
+        string email,
+        string password,
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(email);
         ArgumentException.ThrowIfNullOrWhiteSpace(password);
 
         LoginResponse response = await ExecuteAsync(async () =>
-            await Api.User.Login.PostAsync(
-                new Generated.User.Login.LoginPostRequestBody { Email = email, Password = password },
-                cancellationToken: cancellationToken).ConfigureAwait(false)
-            ?? new LoginResponse()).ConfigureAwait(false);
+                await Api
+                    .User.Login.PostAsync(
+                        new Generated.User.Login.LoginPostRequestBody
+                        {
+                            Email = email,
+                            Password = password,
+                        },
+                        cancellationToken: cancellationToken
+                    )
+                    .ConfigureAwait(false)
+                ?? new LoginResponse()
+            )
+            .ConfigureAwait(false);
 
         if (string.IsNullOrWhiteSpace(response.AccessToken))
         {
             throw new GoAffProApiException(
                 "GoAffPro login response does not contain an access token.",
-                HttpStatusCode.OK);
+                HttpStatusCode.OK
+            );
         }
 
         SetBearerToken(response.AccessToken);
@@ -215,7 +237,10 @@ public sealed class GoAffProClient : IGoAffProClient
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(bearerToken);
         BearerToken = bearerToken;
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", bearerToken);
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer",
+            bearerToken
+        );
     }
 
     // =========================================================================
@@ -226,54 +251,95 @@ public sealed class GoAffProClient : IGoAffProClient
     /// <inheritdoc />
     public async Task<IReadOnlyList<UserSite>> GetSitesAsync(
         string? status = "APPROVED",
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         UserSiteListResponse response = await ExecuteAsync(async () =>
-            await Api.User.Sites.GetAsync(config =>
-            {
-                config.QueryParameters.Limit = 200; // generous; most affiliates have < 10 programs
-                config.QueryParameters.Offset = 0;
-                config.QueryParameters.FieldsAsGetFieldsQueryParameterType = _siteFields;
-                if (!string.IsNullOrWhiteSpace(status))
-                {
-                    config.QueryParameters.StatusAsGetStatusQueryParameterType = status.ToUpperInvariant() switch
-                    {
-                        "APPROVED" => GetStatusQueryParameterType.Approved,
-                        "PENDING" => GetStatusQueryParameterType.Pending,
-                        "BLOCKED" => GetStatusQueryParameterType.Blocked,
-                        _ => null,
-                    };
-                }
-            }, cancellationToken).ConfigureAwait(false)
-            ?? new UserSiteListResponse()).ConfigureAwait(false);
+                await Api
+                    .User.Sites.GetAsync(
+                        config =>
+                        {
+                            config.QueryParameters.Limit = 200; // generous; most affiliates have < 10 programs
+                            config.QueryParameters.Offset = 0;
+                            config.QueryParameters.FieldsAsGetFieldsQueryParameterType =
+                                _siteFields;
+                            if (!string.IsNullOrWhiteSpace(status))
+                            {
+                                config.QueryParameters.StatusAsGetStatusQueryParameterType =
+                                    status.ToUpperInvariant() switch
+                                    {
+                                        "APPROVED" => GetStatusQueryParameterType.Approved,
+                                        "PENDING" => GetStatusQueryParameterType.Pending,
+                                        "BLOCKED" => GetStatusQueryParameterType.Blocked,
+                                        _ => null,
+                                    };
+                            }
+                        },
+                        cancellationToken
+                    )
+                    .ConfigureAwait(false)
+                ?? new UserSiteListResponse()
+            )
+            .ConfigureAwait(false);
 
-        return response.Sites is { Count: > 0 }
-            ? (IReadOnlyList<UserSite>)response.Sites
-            : [];
+        return response.Sites is { Count: > 0 } ? (IReadOnlyList<UserSite>)response.Sites : [];
     }
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<UserStatsAggregateItem>> GetAggregateStatsAsync(
         string? siteIds = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         // limit + offset are empirically required — endpoint silently returns empty without them.
         UserStatsAggregateResponse response = await ExecuteAsync(async () =>
-            await Api.User.Stats.Aggregate.GetAsync(config =>
-            {
-                config.QueryParameters.SiteIds = siteIds;
-                config.QueryParameters.Limit = 200;
-                config.QueryParameters.Offset = 0;
-                config.QueryParameters.FieldsAsGetFieldsQueryParameterType =
-                [
-                    Generated.User.Stats.Aggregate.GetFieldsQueryParameterType.Total_sales,
-                    Generated.User.Stats.Aggregate.GetFieldsQueryParameterType.Other_commission_earned,
-                    Generated.User.Stats.Aggregate.GetFieldsQueryParameterType.Revenue_generated,
-                    Generated.User.Stats.Aggregate.GetFieldsQueryParameterType.Sale_commission_earned,
-                    Generated.User.Stats.Aggregate.GetFieldsQueryParameterType.Commission_paid,
-                ];
-            }, cancellationToken).ConfigureAwait(false)
-            ?? new UserStatsAggregateResponse()).ConfigureAwait(false);
+                await Api
+                    .User.Stats.Aggregate.GetAsync(
+                        config =>
+                        {
+                            config.QueryParameters.SiteIds = siteIds;
+                            config.QueryParameters.Limit = 200;
+                            config.QueryParameters.Offset = 0;
+                            config.QueryParameters.FieldsAsGetFieldsQueryParameterType =
+                            [
+                                Generated
+                                    .User
+                                    .Stats
+                                    .Aggregate
+                                    .GetFieldsQueryParameterType
+                                    .Total_sales,
+                                Generated
+                                    .User
+                                    .Stats
+                                    .Aggregate
+                                    .GetFieldsQueryParameterType
+                                    .Other_commission_earned,
+                                Generated
+                                    .User
+                                    .Stats
+                                    .Aggregate
+                                    .GetFieldsQueryParameterType
+                                    .Revenue_generated,
+                                Generated
+                                    .User
+                                    .Stats
+                                    .Aggregate
+                                    .GetFieldsQueryParameterType
+                                    .Sale_commission_earned,
+                                Generated
+                                    .User
+                                    .Stats
+                                    .Aggregate
+                                    .GetFieldsQueryParameterType
+                                    .Commission_paid,
+                            ];
+                        },
+                        cancellationToken
+                    )
+                    .ConfigureAwait(false)
+                ?? new UserStatsAggregateResponse()
+            )
+            .ConfigureAwait(false);
 
         return response.Data is { Count: > 0 }
             ? (IReadOnlyList<UserStatsAggregateItem>)response.Data
@@ -283,14 +349,21 @@ public sealed class GoAffProClient : IGoAffProClient
     /// <inheritdoc />
     public async Task<UserCommissionsResponse?> GetCommissionsAsync(
         string siteIds,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         return await ExecuteAsync(async () =>
-            await Api.User.Commissions.GetAsync(config =>
-            {
-                config.QueryParameters.SiteIds = siteIds;
-            }, cancellationToken).ConfigureAwait(false))
-        .ConfigureAwait(false);
+                await Api
+                    .User.Commissions.GetAsync(
+                        config =>
+                        {
+                            config.QueryParameters.SiteIds = siteIds;
+                        },
+                        cancellationToken
+                    )
+                    .ConfigureAwait(false)
+            )
+            .ConfigureAwait(false);
     }
 
     // =========================================================================
@@ -301,7 +374,8 @@ public sealed class GoAffProClient : IGoAffProClient
     public async Task StartEventObserverAsync(
         TimeSpan? pollingInterval = null,
         int pageSize = 100,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         int validatedPageSize = ValidatePageSize(pageSize);
         TimeSpan interval = pollingInterval ?? _options.DefaultPollingInterval;
@@ -315,7 +389,15 @@ public sealed class GoAffProClient : IGoAffProClient
         while (!cancellationToken.IsCancellationRequested)
         {
             DateTimeOffset orderTo = DateTimeOffset.UtcNow;
-            foreach (UserOrderFeedItem order in await PollOrdersAsync(lastOrderPoll, orderTo, validatedPageSize, cancellationToken).ConfigureAwait(false))
+            foreach (
+                UserOrderFeedItem order in await PollOrdersAsync(
+                        lastOrderPoll,
+                        orderTo,
+                        validatedPageSize,
+                        cancellationToken
+                    )
+                    .ConfigureAwait(false)
+            )
             {
                 OrderDetected?.Invoke(this, new OrderDetectedEventArgs(order));
             }
@@ -323,7 +405,15 @@ public sealed class GoAffProClient : IGoAffProClient
             lastOrderPoll = orderTo;
 
             DateTimeOffset trafficTo = DateTimeOffset.UtcNow;
-            foreach (UserTrafficFeedItem item in await PollTrafficAsync(lastTrafficPoll, trafficTo, validatedPageSize, cancellationToken).ConfigureAwait(false))
+            foreach (
+                UserTrafficFeedItem item in await PollTrafficAsync(
+                        lastTrafficPoll,
+                        trafficTo,
+                        validatedPageSize,
+                        cancellationToken
+                    )
+                    .ConfigureAwait(false)
+            )
             {
                 TrafficDetected?.Invoke(this, new TrafficDetectedEventArgs(item));
             }
@@ -331,7 +421,15 @@ public sealed class GoAffProClient : IGoAffProClient
             lastTrafficPoll = trafficTo;
 
             DateTimeOffset payoutTo = DateTimeOffset.UtcNow;
-            foreach (UserPayoutFeedItem payout in await PollPayoutsAsync(lastPayoutPoll, payoutTo, validatedPageSize, cancellationToken).ConfigureAwait(false))
+            foreach (
+                UserPayoutFeedItem payout in await PollPayoutsAsync(
+                        lastPayoutPoll,
+                        payoutTo,
+                        validatedPageSize,
+                        cancellationToken
+                    )
+                    .ConfigureAwait(false)
+            )
             {
                 PayoutDetected?.Invoke(this, new PayoutDetectedEventArgs(payout));
             }
@@ -350,7 +448,9 @@ public sealed class GoAffProClient : IGoAffProClient
     public async IAsyncEnumerable<UserOrderFeedItem> NewOrdersAsync(
         TimeSpan? pollingInterval = null,
         int pageSize = 100,
-        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+        [System.Runtime.CompilerServices.EnumeratorCancellation]
+            CancellationToken cancellationToken = default
+    )
     {
         int size = ValidatePageSize(pageSize);
         TimeSpan interval = pollingInterval ?? _options.DefaultPollingInterval;
@@ -359,7 +459,15 @@ public sealed class GoAffProClient : IGoAffProClient
         while (!cancellationToken.IsCancellationRequested)
         {
             DateTimeOffset to = DateTimeOffset.UtcNow;
-            foreach (UserOrderFeedItem order in await PollOrdersAsync(lastPoll, to, size, cancellationToken).ConfigureAwait(false))
+            foreach (
+                UserOrderFeedItem order in await PollOrdersAsync(
+                        lastPoll,
+                        to,
+                        size,
+                        cancellationToken
+                    )
+                    .ConfigureAwait(false)
+            )
             {
                 yield return order;
             }
@@ -373,7 +481,9 @@ public sealed class GoAffProClient : IGoAffProClient
     public async IAsyncEnumerable<UserTrafficFeedItem> NewTrafficAsync(
         TimeSpan? pollingInterval = null,
         int pageSize = 100,
-        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+        [System.Runtime.CompilerServices.EnumeratorCancellation]
+            CancellationToken cancellationToken = default
+    )
     {
         int size = ValidatePageSize(pageSize);
         TimeSpan interval = pollingInterval ?? _options.DefaultPollingInterval;
@@ -382,7 +492,15 @@ public sealed class GoAffProClient : IGoAffProClient
         while (!cancellationToken.IsCancellationRequested)
         {
             DateTimeOffset to = DateTimeOffset.UtcNow;
-            foreach (UserTrafficFeedItem item in await PollTrafficAsync(lastPoll, to, size, cancellationToken).ConfigureAwait(false))
+            foreach (
+                UserTrafficFeedItem item in await PollTrafficAsync(
+                        lastPoll,
+                        to,
+                        size,
+                        cancellationToken
+                    )
+                    .ConfigureAwait(false)
+            )
             {
                 yield return item;
             }
@@ -396,7 +514,9 @@ public sealed class GoAffProClient : IGoAffProClient
     public async IAsyncEnumerable<UserPayoutFeedItem> NewPayoutsAsync(
         TimeSpan? pollingInterval = null,
         int pageSize = 100,
-        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+        [System.Runtime.CompilerServices.EnumeratorCancellation]
+            CancellationToken cancellationToken = default
+    )
     {
         int size = ValidatePageSize(pageSize);
         TimeSpan interval = pollingInterval ?? _options.DefaultPollingInterval;
@@ -405,7 +525,15 @@ public sealed class GoAffProClient : IGoAffProClient
         while (!cancellationToken.IsCancellationRequested)
         {
             DateTimeOffset to = DateTimeOffset.UtcNow;
-            foreach (UserPayoutFeedItem payout in await PollPayoutsAsync(lastPoll, to, size, cancellationToken).ConfigureAwait(false))
+            foreach (
+                UserPayoutFeedItem payout in await PollPayoutsAsync(
+                        lastPoll,
+                        to,
+                        size,
+                        cancellationToken
+                    )
+                    .ConfigureAwait(false)
+            )
             {
                 yield return payout;
             }
@@ -419,7 +547,9 @@ public sealed class GoAffProClient : IGoAffProClient
     public async IAsyncEnumerable<UserProductFeedItem> NewProductsAsync(
         TimeSpan? pollingInterval = null,
         int pageSize = 100,
-        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+        [System.Runtime.CompilerServices.EnumeratorCancellation]
+            CancellationToken cancellationToken = default
+    )
     {
         int size = ValidatePageSize(pageSize);
         TimeSpan interval = pollingInterval ?? _options.DefaultPollingInterval;
@@ -427,7 +557,12 @@ public sealed class GoAffProClient : IGoAffProClient
 
         while (!cancellationToken.IsCancellationRequested)
         {
-            (IReadOnlyList<UserProductFeedItem> products, int? nextId) = await PollProductsAsync(lastId, size, cancellationToken).ConfigureAwait(false);
+            (IReadOnlyList<UserProductFeedItem> products, int? nextId) = await PollProductsAsync(
+                    lastId,
+                    size,
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
             lastId = nextId;
             foreach (UserProductFeedItem product in products)
             {
@@ -442,7 +577,9 @@ public sealed class GoAffProClient : IGoAffProClient
     public async IAsyncEnumerable<UserTransactionItem> NewTransactionsAsync(
         TimeSpan? pollingInterval = null,
         int pageSize = 100,
-        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+        [System.Runtime.CompilerServices.EnumeratorCancellation]
+            CancellationToken cancellationToken = default
+    )
     {
         int size = ValidatePageSize(pageSize);
         TimeSpan interval = pollingInterval ?? _options.DefaultPollingInterval;
@@ -450,7 +587,8 @@ public sealed class GoAffProClient : IGoAffProClient
 
         while (!cancellationToken.IsCancellationRequested)
         {
-            (IReadOnlyList<UserTransactionItem> transactions, int? nextId) = await PollTransactionsAsync(lastId, size, cancellationToken).ConfigureAwait(false);
+            (IReadOnlyList<UserTransactionItem> transactions, int? nextId) =
+                await PollTransactionsAsync(lastId, size, cancellationToken).ConfigureAwait(false);
             lastId = nextId;
             foreach (UserTransactionItem tx in transactions)
             {
@@ -462,9 +600,13 @@ public sealed class GoAffProClient : IGoAffProClient
     }
 
     /// <inheritdoc />
-    [Obsolete("Disabled because /user/feed/rewards currently returns HTTP 404 (observed on 2026-02-18).")]
+    [Obsolete(
+        "Disabled because /user/feed/rewards currently returns HTTP 404 (observed on 2026-02-18)."
+    )]
     public async IAsyncEnumerable<UserRewardFeedItem> NewRewardsAsync(
-        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+        [System.Runtime.CompilerServices.EnumeratorCancellation]
+            CancellationToken cancellationToken = default
+    )
     {
         _ = cancellationToken;
         await Task.CompletedTask.ConfigureAwait(false);
@@ -516,98 +658,158 @@ public sealed class GoAffProClient : IGoAffProClient
     [SuppressMessage(
         "Reliability",
         "CA2000:Dispose objects before losing scope",
-        Justification = "Ownership of the inner adapter is transferred to StrictUtcDateQueryRequestAdapter, which disposes it.")]
+        Justification = "Ownership of the inner adapter is transferred to StrictUtcDateQueryRequestAdapter, which disposes it."
+    )]
     private static StrictUtcDateQueryRequestAdapter CreateRequestAdapter(
         IAuthenticationProvider authProvider,
         HttpClient httpClient,
-        string baseUrl)
+        string baseUrl
+    )
     {
-        return new StrictUtcDateQueryRequestAdapter(new HttpClientRequestAdapter(authProvider, httpClient: httpClient)
-        {
-            BaseUrl = baseUrl.TrimEnd('/'),
-        });
+        return new StrictUtcDateQueryRequestAdapter(
+            new HttpClientRequestAdapter(authProvider, httpClient: httpClient)
+            {
+                BaseUrl = baseUrl.TrimEnd('/'),
+            }
+        );
     }
 
     private async Task<IReadOnlyList<UserOrderFeedItem>> PollOrdersAsync(
-        DateTimeOffset from, DateTimeOffset to, int pageSize, CancellationToken ct)
+        DateTimeOffset from,
+        DateTimeOffset to,
+        int pageSize,
+        CancellationToken ct
+    )
     {
         // created_at_min/max use ISO-8601 UTC. limit + offset are required by the API
         // or it silently returns empty results (confirmed empirically 2026-02).
         UserOrderFeedResponse response = await ExecuteAsync(async () =>
-            await Api.User.Feed.Orders.GetAsync(config =>
-            {
-                config.QueryParameters.CreatedAtMin = from;
-                config.QueryParameters.CreatedAtMax = to;
-                config.QueryParameters.FieldsAsGetFieldsQueryParameterType = _orderObserverFields;
-                config.QueryParameters.Limit = pageSize;
-                config.QueryParameters.Offset = 0;
-            }, ct).ConfigureAwait(false)
-            ?? new UserOrderFeedResponse()).ConfigureAwait(false);
+                await Api
+                    .User.Feed.Orders.GetAsync(
+                        config =>
+                        {
+                            config.QueryParameters.CreatedAtMin = from;
+                            config.QueryParameters.CreatedAtMax = to;
+                            config.QueryParameters.FieldsAsGetFieldsQueryParameterType =
+                                _orderObserverFields;
+                            config.QueryParameters.Limit = pageSize;
+                            config.QueryParameters.Offset = 0;
+                        },
+                        ct
+                    )
+                    .ConfigureAwait(false)
+                ?? new UserOrderFeedResponse()
+            )
+            .ConfigureAwait(false);
 
-        return response.Orders is { Count: > 0 } ? (IReadOnlyList<UserOrderFeedItem>)response.Orders : [];
+        return response.Orders is { Count: > 0 }
+            ? (IReadOnlyList<UserOrderFeedItem>)response.Orders
+            : [];
     }
 
     private async Task<IReadOnlyList<UserTrafficFeedItem>> PollTrafficAsync(
-        DateTimeOffset from, DateTimeOffset to, int pageSize, CancellationToken ct)
+        DateTimeOffset from,
+        DateTimeOffset to,
+        int pageSize,
+        CancellationToken ct
+    )
     {
         // limit + offset are required by the API or it silently returns empty results.
         UserTrafficFeedResponse response = await ExecuteAsync(async () =>
-            await Api.User.Feed.Traffic.GetAsync(config =>
-            {
-                config.QueryParameters.StartTime = from;
-                config.QueryParameters.EndTime = to;
-                config.QueryParameters.Limit = pageSize;
-                config.QueryParameters.Offset = 0;
-            }, ct).ConfigureAwait(false)
-            ?? new UserTrafficFeedResponse()).ConfigureAwait(false);
+                await Api
+                    .User.Feed.Traffic.GetAsync(
+                        config =>
+                        {
+                            config.QueryParameters.StartTime = from;
+                            config.QueryParameters.EndTime = to;
+                            config.QueryParameters.Limit = pageSize;
+                            config.QueryParameters.Offset = 0;
+                        },
+                        ct
+                    )
+                    .ConfigureAwait(false)
+                ?? new UserTrafficFeedResponse()
+            )
+            .ConfigureAwait(false);
 
-        return response.Traffic is { Count: > 0 } ? (IReadOnlyList<UserTrafficFeedItem>)response.Traffic : [];
+        return response.Traffic is { Count: > 0 }
+            ? (IReadOnlyList<UserTrafficFeedItem>)response.Traffic
+            : [];
     }
 
     private async Task<IReadOnlyList<UserPayoutFeedItem>> PollPayoutsAsync(
-        DateTimeOffset from, DateTimeOffset to, int pageSize, CancellationToken ct)
+        DateTimeOffset from,
+        DateTimeOffset to,
+        int pageSize,
+        CancellationToken ct
+    )
     {
         UserPayoutFeedResponse response = await ExecuteAsync(async () =>
-            await Api.User.Feed.Payouts.GetAsync(config =>
-            {
-                config.QueryParameters.StartTime = from;
-                config.QueryParameters.EndTime = to;
-                config.QueryParameters.Limit = pageSize;
-                config.QueryParameters.Offset = 0;
-            }, ct).ConfigureAwait(false)
-            ?? new UserPayoutFeedResponse()).ConfigureAwait(false);
+                await Api
+                    .User.Feed.Payouts.GetAsync(
+                        config =>
+                        {
+                            config.QueryParameters.StartTime = from;
+                            config.QueryParameters.EndTime = to;
+                            config.QueryParameters.Limit = pageSize;
+                            config.QueryParameters.Offset = 0;
+                        },
+                        ct
+                    )
+                    .ConfigureAwait(false)
+                ?? new UserPayoutFeedResponse()
+            )
+            .ConfigureAwait(false);
 
-        return response.Payouts is { Count: > 0 } ? (IReadOnlyList<UserPayoutFeedItem>)response.Payouts : [];
+        return response.Payouts is { Count: > 0 }
+            ? (IReadOnlyList<UserPayoutFeedItem>)response.Payouts
+            : [];
     }
 
     private async Task<(IReadOnlyList<UserProductFeedItem>, int? NextId)> PollProductsAsync(
-        int? lastId, int pageSize, CancellationToken ct)
+        int? lastId,
+        int pageSize,
+        CancellationToken ct
+    )
     {
         UserProductFeedResponse response = await ExecuteAsync(async () =>
-            await Api.User.Feed.Products.GetAsync(config =>
-            {
-                config.QueryParameters.Limit = pageSize;
-                config.QueryParameters.Offset = 0;
-            }, ct).ConfigureAwait(false)
-            ?? new UserProductFeedResponse()).ConfigureAwait(false);
+                await Api
+                    .User.Feed.Products.GetAsync(
+                        config =>
+                        {
+                            config.QueryParameters.Limit = pageSize;
+                            config.QueryParameters.Offset = 0;
+                        },
+                        ct
+                    )
+                    .ConfigureAwait(false)
+                ?? new UserProductFeedResponse()
+            )
+            .ConfigureAwait(false);
 
         if (response.Products is not { Count: > 0 })
         {
             return ([], lastId);
         }
 
-        int? maxId = response.Products
-            .Select(p => ToNullableInt(p.ProductId) ?? ToNullableInt(p.Id))
-            .Where(v => v.HasValue).Select(v => v!.Value)
-            .DefaultIfEmpty(lastId ?? int.MinValue).Max();
+        int? maxId = response
+            .Products.Select(p => ToNullableInt(p.ProductId) ?? ToNullableInt(p.Id))
+            .Where(v => v.HasValue)
+            .Select(v => v!.Value)
+            .DefaultIfEmpty(lastId ?? int.MinValue)
+            .Max();
 
         if (!lastId.HasValue)
         {
             return ([], maxId == int.MinValue ? null : maxId);
         }
 
-        var newItems = response.Products
-            .Where(p => { int? id = ToNullableInt(p.ProductId) ?? ToNullableInt(p.Id); return id > lastId; })
+        var newItems = response
+            .Products.Where(p =>
+            {
+                int? id = ToNullableInt(p.ProductId) ?? ToNullableInt(p.Id);
+                return id > lastId;
+            })
             .OrderBy(p => ToNullableInt(p.ProductId) ?? ToNullableInt(p.Id))
             .ToList();
 
@@ -615,32 +817,45 @@ public sealed class GoAffProClient : IGoAffProClient
     }
 
     private async Task<(IReadOnlyList<UserTransactionItem>, int? NextId)> PollTransactionsAsync(
-        int? lastId, int pageSize, CancellationToken ct)
+        int? lastId,
+        int pageSize,
+        CancellationToken ct
+    )
     {
         UserTransactionFeedResponse response = await ExecuteAsync(async () =>
-            await Api.User.Feed.Transactions.GetAsync(config =>
-            {
-                config.QueryParameters.Limit = pageSize;
-                config.QueryParameters.Offset = 0;
-            }, ct).ConfigureAwait(false)
-            ?? new UserTransactionFeedResponse()).ConfigureAwait(false);
+                await Api
+                    .User.Feed.Transactions.GetAsync(
+                        config =>
+                        {
+                            config.QueryParameters.Limit = pageSize;
+                            config.QueryParameters.Offset = 0;
+                        },
+                        ct
+                    )
+                    .ConfigureAwait(false)
+                ?? new UserTransactionFeedResponse()
+            )
+            .ConfigureAwait(false);
 
         if (response.Transactions is not { Count: > 0 })
         {
             return ([], lastId);
         }
 
-        int? maxId = response.Transactions
-            .Select(t => t.TxId).Where(v => v.HasValue).Select(v => v!.Value)
-            .DefaultIfEmpty(lastId ?? int.MinValue).Max();
+        int? maxId = response
+            .Transactions.Select(t => t.TxId)
+            .Where(v => v.HasValue)
+            .Select(v => v!.Value)
+            .DefaultIfEmpty(lastId ?? int.MinValue)
+            .Max();
 
         if (!lastId.HasValue)
         {
             return ([], maxId == int.MinValue ? null : maxId);
         }
 
-        var newItems = response.Transactions
-            .Where(t => t.TxId > lastId)
+        var newItems = response
+            .Transactions.Where(t => t.TxId > lastId)
             .OrderBy(t => t.TxId)
             .ToList();
 
@@ -649,12 +864,32 @@ public sealed class GoAffProClient : IGoAffProClient
 
     private static int? ToNullableInt(UserProductFeedItem.UserProductFeedItem_product_id? v)
     {
-        return v?.Integer ?? (int.TryParse(v?.String, NumberStyles.Integer, CultureInfo.InvariantCulture, out int p) ? p : null);
+        return v?.Integer
+            ?? (
+                int.TryParse(
+                    v?.String,
+                    NumberStyles.Integer,
+                    CultureInfo.InvariantCulture,
+                    out int p
+                )
+                    ? p
+                    : null
+            );
     }
 
     private static int? ToNullableInt(UserProductFeedItem.UserProductFeedItem_id? v)
     {
-        return v?.Integer ?? (int.TryParse(v?.String, NumberStyles.Integer, CultureInfo.InvariantCulture, out int p) ? p : null);
+        return v?.Integer
+            ?? (
+                int.TryParse(
+                    v?.String,
+                    NumberStyles.Integer,
+                    CultureInfo.InvariantCulture,
+                    out int p
+                )
+                    ? p
+                    : null
+            );
     }
 
     private static HttpClient CreateHttpClient(GoAffProClientOptions options)
@@ -680,7 +915,13 @@ public sealed class GoAffProClient : IGoAffProClient
 
     private static int ValidatePageSize(int pageSize)
     {
-        return pageSize > 0 ? pageSize : throw new ArgumentOutOfRangeException(nameof(pageSize), pageSize, "Page size must be greater than zero.");
+        return pageSize > 0
+            ? pageSize
+            : throw new ArgumentOutOfRangeException(
+                nameof(pageSize),
+                pageSize,
+                "Page size must be greater than zero."
+            );
     }
 
     private static async Task<T> ExecuteAsync<T>(Func<Task<T>> action)

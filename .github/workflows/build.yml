@@ -68,7 +68,7 @@ jobs:
       # with exit code 8 on each target framework. The overall run still passes, which is the
       # problem: it trains us to read a real zero-tests regression as normal.
       run: >
-        dotnet test tests/GoAffPro.Client.Tests/GoAffPro.Client.Tests.csproj
+        dotnet test --project ${{ github.workspace }}/tests/GoAffPro.Client.Tests/GoAffPro.Client.Tests.csproj
         --configuration Release
         --no-build
         --verbosity normal

@@ -10,9 +10,7 @@ public sealed class GoAffProApiException : Exception
     /// <summary>
     /// Initializes a new instance of the <see cref="GoAffProApiException"/> class.
     /// </summary>
-    public GoAffProApiException()
-    {
-    }
+    public GoAffProApiException() { }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GoAffProApiException"/> class
@@ -20,9 +18,7 @@ public sealed class GoAffProApiException : Exception
     /// </summary>
     /// <param name="message">Exception message.</param>
     public GoAffProApiException(string message)
-        : base(message)
-    {
-    }
+        : base(message) { }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GoAffProApiException"/> class
@@ -31,9 +27,7 @@ public sealed class GoAffProApiException : Exception
     /// <param name="message">Exception message.</param>
     /// <param name="innerException">Inner exception that caused this failure.</param>
     public GoAffProApiException(string message, Exception innerException)
-        : base(message, innerException)
-    {
-    }
+        : base(message, innerException) { }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GoAffProApiException"/> class
@@ -43,7 +37,12 @@ public sealed class GoAffProApiException : Exception
     /// <param name="statusCode">HTTP status code returned by the API.</param>
     /// <param name="responseBody">Raw response body returned by the API, when available.</param>
     /// <param name="innerException">Underlying exception, when available.</param>
-    public GoAffProApiException(string message, HttpStatusCode statusCode, string? responseBody = null, Exception? innerException = null)
+    public GoAffProApiException(
+        string message,
+        HttpStatusCode statusCode,
+        string? responseBody = null,
+        Exception? innerException = null
+    )
         : base(message, innerException)
     {
         StatusCode = statusCode;

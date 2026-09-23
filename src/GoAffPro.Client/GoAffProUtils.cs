@@ -38,10 +38,14 @@ public static class GoAffProUtils
     /// </example>
     public static decimal? ParseMonetary(string? value)
     {
-        return string.IsNullOrWhiteSpace(value)
-            ? null
-            : decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out decimal result)
-            ? result
+        return string.IsNullOrWhiteSpace(value) ? null
+            : decimal.TryParse(
+                value,
+                NumberStyles.Number,
+                CultureInfo.InvariantCulture,
+                out decimal result
+            )
+                ? result
             : null;
     }
 
@@ -58,10 +62,14 @@ public static class GoAffProUtils
     /// </returns>
     public static DateTimeOffset? ParseTimestamp(string? value)
     {
-        return string.IsNullOrWhiteSpace(value)
-            ? null
-            : DateTimeOffset.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTimeOffset result)
-            ? result.ToUniversalTime()
+        return string.IsNullOrWhiteSpace(value) ? null
+            : DateTimeOffset.TryParse(
+                value,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.AssumeUniversal,
+                out DateTimeOffset result
+            )
+                ? result.ToUniversalTime()
             : null;
     }
 
@@ -72,6 +80,8 @@ public static class GoAffProUtils
     /// <returns>A UTC timestamp string formatted as <c>yyyy-MM-ddTHH:mm:ss.000Z</c>.</returns>
     public static string FormatTimestampQuery(DateTimeOffset value)
     {
-        return value.ToUniversalTime().ToString(_strictUtcIsoTimestampQueryFormat, CultureInfo.InvariantCulture);
+        return value
+            .ToUniversalTime()
+            .ToString(_strictUtcIsoTimestampQueryFormat, CultureInfo.InvariantCulture);
     }
 }

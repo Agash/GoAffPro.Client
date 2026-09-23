@@ -12,12 +12,14 @@ using SiteStatus = GoAffPro.Client.Generated.User.Sites.GetStatusQueryParameterT
 ExampleSettings settings = LoadSettings();
 var options = CommandLineOptions.Parse(args);
 
-using var client = new GoAffProClient(new GoAffProClientOptions
-{
-    BaseUrl = settings.BaseUrl,
-    BearerToken = settings.BearerToken,
-    Timeout = settings.Timeout,
-});
+using var client = new GoAffProClient(
+    new GoAffProClientOptions
+    {
+        BaseUrl = settings.BaseUrl,
+        BearerToken = settings.BearerToken,
+        Timeout = settings.Timeout,
+    }
+);
 
 if (options.RunTests)
 {
@@ -28,37 +30,58 @@ if (options.RunTests)
 
 await RunInteractiveAsync(client).ConfigureAwait(false);
 
-static async Task<int> RunCliSweepAsync(GoAffProClient client, ExampleSettings settings, CommandLineOptions options)
+static async Task<int> RunCliSweepAsync(
+    GoAffProClient client,
+    ExampleSettings settings,
+    CommandLineOptions options
+)
 {
     string? token = ResolveToken(options.AccessToken) ?? client.BearerToken;
-    if (string.IsNullOrWhiteSpace(token) &&
-        !string.IsNullOrWhiteSpace(options.Email) &&
-        !string.IsNullOrWhiteSpace(options.Password))
+    if (
+        string.IsNullOrWhiteSpace(token)
+        && !string.IsNullOrWhiteSpace(options.Email)
+        && !string.IsNullOrWhiteSpace(options.Password)
+    )
     {
-        token = await client.LoginAsync(options.Email, options.Password, CancellationToken.None).ConfigureAwait(false);
+        token = await client
+            .LoginAsync(options.Email, options.Password, CancellationToken.None)
+            .ConfigureAwait(false);
     }
 
     if (string.IsNullOrWhiteSpace(token))
     {
-        await Console.Error.WriteLineAsync("No access token is available. Use --access_token=... or --email/--password.").ConfigureAwait(false);
+        await Console
+            .Error.WriteLineAsync(
+                "No access token is available. Use --access_token=... or --email/--password."
+            )
+            .ConfigureAwait(false);
         return 2;
     }
 
     client.SetBearerToken(token);
     string outputPath = string.IsNullOrWhiteSpace(options.OutputPath)
-        ? Path.Combine(Environment.CurrentDirectory, $"api-sweep-{DateTimeOffset.UtcNow:yyyyMMdd-HHmmss}.json")
+        ? Path.Combine(
+            Environment.CurrentDirectory,
+            $"api-sweep-{DateTimeOffset.UtcNow:yyyyMMdd-HHmmss}.json"
+        )
         : options.OutputPath;
 
-    TimeSpan productTimeout = options.ProductsTimeoutSeconds > 0
-        ? TimeSpan.FromSeconds(options.ProductsTimeoutSeconds)
-        : TimeSpan.FromSeconds(90);
+    TimeSpan productTimeout =
+        options.ProductsTimeoutSeconds > 0
+            ? TimeSpan.FromSeconds(options.ProductsTimeoutSeconds)
+            : TimeSpan.FromSeconds(90);
 
-    ApiSweepReport report = await ApiSweepRunner.RunAllAsync(client, settings, productTimeout, CancellationToken.None).ConfigureAwait(false);
+    ApiSweepReport report = await ApiSweepRunner
+        .RunAllAsync(client, settings, productTimeout, CancellationToken.None)
+        .ConfigureAwait(false);
     string reportJson = JsonSerializer.Serialize(report, JsonOptions.Value);
-    await File.WriteAllTextAsync(outputPath, reportJson, CancellationToken.None).ConfigureAwait(false);
+    await File.WriteAllTextAsync(outputPath, reportJson, CancellationToken.None)
+        .ConfigureAwait(false);
 
     int failures = report.Results.Count(static x => !x.Success);
-    await Console.Out.WriteLineAsync($"Sweep completed. Total: {report.Results.Count}, failed: {failures}").ConfigureAwait(false);
+    await Console
+        .Out.WriteLineAsync($"Sweep completed. Total: {report.Results.Count}, failed: {failures}")
+        .ConfigureAwait(false);
     await Console.Out.WriteLineAsync($"Report: {outputPath}").ConfigureAwait(false);
     return failures == 0 ? 0 : 1;
 }
@@ -78,22 +101,26 @@ static async Task RunInteractiveAsync(GoAffProClient client)
         while (!exitRequested)
         {
             AnsiConsole.WriteLine();
-            AnsiConsole.MarkupLine($"Auth: {(string.IsNullOrWhiteSpace(client.BearerToken) ? "[yellow]not authenticated[/]" : "[green]authenticated[/]")}");
-            AnsiConsole.MarkupLine($"Observer: {(observer.IsRunning ? "[green]running[/]" : "[grey]stopped[/]")}");
+            AnsiConsole.MarkupLine(
+                $"Auth: {(string.IsNullOrWhiteSpace(client.BearerToken) ? "[yellow]not authenticated[/]" : "[green]authenticated[/]")}"
+            );
+            AnsiConsole.MarkupLine(
+                $"Observer: {(observer.IsRunning ? "[green]running[/]" : "[grey]stopped[/]")}"
+            );
 
             string action = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("Select an action")
-                    .AddChoices(
-                    [
+                    .AddChoices([
                         "Set bearer token",
                         "Login with email/password",
                         "Call endpoint",
                         "Run full endpoint sweep",
                         "Start observer",
                         "Stop observer",
-                        "Exit"
-                    ]));
+                        "Exit",
+                    ])
+            );
 
             try
             {
@@ -158,22 +185,30 @@ static async Task RunSweepFromInteractiveAsync(GoAffProClient client)
         return;
     }
 
-    string defaultPath = Path.Combine(Environment.CurrentDirectory, $"api-sweep-{DateTimeOffset.UtcNow:yyyyMMdd-HHmmss}.json");
-    string outputPath = AnsiConsole.Prompt(new TextPrompt<string>("Output path").DefaultValue(defaultPath));
+    string defaultPath = Path.Combine(
+        Environment.CurrentDirectory,
+        $"api-sweep-{DateTimeOffset.UtcNow:yyyyMMdd-HHmmss}.json"
+    );
+    string outputPath = AnsiConsole.Prompt(
+        new TextPrompt<string>("Output path").DefaultValue(defaultPath)
+    );
 
-    int timeoutSeconds = AnsiConsole.Prompt(new TextPrompt<int>("Product endpoint timeout (seconds)").DefaultValue(90));
+    int timeoutSeconds = AnsiConsole.Prompt(
+        new TextPrompt<int>("Product endpoint timeout (seconds)").DefaultValue(90)
+    );
     var productTimeout = TimeSpan.FromSeconds(Math.Max(1, timeoutSeconds));
 
-    ApiSweepReport report = await ApiSweepRunner.RunAllAsync(
-        client,
-        ExampleSettings.Default,
-        productTimeout,
-        CancellationToken.None).ConfigureAwait(false);
+    ApiSweepReport report = await ApiSweepRunner
+        .RunAllAsync(client, ExampleSettings.Default, productTimeout, CancellationToken.None)
+        .ConfigureAwait(false);
     string reportJson = JsonSerializer.Serialize(report, JsonOptions.Value);
-    await File.WriteAllTextAsync(outputPath, reportJson, CancellationToken.None).ConfigureAwait(false);
+    await File.WriteAllTextAsync(outputPath, reportJson, CancellationToken.None)
+        .ConfigureAwait(false);
 
     int failures = report.Results.Count(static x => !x.Success);
-    AnsiConsole.MarkupLine($"[green]Sweep complete.[/] total={report.Results.Count}, failed={failures}");
+    AnsiConsole.MarkupLine(
+        $"[green]Sweep complete.[/] total={report.Results.Count}, failed={failures}"
+    );
     AnsiConsole.MarkupLine($"Saved: [grey]{Markup.Escape(outputPath)}[/]");
 }
 
@@ -190,7 +225,9 @@ static async Task LoginAsync(GoAffProClient client)
     string password = AnsiConsole.Prompt(new TextPrompt<string>("Password").Secret());
 
     string token = await client.LoginAsync(email, password).ConfigureAwait(false);
-    AnsiConsole.MarkupLine($"[green]Login successful.[/] Token: [grey]{Markup.Escape(ShortToken(token))}[/]");
+    AnsiConsole.MarkupLine(
+        $"[green]Login successful.[/] Token: [grey]{Markup.Escape(ShortToken(token))}[/]"
+    );
 }
 
 static async Task CallEndpointAsync(GoAffProClient client)
@@ -198,8 +235,7 @@ static async Task CallEndpointAsync(GoAffProClient client)
     string endpoint = AnsiConsole.Prompt(
         new SelectionPrompt<string>()
             .Title("Select endpoint")
-            .AddChoices(
-            [
+            .AddChoices([
                 "GET /user",
                 "POST /user",
                 "GET /user/sites",
@@ -214,8 +250,9 @@ static async Task CallEndpointAsync(GoAffProClient client)
                 "GET /user/payouts/pending",
                 "GET /public/sites",
                 "GET /public/products",
-                "Back"
-            ]));
+                "Back",
+            ])
+    );
 
     if (endpoint == "Back")
     {
@@ -225,95 +262,156 @@ static async Task CallEndpointAsync(GoAffProClient client)
     int limit = AskInt("Limit", 10);
     int offset = AskInt("Offset", 0);
     string? siteIds = AskOptional("site_ids (optional)");
-    string startTime = DateTimeOffset.UtcNow.AddDays(-1).ToString("o", CultureInfo.InvariantCulture);
+    string startTime = DateTimeOffset
+        .UtcNow.AddDays(-1)
+        .ToString("o", CultureInfo.InvariantCulture);
     string endTime = DateTimeOffset.UtcNow.ToString("o", CultureInfo.InvariantCulture);
 
     object? result = endpoint switch
     {
         "GET /user" => await client.Api.User.GetAsync().ConfigureAwait(false),
         "POST /user" => await client.Api.User.PostAsync().ConfigureAwait(false),
-        "GET /user/sites" => await client.Api.User.Sites.GetAsync(config =>
-        {
-            config.QueryParameters.Limit = limit;
-            config.QueryParameters.Offset = offset;
-            config.QueryParameters.StatusAsGetStatusQueryParameterType = AskSiteStatus();
-            config.QueryParameters.FieldsAsGetFieldsQueryParameterType = [SiteField.Id, SiteField.Name, SiteField.Logo];
-        }).ConfigureAwait(false),
-        "GET /user/stats/aggregate" => await client.Api.User.Stats.Aggregate.GetAsync(config =>
-        {
-            config.QueryParameters.SiteIds = siteIds;
-            config.QueryParameters.StartTime = DateTimeOffset.Parse(AskOptional("start_time (ISO8601, optional)") ?? startTime, CultureInfo.InvariantCulture);
-            config.QueryParameters.EndTime = DateTimeOffset.Parse(AskOptional("end_time (ISO8601, optional)") ?? endTime, CultureInfo.InvariantCulture);
-            config.QueryParameters.FieldsAsGetFieldsQueryParameterType =
-            [
-                AggregateField.Total_sales,
-                AggregateField.Other_commission_earned,
-                AggregateField.Revenue_generated,
-                AggregateField.Sale_commission_earned,
-                AggregateField.Commission_paid,
-            ];
-        }).ConfigureAwait(false),
-        "GET /user/feed/orders" => await client.Api.User.Feed.Orders.GetAsync(config =>
-        {
-            config.QueryParameters.Limit = limit;
-            config.QueryParameters.Offset = offset;
-            config.QueryParameters.SiteIds = siteIds;
-            config.QueryParameters.CreatedAtMin = DateTimeOffset.Parse(AskOptional("created_at_min (ISO8601, optional)") ?? startTime, CultureInfo.InvariantCulture);
-            config.QueryParameters.CreatedAtMax = DateTimeOffset.Parse(AskOptional("created_at_max (ISO8601, optional)") ?? endTime, CultureInfo.InvariantCulture);
-        }).ConfigureAwait(false),
-        "GET /user/feed/traffic" => await client.Api.User.Feed.Traffic.GetAsync(config =>
-        {
-            config.QueryParameters.Limit = limit;
-            config.QueryParameters.Offset = offset;
-            config.QueryParameters.SiteIds = siteIds;
-            config.QueryParameters.StartTime = DateTimeOffset.Parse(AskOptional("start_time (ISO8601, optional)") ?? startTime, CultureInfo.InvariantCulture);
-            config.QueryParameters.EndTime = DateTimeOffset.Parse(AskOptional("end_time (ISO8601, optional)") ?? endTime, CultureInfo.InvariantCulture);
-        }).ConfigureAwait(false),
-        "GET /user/feed/payouts" => await client.Api.User.Feed.Payouts.GetAsync(config =>
-        {
-            config.QueryParameters.Limit = limit;
-            config.QueryParameters.Offset = offset;
-            config.QueryParameters.SiteIds = siteIds;
-            config.QueryParameters.StartTime = DateTimeOffset.Parse(AskOptional("start_time (ISO8601, optional)") ?? startTime, CultureInfo.InvariantCulture);
-            config.QueryParameters.EndTime = DateTimeOffset.Parse(AskOptional("end_time (ISO8601, optional)") ?? endTime, CultureInfo.InvariantCulture);
-        }).ConfigureAwait(false),
-        "GET /user/feed/products" => await client.Api.User.Feed.Products.GetAsync(config =>
-        {
-            config.QueryParameters.Limit = limit;
-            config.QueryParameters.Offset = offset;
-        }).ConfigureAwait(false),
-        "GET /user/feed/rewards" => await client.Api.User.Feed.Rewards.GetAsync(config =>
-        {
-            config.QueryParameters.Limit = limit;
-            config.QueryParameters.Offset = offset;
-            config.QueryParameters.SiteIds = siteIds;
-            config.QueryParameters.StartTime = DateTimeOffset.Parse(AskOptional("start_time (ISO8601, optional)") ?? startTime, CultureInfo.InvariantCulture);
-            config.QueryParameters.EndTime = DateTimeOffset.Parse(AskOptional("end_time (ISO8601, optional)") ?? endTime, CultureInfo.InvariantCulture);
-        }).ConfigureAwait(false),
-        "GET /user/feed/transactions" => await client.Api.User.Feed.Transactions.GetAsync(config =>
-        {
-            config.QueryParameters.Limit = limit;
-            config.QueryParameters.Offset = offset;
-        }).ConfigureAwait(false),
-        "GET /user/commissions" => await client.Api.User.Commissions.GetAsync(config =>
-        {
-            config.QueryParameters.SiteIds = siteIds;
-        }).ConfigureAwait(false),
-        "GET /user/payouts/pending" => await client.Api.User.Payouts.Pending.GetAsync().ConfigureAwait(false),
-        "GET /public/sites" => await client.Api.Public.Sites.GetAsync(config =>
-        {
-            config.QueryParameters.Limit = limit;
-            config.QueryParameters.Offset = offset;
-            config.QueryParameters.SiteIds = siteIds;
-            config.QueryParameters.Currency = AskOptional("currency (optional)");
-            config.QueryParameters.Keyword = AskOptional("keyword (optional)");
-        }).ConfigureAwait(false),
-        "GET /public/products" => await client.Api.Public.Products.GetAsync(config =>
-        {
-            config.QueryParameters.Limit = limit;
-            config.QueryParameters.Offset = offset;
-            config.QueryParameters.SiteIds = siteIds;
-        }).ConfigureAwait(false),
+        "GET /user/sites" => await client
+            .Api.User.Sites.GetAsync(config =>
+            {
+                config.QueryParameters.Limit = limit;
+                config.QueryParameters.Offset = offset;
+                config.QueryParameters.StatusAsGetStatusQueryParameterType = AskSiteStatus();
+                config.QueryParameters.FieldsAsGetFieldsQueryParameterType =
+                [
+                    SiteField.Id,
+                    SiteField.Name,
+                    SiteField.Logo,
+                ];
+            })
+            .ConfigureAwait(false),
+        "GET /user/stats/aggregate" => await client
+            .Api.User.Stats.Aggregate.GetAsync(config =>
+            {
+                config.QueryParameters.SiteIds = siteIds;
+                config.QueryParameters.StartTime = DateTimeOffset.Parse(
+                    AskOptional("start_time (ISO8601, optional)") ?? startTime,
+                    CultureInfo.InvariantCulture
+                );
+                config.QueryParameters.EndTime = DateTimeOffset.Parse(
+                    AskOptional("end_time (ISO8601, optional)") ?? endTime,
+                    CultureInfo.InvariantCulture
+                );
+                config.QueryParameters.FieldsAsGetFieldsQueryParameterType =
+                [
+                    AggregateField.Total_sales,
+                    AggregateField.Other_commission_earned,
+                    AggregateField.Revenue_generated,
+                    AggregateField.Sale_commission_earned,
+                    AggregateField.Commission_paid,
+                ];
+            })
+            .ConfigureAwait(false),
+        "GET /user/feed/orders" => await client
+            .Api.User.Feed.Orders.GetAsync(config =>
+            {
+                config.QueryParameters.Limit = limit;
+                config.QueryParameters.Offset = offset;
+                config.QueryParameters.SiteIds = siteIds;
+                config.QueryParameters.CreatedAtMin = DateTimeOffset.Parse(
+                    AskOptional("created_at_min (ISO8601, optional)") ?? startTime,
+                    CultureInfo.InvariantCulture
+                );
+                config.QueryParameters.CreatedAtMax = DateTimeOffset.Parse(
+                    AskOptional("created_at_max (ISO8601, optional)") ?? endTime,
+                    CultureInfo.InvariantCulture
+                );
+            })
+            .ConfigureAwait(false),
+        "GET /user/feed/traffic" => await client
+            .Api.User.Feed.Traffic.GetAsync(config =>
+            {
+                config.QueryParameters.Limit = limit;
+                config.QueryParameters.Offset = offset;
+                config.QueryParameters.SiteIds = siteIds;
+                config.QueryParameters.StartTime = DateTimeOffset.Parse(
+                    AskOptional("start_time (ISO8601, optional)") ?? startTime,
+                    CultureInfo.InvariantCulture
+                );
+                config.QueryParameters.EndTime = DateTimeOffset.Parse(
+                    AskOptional("end_time (ISO8601, optional)") ?? endTime,
+                    CultureInfo.InvariantCulture
+                );
+            })
+            .ConfigureAwait(false),
+        "GET /user/feed/payouts" => await client
+            .Api.User.Feed.Payouts.GetAsync(config =>
+            {
+                config.QueryParameters.Limit = limit;
+                config.QueryParameters.Offset = offset;
+                config.QueryParameters.SiteIds = siteIds;
+                config.QueryParameters.StartTime = DateTimeOffset.Parse(
+                    AskOptional("start_time (ISO8601, optional)") ?? startTime,
+                    CultureInfo.InvariantCulture
+                );
+                config.QueryParameters.EndTime = DateTimeOffset.Parse(
+                    AskOptional("end_time (ISO8601, optional)") ?? endTime,
+                    CultureInfo.InvariantCulture
+                );
+            })
+            .ConfigureAwait(false),
+        "GET /user/feed/products" => await client
+            .Api.User.Feed.Products.GetAsync(config =>
+            {
+                config.QueryParameters.Limit = limit;
+                config.QueryParameters.Offset = offset;
+            })
+            .ConfigureAwait(false),
+        "GET /user/feed/rewards" => await client
+            .Api.User.Feed.Rewards.GetAsync(config =>
+            {
+                config.QueryParameters.Limit = limit;
+                config.QueryParameters.Offset = offset;
+                config.QueryParameters.SiteIds = siteIds;
+                config.QueryParameters.StartTime = DateTimeOffset.Parse(
+                    AskOptional("start_time (ISO8601, optional)") ?? startTime,
+                    CultureInfo.InvariantCulture
+                );
+                config.QueryParameters.EndTime = DateTimeOffset.Parse(
+                    AskOptional("end_time (ISO8601, optional)") ?? endTime,
+                    CultureInfo.InvariantCulture
+                );
+            })
+            .ConfigureAwait(false),
+        "GET /user/feed/transactions" => await client
+            .Api.User.Feed.Transactions.GetAsync(config =>
+            {
+                config.QueryParameters.Limit = limit;
+                config.QueryParameters.Offset = offset;
+            })
+            .ConfigureAwait(false),
+        "GET /user/commissions" => await client
+            .Api.User.Commissions.GetAsync(config =>
+            {
+                config.QueryParameters.SiteIds = siteIds;
+            })
+            .ConfigureAwait(false),
+        "GET /user/payouts/pending" => await client
+            .Api.User.Payouts.Pending.GetAsync()
+            .ConfigureAwait(false),
+        "GET /public/sites" => await client
+            .Api.Public.Sites.GetAsync(config =>
+            {
+                config.QueryParameters.Limit = limit;
+                config.QueryParameters.Offset = offset;
+                config.QueryParameters.SiteIds = siteIds;
+                config.QueryParameters.Currency = AskOptional("currency (optional)");
+                config.QueryParameters.Keyword = AskOptional("keyword (optional)");
+            })
+            .ConfigureAwait(false),
+        "GET /public/products" => await client
+            .Api.Public.Products.GetAsync(config =>
+            {
+                config.QueryParameters.Limit = limit;
+                config.QueryParameters.Offset = offset;
+                config.QueryParameters.SiteIds = siteIds;
+            })
+            .ConfigureAwait(false),
         _ => null,
     };
 
@@ -325,7 +423,8 @@ static SiteStatus? AskSiteStatus()
     string status = AnsiConsole.Prompt(
         new SelectionPrompt<string>()
             .Title("status")
-            .AddChoices(["(none)", "approved", "pending", "blocked"]));
+            .AddChoices(["(none)", "approved", "pending", "blocked"])
+    );
 
     return status switch
     {
@@ -469,15 +568,29 @@ internal sealed class ObserverController(IGoAffProClient client) : IAsyncDisposa
             return Task.CompletedTask;
         }
 
-        int pollingSeconds = AnsiConsole.Prompt(new TextPrompt<int>("Polling interval (seconds)").DefaultValue(30));
+        int pollingSeconds = AnsiConsole.Prompt(
+            new TextPrompt<int>("Polling interval (seconds)").DefaultValue(30)
+        );
         int pageSize = AnsiConsole.Prompt(new TextPrompt<int>("Page size").DefaultValue(50));
 
         client.OrderDetected += (_, args) =>
-            WriteLiveEvent("order", args.Order.Id?.String ?? args.Order.OrderId?.String ?? "<unknown>");
+            WriteLiveEvent(
+                "order",
+                args.Order.Id?.String ?? args.Order.OrderId?.String ?? "<unknown>"
+            );
         client.TrafficDetected += (_, args) =>
-            WriteLiveEvent("traffic", args.Traffic.AffiliateId?.String ?? args.Traffic.Id?.String ?? args.Traffic.CustomerId?.String ?? "<unknown>");
+            WriteLiveEvent(
+                "traffic",
+                args.Traffic.AffiliateId?.String
+                    ?? args.Traffic.Id?.String
+                    ?? args.Traffic.CustomerId?.String
+                    ?? "<unknown>"
+            );
         client.PayoutDetected += (_, args) =>
-            WriteLiveEvent("payout", args.Payout.Id?.String ?? args.Payout.PayoutId?.String ?? "<unknown>");
+            WriteLiveEvent(
+                "payout",
+                args.Payout.Id?.String ?? args.Payout.PayoutId?.String ?? "<unknown>"
+            );
 
         //client.ProductDetected += (_, args) =>
         //    WriteLiveEvent("product", args.Product.ProductId?.String ?? args.Product.Id?.String ?? "<unknown>");
@@ -489,10 +602,13 @@ internal sealed class ObserverController(IGoAffProClient client) : IAsyncDisposa
         {
             try
             {
-                await client.StartEventObserverAsync(
-                    pollingInterval: TimeSpan.FromSeconds(Math.Max(1, pollingSeconds)),
-                    pageSize: Math.Max(1, pageSize),
-                    cancellationToken: _cts.Token).ConfigureAwait(false);
+                await client
+                    .StartEventObserverAsync(
+                        pollingInterval: TimeSpan.FromSeconds(Math.Max(1, pollingSeconds)),
+                        pageSize: Math.Max(1, pageSize),
+                        cancellationToken: _cts.Token
+                    )
+                    .ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
@@ -551,7 +667,9 @@ internal sealed class ObserverController(IGoAffProClient client) : IAsyncDisposa
         lock (_consoleLock)
         {
             string timestamp = DateTimeOffset.UtcNow.ToString("O", CultureInfo.InvariantCulture);
-            AnsiConsole.MarkupLine($"[blue]{Markup.Escape(timestamp)}[/] [green]{Markup.Escape(type)}[/] -> {Markup.Escape(id)}");
+            AnsiConsole.MarkupLine(
+                $"[blue]{Markup.Escape(timestamp)}[/] [green]{Markup.Escape(type)}[/] -> {Markup.Escape(id)}"
+            );
         }
     }
 
@@ -570,170 +688,300 @@ internal static class ApiSweepRunner
         GoAffProClient client,
         ExampleSettings settings,
         TimeSpan productTimeout,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         DateTimeOffset startTime = DateTimeOffset.UtcNow.AddDays(-1);
         DateTimeOffset endTime = DateTimeOffset.UtcNow;
         var results = new List<ApiEndpointResult>();
 
-        await RunEndpointAsync(results, "GET /user", () => client.Api.User.GetAsync(cancellationToken: cancellationToken)).ConfigureAwait(false);
-        await RunEndpointAsync(results, "POST /user", () => client.Api.User.PostAsync(cancellationToken: cancellationToken)).ConfigureAwait(false);
-        await RunEndpointAsync(results, "GET /user/sites", () => client.Api.User.Sites.GetAsync(config =>
-        {
-            config.QueryParameters.Limit = 1;
-            config.QueryParameters.Offset = 0;
-            config.QueryParameters.StatusAsGetStatusQueryParameterType = SiteStatus.Approved;
-            config.QueryParameters.FieldsAsGetFieldsQueryParameterType = [SiteField.Id, SiteField.Name, SiteField.Logo];
-        }, cancellationToken)).ConfigureAwait(false);
-        await RunEndpointAsync(results, "GET /user/stats/aggregate", () => client.Api.User.Stats.Aggregate.GetAsync(config =>
-        {
-            config.QueryParameters.StartTime = startTime;
-            config.QueryParameters.EndTime = endTime;
-            config.QueryParameters.FieldsAsGetFieldsQueryParameterType =
-            [
-                AggregateField.Total_sales,
-                AggregateField.Other_commission_earned,
-                AggregateField.Revenue_generated,
-                AggregateField.Sale_commission_earned,
-                AggregateField.Commission_paid,
-            ];
-        }, cancellationToken)).ConfigureAwait(false);
-        await RunEndpointAsync(results, "GET /user/feed/orders", () => client.Api.User.Feed.Orders.GetAsync(config =>
-        {
-            config.QueryParameters.Limit = 1;
-            config.QueryParameters.Offset = 0;
-            config.QueryParameters.CreatedAtMin = startTime;
-            config.QueryParameters.CreatedAtMax = endTime;
-        }, cancellationToken)).ConfigureAwait(false);
-        await RunEndpointAsync(results, "GET /user/feed/traffic", () => client.Api.User.Feed.Traffic.GetAsync(config =>
-        {
-            config.QueryParameters.Limit = 1;
-            config.QueryParameters.Offset = 0;
-            config.QueryParameters.StartTime = startTime;
-            config.QueryParameters.EndTime = endTime;
-        }, cancellationToken)).ConfigureAwait(false);
-        await RunEndpointAsync(results, "GET /user/feed/payouts", () => client.Api.User.Feed.Payouts.GetAsync(config =>
-        {
-            config.QueryParameters.Limit = 1;
-            config.QueryParameters.Offset = 0;
-            config.QueryParameters.StartTime = startTime;
-            config.QueryParameters.EndTime = endTime;
-        }, cancellationToken)).ConfigureAwait(false);
         await RunEndpointAsync(
-            results,
-            "GET /user/feed/products",
-            () => ExecuteProductsCallAsync(client, settings, productTimeout, cancellationToken)).ConfigureAwait(false);
-        await RunEndpointAsync(results, "GET /user/feed/rewards", () => client.Api.User.Feed.Rewards.GetAsync(config =>
-        {
-            config.QueryParameters.Limit = 1;
-            config.QueryParameters.Offset = 0;
-            config.QueryParameters.StartTime = startTime;
-            config.QueryParameters.EndTime = endTime;
-        }, cancellationToken)).ConfigureAwait(false);
-        await RunEndpointAsync(results, "GET /user/feed/transactions", () => client.Api.User.Feed.Transactions.GetAsync(config =>
-        {
-            config.QueryParameters.Limit = 1;
-            config.QueryParameters.Offset = 0;
-        }, cancellationToken)).ConfigureAwait(false);
-        await RunEndpointAsync(results, "GET /user/commissions", () => client.Api.User.Commissions.GetAsync(cancellationToken: cancellationToken)).ConfigureAwait(false);
-        await RunEndpointAsync(results, "GET /user/payouts/pending", () => client.Api.User.Payouts.Pending.GetAsync(cancellationToken: cancellationToken)).ConfigureAwait(false);
-        await RunEndpointAsync(results, "GET /public/sites", () => client.Api.Public.Sites.GetAsync(config =>
-        {
-            config.QueryParameters.Limit = 1;
-            config.QueryParameters.Offset = 0;
-        }, cancellationToken)).ConfigureAwait(false);
-        await RunEndpointAsync(results, "GET /public/products", () => client.Api.Public.Products.GetAsync(config =>
-        {
-            config.QueryParameters.Limit = 1;
-            config.QueryParameters.Offset = 0;
-        }, cancellationToken)).ConfigureAwait(false);
+                results,
+                "GET /user",
+                () => client.Api.User.GetAsync(cancellationToken: cancellationToken)
+            )
+            .ConfigureAwait(false);
+        await RunEndpointAsync(
+                results,
+                "POST /user",
+                () => client.Api.User.PostAsync(cancellationToken: cancellationToken)
+            )
+            .ConfigureAwait(false);
+        await RunEndpointAsync(
+                results,
+                "GET /user/sites",
+                () =>
+                    client.Api.User.Sites.GetAsync(
+                        config =>
+                        {
+                            config.QueryParameters.Limit = 1;
+                            config.QueryParameters.Offset = 0;
+                            config.QueryParameters.StatusAsGetStatusQueryParameterType =
+                                SiteStatus.Approved;
+                            config.QueryParameters.FieldsAsGetFieldsQueryParameterType =
+                            [
+                                SiteField.Id,
+                                SiteField.Name,
+                                SiteField.Logo,
+                            ];
+                        },
+                        cancellationToken
+                    )
+            )
+            .ConfigureAwait(false);
+        await RunEndpointAsync(
+                results,
+                "GET /user/stats/aggregate",
+                () =>
+                    client.Api.User.Stats.Aggregate.GetAsync(
+                        config =>
+                        {
+                            config.QueryParameters.StartTime = startTime;
+                            config.QueryParameters.EndTime = endTime;
+                            config.QueryParameters.FieldsAsGetFieldsQueryParameterType =
+                            [
+                                AggregateField.Total_sales,
+                                AggregateField.Other_commission_earned,
+                                AggregateField.Revenue_generated,
+                                AggregateField.Sale_commission_earned,
+                                AggregateField.Commission_paid,
+                            ];
+                        },
+                        cancellationToken
+                    )
+            )
+            .ConfigureAwait(false);
+        await RunEndpointAsync(
+                results,
+                "GET /user/feed/orders",
+                () =>
+                    client.Api.User.Feed.Orders.GetAsync(
+                        config =>
+                        {
+                            config.QueryParameters.Limit = 1;
+                            config.QueryParameters.Offset = 0;
+                            config.QueryParameters.CreatedAtMin = startTime;
+                            config.QueryParameters.CreatedAtMax = endTime;
+                        },
+                        cancellationToken
+                    )
+            )
+            .ConfigureAwait(false);
+        await RunEndpointAsync(
+                results,
+                "GET /user/feed/traffic",
+                () =>
+                    client.Api.User.Feed.Traffic.GetAsync(
+                        config =>
+                        {
+                            config.QueryParameters.Limit = 1;
+                            config.QueryParameters.Offset = 0;
+                            config.QueryParameters.StartTime = startTime;
+                            config.QueryParameters.EndTime = endTime;
+                        },
+                        cancellationToken
+                    )
+            )
+            .ConfigureAwait(false);
+        await RunEndpointAsync(
+                results,
+                "GET /user/feed/payouts",
+                () =>
+                    client.Api.User.Feed.Payouts.GetAsync(
+                        config =>
+                        {
+                            config.QueryParameters.Limit = 1;
+                            config.QueryParameters.Offset = 0;
+                            config.QueryParameters.StartTime = startTime;
+                            config.QueryParameters.EndTime = endTime;
+                        },
+                        cancellationToken
+                    )
+            )
+            .ConfigureAwait(false);
+        await RunEndpointAsync(
+                results,
+                "GET /user/feed/products",
+                () => ExecuteProductsCallAsync(client, settings, productTimeout, cancellationToken)
+            )
+            .ConfigureAwait(false);
+        await RunEndpointAsync(
+                results,
+                "GET /user/feed/rewards",
+                () =>
+                    client.Api.User.Feed.Rewards.GetAsync(
+                        config =>
+                        {
+                            config.QueryParameters.Limit = 1;
+                            config.QueryParameters.Offset = 0;
+                            config.QueryParameters.StartTime = startTime;
+                            config.QueryParameters.EndTime = endTime;
+                        },
+                        cancellationToken
+                    )
+            )
+            .ConfigureAwait(false);
+        await RunEndpointAsync(
+                results,
+                "GET /user/feed/transactions",
+                () =>
+                    client.Api.User.Feed.Transactions.GetAsync(
+                        config =>
+                        {
+                            config.QueryParameters.Limit = 1;
+                            config.QueryParameters.Offset = 0;
+                        },
+                        cancellationToken
+                    )
+            )
+            .ConfigureAwait(false);
+        await RunEndpointAsync(
+                results,
+                "GET /user/commissions",
+                () => client.Api.User.Commissions.GetAsync(cancellationToken: cancellationToken)
+            )
+            .ConfigureAwait(false);
+        await RunEndpointAsync(
+                results,
+                "GET /user/payouts/pending",
+                () => client.Api.User.Payouts.Pending.GetAsync(cancellationToken: cancellationToken)
+            )
+            .ConfigureAwait(false);
+        await RunEndpointAsync(
+                results,
+                "GET /public/sites",
+                () =>
+                    client.Api.Public.Sites.GetAsync(
+                        config =>
+                        {
+                            config.QueryParameters.Limit = 1;
+                            config.QueryParameters.Offset = 0;
+                        },
+                        cancellationToken
+                    )
+            )
+            .ConfigureAwait(false);
+        await RunEndpointAsync(
+                results,
+                "GET /public/products",
+                () =>
+                    client.Api.Public.Products.GetAsync(
+                        config =>
+                        {
+                            config.QueryParameters.Limit = 1;
+                            config.QueryParameters.Offset = 0;
+                        },
+                        cancellationToken
+                    )
+            )
+            .ConfigureAwait(false);
 
         return new ApiSweepReport(
             TimestampUtc: DateTimeOffset.UtcNow,
             BaseUrl: settings.BaseUrl.ToString(),
             Total: results.Count,
             Failed: results.Count(static r => !r.Success),
-            Results: results);
+            Results: results
+        );
     }
 
     private static async Task RunEndpointAsync<TResponse>(
         List<ApiEndpointResult> sink,
         string endpoint,
-        Func<Task<TResponse?>> call)
+        Func<Task<TResponse?>> call
+    )
     {
         var sw = Stopwatch.StartNew();
         try
         {
             TResponse? result = await call().ConfigureAwait(false);
             sw.Stop();
-            sink.Add(new ApiEndpointResult(
-                Endpoint: endpoint,
-                Success: true,
-                DurationMs: sw.ElapsedMilliseconds,
-                StatusCode: null,
-                ErrorType: null,
-                ErrorMessage: null,
-                ResponseJson: SerializeResponse(result)));
+            sink.Add(
+                new ApiEndpointResult(
+                    Endpoint: endpoint,
+                    Success: true,
+                    DurationMs: sw.ElapsedMilliseconds,
+                    StatusCode: null,
+                    ErrorType: null,
+                    ErrorMessage: null,
+                    ResponseJson: SerializeResponse(result)
+                )
+            );
         }
         catch (ApiException ex)
         {
             sw.Stop();
-            sink.Add(new ApiEndpointResult(
-                Endpoint: endpoint,
-                Success: false,
-                DurationMs: sw.ElapsedMilliseconds,
-                StatusCode: ex.ResponseStatusCode,
-                ErrorType: ex.GetType().FullName,
-                ErrorMessage: ex.Message,
-                ResponseJson: null));
+            sink.Add(
+                new ApiEndpointResult(
+                    Endpoint: endpoint,
+                    Success: false,
+                    DurationMs: sw.ElapsedMilliseconds,
+                    StatusCode: ex.ResponseStatusCode,
+                    ErrorType: ex.GetType().FullName,
+                    ErrorMessage: ex.Message,
+                    ResponseJson: null
+                )
+            );
         }
         catch (HttpRequestException ex)
         {
             sw.Stop();
-            sink.Add(new ApiEndpointResult(
-                Endpoint: endpoint,
-                Success: false,
-                DurationMs: sw.ElapsedMilliseconds,
-                StatusCode: null,
-                ErrorType: ex.GetType().FullName,
-                ErrorMessage: ex.Message,
-                ResponseJson: null));
+            sink.Add(
+                new ApiEndpointResult(
+                    Endpoint: endpoint,
+                    Success: false,
+                    DurationMs: sw.ElapsedMilliseconds,
+                    StatusCode: null,
+                    ErrorType: ex.GetType().FullName,
+                    ErrorMessage: ex.Message,
+                    ResponseJson: null
+                )
+            );
         }
         catch (TaskCanceledException ex)
         {
             sw.Stop();
-            sink.Add(new ApiEndpointResult(
-                Endpoint: endpoint,
-                Success: false,
-                DurationMs: sw.ElapsedMilliseconds,
-                StatusCode: null,
-                ErrorType: ex.GetType().FullName,
-                ErrorMessage: ex.Message,
-                ResponseJson: null));
+            sink.Add(
+                new ApiEndpointResult(
+                    Endpoint: endpoint,
+                    Success: false,
+                    DurationMs: sw.ElapsedMilliseconds,
+                    StatusCode: null,
+                    ErrorType: ex.GetType().FullName,
+                    ErrorMessage: ex.Message,
+                    ResponseJson: null
+                )
+            );
         }
         catch (InvalidOperationException ex)
         {
             sw.Stop();
-            sink.Add(new ApiEndpointResult(
-                Endpoint: endpoint,
-                Success: false,
-                DurationMs: sw.ElapsedMilliseconds,
-                StatusCode: null,
-                ErrorType: ex.GetType().FullName,
-                ErrorMessage: ex.Message,
-                ResponseJson: null));
+            sink.Add(
+                new ApiEndpointResult(
+                    Endpoint: endpoint,
+                    Success: false,
+                    DurationMs: sw.ElapsedMilliseconds,
+                    StatusCode: null,
+                    ErrorType: ex.GetType().FullName,
+                    ErrorMessage: ex.Message,
+                    ResponseJson: null
+                )
+            );
         }
         catch (GoAffProApiException ex)
         {
             sw.Stop();
-            sink.Add(new ApiEndpointResult(
-                Endpoint: endpoint,
-                Success: false,
-                DurationMs: sw.ElapsedMilliseconds,
-                StatusCode: (int)ex.StatusCode,
-                ErrorType: ex.GetType().FullName,
-                ErrorMessage: ex.Message,
-                ResponseJson: null));
+            sink.Add(
+                new ApiEndpointResult(
+                    Endpoint: endpoint,
+                    Success: false,
+                    DurationMs: sw.ElapsedMilliseconds,
+                    StatusCode: (int)ex.StatusCode,
+                    ErrorType: ex.GetType().FullName,
+                    ErrorMessage: ex.Message,
+                    ResponseJson: null
+                )
+            );
         }
     }
 
@@ -762,29 +1010,42 @@ internal static class ApiSweepRunner
         GoAffProClient client,
         ExampleSettings settings,
         TimeSpan productTimeout,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         if (productTimeout <= TimeSpan.Zero || productTimeout == settings.Timeout)
         {
-            return await client.Api.User.Feed.Products.GetAsync(config =>
-            {
-                config.QueryParameters.Limit = 1;
-                config.QueryParameters.Offset = 0;
-            }, cancellationToken).ConfigureAwait(false);
+            return await client
+                .Api.User.Feed.Products.GetAsync(
+                    config =>
+                    {
+                        config.QueryParameters.Limit = 1;
+                        config.QueryParameters.Offset = 0;
+                    },
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
         }
 
-        using var timeoutClient = new GoAffProClient(new GoAffProClientOptions
-        {
-            BaseUrl = settings.BaseUrl,
-            BearerToken = client.BearerToken,
-            Timeout = productTimeout
-        });
+        using var timeoutClient = new GoAffProClient(
+            new GoAffProClientOptions
+            {
+                BaseUrl = settings.BaseUrl,
+                BearerToken = client.BearerToken,
+                Timeout = productTimeout,
+            }
+        );
 
-        return await timeoutClient.Api.User.Feed.Products.GetAsync(config =>
-        {
-            config.QueryParameters.Limit = 1;
-            config.QueryParameters.Offset = 0;
-        }, cancellationToken).ConfigureAwait(false);
+        return await timeoutClient
+            .Api.User.Feed.Products.GetAsync(
+                config =>
+                {
+                    config.QueryParameters.Limit = 1;
+                    config.QueryParameters.Offset = 0;
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
     }
 }
 
@@ -832,8 +1093,15 @@ internal sealed record CommandLineOptions
                 continue;
             }
 
-            if (arg.StartsWith("--products-timeout-seconds=", StringComparison.OrdinalIgnoreCase) &&
-                int.TryParse(arg["--products-timeout-seconds=".Length..], NumberStyles.Integer, CultureInfo.InvariantCulture, out int timeoutSeconds))
+            if (
+                arg.StartsWith("--products-timeout-seconds=", StringComparison.OrdinalIgnoreCase)
+                && int.TryParse(
+                    arg["--products-timeout-seconds=".Length..],
+                    NumberStyles.Integer,
+                    CultureInfo.InvariantCulture,
+                    out int timeoutSeconds
+                )
+            )
             {
                 options = options with { ProductsTimeoutSeconds = timeoutSeconds };
             }
@@ -846,7 +1114,11 @@ internal sealed record CommandLineOptions
 internal sealed record ExampleSettings(Uri BaseUrl, string? BearerToken, TimeSpan Timeout)
 {
     public static ExampleSettings Default { get; } =
-        new(new Uri("https://api.goaffpro.com/v1/", UriKind.Absolute), null, TimeSpan.FromSeconds(30));
+        new(
+            new Uri("https://api.goaffpro.com/v1/", UriKind.Absolute),
+            null,
+            TimeSpan.FromSeconds(30)
+        );
 }
 
 internal sealed record ApiSweepReport(
@@ -854,7 +1126,8 @@ internal sealed record ApiSweepReport(
     string BaseUrl,
     int Total,
     int Failed,
-    IReadOnlyList<ApiEndpointResult> Results);
+    IReadOnlyList<ApiEndpointResult> Results
+);
 
 internal sealed record ApiEndpointResult(
     string Endpoint,
@@ -863,12 +1136,10 @@ internal sealed record ApiEndpointResult(
     int? StatusCode,
     string? ErrorType,
     string? ErrorMessage,
-    string? ResponseJson);
+    string? ResponseJson
+);
 
 file static class JsonOptions
 {
-    public static JsonSerializerOptions Value { get; } = new()
-    {
-        WriteIndented = true,
-    };
+    public static JsonSerializerOptions Value { get; } = new() { WriteIndented = true };
 }

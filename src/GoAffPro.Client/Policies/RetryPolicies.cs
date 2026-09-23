@@ -31,16 +31,18 @@ public static class RetryPolicies
         return retryCount <= 0
             ? Policy.NoOpAsync<HttpResponseMessage>()
             : HttpPolicyExtensions
-            .HandleTransientHttpError()
-            .OrResult(static r => r.StatusCode == HttpStatusCode.TooManyRequests)
-            .WaitAndRetryAsync(
-                retryCount: retryCount,
-                sleepDurationProvider: static attempt =>
-                {
-                    // Exponential back-off: 2s, 4s, 8s … plus 0–300 ms of jitter.
-                    int jitter = RandomNumberGenerator.GetInt32(0, 300);
-                    return TimeSpan.FromSeconds(Math.Pow(2, attempt)) + TimeSpan.FromMilliseconds(jitter);
-                });
+                .HandleTransientHttpError()
+                .OrResult(static r => r.StatusCode == HttpStatusCode.TooManyRequests)
+                .WaitAndRetryAsync(
+                    retryCount: retryCount,
+                    sleepDurationProvider: static attempt =>
+                    {
+                        // Exponential back-off: 2s, 4s, 8s … plus 0–300 ms of jitter.
+                        int jitter = RandomNumberGenerator.GetInt32(0, 300);
+                        return TimeSpan.FromSeconds(Math.Pow(2, attempt))
+                            + TimeSpan.FromMilliseconds(jitter);
+                    }
+                );
     }
 
     /// <summary>
@@ -56,16 +58,18 @@ public static class RetryPolicies
     /// <returns>An async Polly circuit-breaker policy, or a no-op when disabled.</returns>
     public static IAsyncPolicy<HttpResponseMessage> CreateCircuitBreakerPolicy(
         int? handledEventsAllowedBeforeBreaking = 5,
-        TimeSpan? durationOfBreak = null)
+        TimeSpan? durationOfBreak = null
+    )
     {
         return handledEventsAllowedBeforeBreaking is not > 0
             ? Policy.NoOpAsync<HttpResponseMessage>()
             : HttpPolicyExtensions
-            .HandleTransientHttpError()
-            .OrResult(static r => r.StatusCode == HttpStatusCode.TooManyRequests)
-            .CircuitBreakerAsync(
-                handledEventsAllowedBeforeBreaking: handledEventsAllowedBeforeBreaking.Value,
-                durationOfBreak: durationOfBreak ?? TimeSpan.FromMinutes(1));
+                .HandleTransientHttpError()
+                .OrResult(static r => r.StatusCode == HttpStatusCode.TooManyRequests)
+                .CircuitBreakerAsync(
+                    handledEventsAllowedBeforeBreaking: handledEventsAllowedBeforeBreaking.Value,
+                    durationOfBreak: durationOfBreak ?? TimeSpan.FromMinutes(1)
+                );
     }
 
     /// <summary>
@@ -78,10 +82,16 @@ public static class RetryPolicies
     /// Options that drive retry count, circuit threshold, and break duration.
     /// When <see langword="null"/>, production defaults are used.
     /// </param>
-    public static IAsyncPolicy<HttpResponseMessage> CreateCompositePolicy(GoAffProClientOptions? options = null)
+    public static IAsyncPolicy<HttpResponseMessage> CreateCompositePolicy(
+        GoAffProClientOptions? options = null
+    )
     {
         return Policy.WrapAsync(
             CreateTransientRetryPolicy(options?.MaxRetries ?? 3),
-            CreateCircuitBreakerPolicy(options?.CircuitBreakerThreshold, options?.CircuitBreakerDuration));
+            CreateCircuitBreakerPolicy(
+                options?.CircuitBreakerThreshold,
+                options?.CircuitBreakerDuration
+            )
+        );
     }
 }

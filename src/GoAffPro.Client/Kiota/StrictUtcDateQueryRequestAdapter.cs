@@ -8,7 +8,10 @@ namespace GoAffPro.Client.Kiota;
 /// <summary>
 /// Normalizes GoAffPro date-filter query parameters to the preferred UTC wire form.
 /// </summary>
-internal sealed class StrictUtcDateQueryRequestAdapter(IRequestAdapter inner) : IRequestAdapter, IDisposable, IAsyncDisposable
+internal sealed class StrictUtcDateQueryRequestAdapter(IRequestAdapter inner)
+    : IRequestAdapter,
+        IDisposable,
+        IAsyncDisposable
 {
     private static readonly HashSet<string> _dateQueryParameterNames =
     [
@@ -18,7 +21,8 @@ internal sealed class StrictUtcDateQueryRequestAdapter(IRequestAdapter inner) : 
         "start_time",
     ];
 
-    private readonly IRequestAdapter _inner = inner ?? throw new ArgumentNullException(nameof(inner));
+    private readonly IRequestAdapter _inner =
+        inner ?? throw new ArgumentNullException(nameof(inner));
 
     public string? BaseUrl
     {
@@ -26,7 +30,8 @@ internal sealed class StrictUtcDateQueryRequestAdapter(IRequestAdapter inner) : 
         set => _inner.BaseUrl = value;
     }
 
-    public ISerializationWriterFactory SerializationWriterFactory => _inner.SerializationWriterFactory;
+    public ISerializationWriterFactory SerializationWriterFactory =>
+        _inner.SerializationWriterFactory;
 
     public void EnableBackingStore(IBackingStoreFactory backingStoreFactory)
     {
@@ -37,7 +42,9 @@ internal sealed class StrictUtcDateQueryRequestAdapter(IRequestAdapter inner) : 
         RequestInformation requestInfo,
         ParsableFactory<ModelType> factory,
         Dictionary<string, ParsableFactory<IParsable>>? errorMapping = null,
-        CancellationToken cancellationToken = default) where ModelType : IParsable
+        CancellationToken cancellationToken = default
+    )
+        where ModelType : IParsable
     {
         NormalizeDateQueryParameters(requestInfo);
         return _inner.SendAsync(requestInfo, factory, errorMapping, cancellationToken);
@@ -47,7 +54,9 @@ internal sealed class StrictUtcDateQueryRequestAdapter(IRequestAdapter inner) : 
         RequestInformation requestInfo,
         ParsableFactory<ModelType> factory,
         Dictionary<string, ParsableFactory<IParsable>>? errorMapping = null,
-        CancellationToken cancellationToken = default) where ModelType : IParsable
+        CancellationToken cancellationToken = default
+    )
+        where ModelType : IParsable
     {
         NormalizeDateQueryParameters(requestInfo);
         return _inner.SendCollectionAsync(requestInfo, factory, errorMapping, cancellationToken);
@@ -56,34 +65,48 @@ internal sealed class StrictUtcDateQueryRequestAdapter(IRequestAdapter inner) : 
     // The primitive overloads keep the interface's PublicFields annotation so the trimmer keeps enum
     // members reachable: Kiota parses enum primitives by field name. A pass-through wrapper has to
     // restate it, because the analyzer compares annotations per declaration, not through the forward.
-    public Task<ModelType?> SendPrimitiveAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)] ModelType>(
+    public Task<ModelType?> SendPrimitiveAsync<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)] ModelType
+    >(
         RequestInformation requestInfo,
         Dictionary<string, ParsableFactory<IParsable>>? errorMapping = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         NormalizeDateQueryParameters(requestInfo);
         return _inner.SendPrimitiveAsync<ModelType>(requestInfo, errorMapping, cancellationToken);
     }
 
-    public Task<IEnumerable<ModelType>?> SendPrimitiveCollectionAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)] ModelType>(
+    public Task<IEnumerable<ModelType>?> SendPrimitiveCollectionAsync<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)] ModelType
+    >(
         RequestInformation requestInfo,
         Dictionary<string, ParsableFactory<IParsable>>? errorMapping = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         NormalizeDateQueryParameters(requestInfo);
-        return _inner.SendPrimitiveCollectionAsync<ModelType>(requestInfo, errorMapping, cancellationToken);
+        return _inner.SendPrimitiveCollectionAsync<ModelType>(
+            requestInfo,
+            errorMapping,
+            cancellationToken
+        );
     }
 
     public Task SendNoContentAsync(
         RequestInformation requestInfo,
         Dictionary<string, ParsableFactory<IParsable>>? errorMapping = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         NormalizeDateQueryParameters(requestInfo);
         return _inner.SendNoContentAsync(requestInfo, errorMapping, cancellationToken);
     }
 
-    public Task<T?> ConvertToNativeRequestAsync<T>(RequestInformation requestInfo, CancellationToken cancellationToken = default)
+    public Task<T?> ConvertToNativeRequestAsync<T>(
+        RequestInformation requestInfo,
+        CancellationToken cancellationToken = default
+    )
     {
         NormalizeDateQueryParameters(requestInfo);
         return _inner.ConvertToNativeRequestAsync<T>(requestInfo, cancellationToken);
@@ -121,7 +144,10 @@ internal sealed class StrictUtcDateQueryRequestAdapter(IRequestAdapter inner) : 
             }
 
             string normalized = GoAffProUtils.FormatTimestampQuery(dateTimeOffset);
-            if (rawValue is string existing && string.Equals(existing, normalized, StringComparison.Ordinal))
+            if (
+                rawValue is string existing
+                && string.Equals(existing, normalized, StringComparison.Ordinal)
+            )
             {
                 continue;
             }

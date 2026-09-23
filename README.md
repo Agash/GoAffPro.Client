@@ -6,6 +6,7 @@ Async-first .NET client for GoAffPro using Kiota-generated models plus a thin wr
 
 - `net9.0`
 - `net10.0`
+- `net11.0`
 
 ## Install
 

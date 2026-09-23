@@ -5,8 +5,8 @@
   <ItemGroup Label="Core dependencies">
     <PackageVersion Include="System.Text.Json" Version="10.0.12" />
     <PackageVersion Include="Microsoft.Extensions.Http.Polly" Version="10.0.12" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.11" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.12" />
     <PackageVersion Include="MinVer" Version="8.0.0" />
     <PackageVersion Include="DotNet.ReproducibleBuilds" Version="2.0.5" />
     <PackageVersion Include="Polly" Version="8.8.0" />

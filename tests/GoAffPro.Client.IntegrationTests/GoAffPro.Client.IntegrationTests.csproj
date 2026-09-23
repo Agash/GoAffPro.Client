@@ -1,16 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net9.0;net10.0;net11.0</TargetFrameworks>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <OutputType>Exe</OutputType>
     <EnableMSTestRunner>true</EnableMSTestRunner>
-    <!-- IDE0005 cannot run without GenerateDocumentationFile, which tests do not produce;
-         Roslyn errors asking for it rather than staying silent. CA1707/IDE1006 cover test naming,
+    <!-- CS1591: public test classes carry no XML docs. CA1707/IDE1006 cover test naming,
          CA1515 fires only because OutputType=Exe, CA2007 is noise in test bodies. -->
-    <NoWarn>$(NoWarn);IDE0005;CA1707;CA2007;CA1515</NoWarn>
+    <NoWarn>$(NoWarn);CA1707;CA2007;CA1515;CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

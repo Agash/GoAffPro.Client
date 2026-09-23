@@ -147,6 +147,8 @@ static async Task RunInteractiveAsync(GoAffProClient client)
                     case "Exit":
                         exitRequested = true;
                         break;
+                    default:
+                        throw new UnreachableException($"Unhandled menu choice '{action}'.");
                 }
             }
             catch (GoAffProApiException ex)

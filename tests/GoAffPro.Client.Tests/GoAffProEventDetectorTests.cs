@@ -1,3 +1,4 @@
+using GoAffPro.Client.Events;
 using GoAffPro.Client.Generated.Models;
 
 namespace GoAffPro.Client.Tests;
@@ -524,6 +525,69 @@ public sealed class GoAffProEventDetectorTests
         Assert.Contains("o-1", orderIds);
         Assert.Contains("a-1", affiliateIds);
         Assert.Contains("p-1", payoutIds);
+    }
+
+    [TestMethod]
+    public async Task NewOrdersAsync_AfterAFailedPoll_ReportsItAndRetriesTheSameWindowAsync()
+    {
+        List<string> queries = [];
+        int calls = 0;
+        using var handler = new TestHttpMessageHandler(
+            (request, _) =>
+            {
+                if (
+                    !request.RequestUri!.AbsolutePath.EndsWith(
+                        "/user/feed/orders",
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                )
+                {
+                    return TestHttpMessageHandler.JsonResponse("{}");
+                }
+
+                lock (queries)
+                {
+                    queries.Add(request.RequestUri.Query);
+                    calls++;
+                    return calls == 1
+                        ? new HttpResponseMessage(System.Net.HttpStatusCode.InternalServerError)
+                        : TestHttpMessageHandler.JsonResponse(
+                            """{"orders":[{"id":"o-1"}],"count":1,"limit":100,"offset":0}"""
+                        );
+                }
+            }
+        );
+        using var httpClient = new HttpClient(handler);
+        using var client = new GoAffProClient(
+            httpClient,
+            new GoAffProClientOptions
+            {
+                BaseUrl = new Uri("https://example.test/v1/", UriKind.Absolute),
+            }
+        );
+        List<FeedPolledEventArgs> polls = [];
+        client.FeedPolled += (_, e) =>
+        {
+            lock (polls)
+            {
+                polls.Add(e);
+            }
+        };
+
+        IReadOnlyList<UserOrderFeedItem> orders = await TakeAsync(
+            client.NewOrdersAsync(pollingInterval: TimeSpan.FromMilliseconds(5), pageSize: 100),
+            expectedCount: 1
+        );
+
+        Assert.HasCount(1, orders);
+        Assert.IsFalse(polls[0].Succeeded);
+        Assert.AreEqual(GoAffProFeed.Orders, polls[0].Feed);
+        Assert.IsTrue(polls[1].Succeeded);
+        string FromOf(string query) =>
+            query
+                .Split('&')
+                .First(part => part.Contains("created_at_min", StringComparison.Ordinal));
+        Assert.AreEqual(FromOf(queries[0]), FromOf(queries[1]));
     }
 
     private static async Task<IReadOnlyList<T>> TakeAsync<T>(

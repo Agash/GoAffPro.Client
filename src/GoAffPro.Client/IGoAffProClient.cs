@@ -177,6 +177,12 @@ public interface IGoAffProClient : IDisposable, IAsyncDisposable
     // =========================================================================
 
     /// <summary>
+    /// Raised after every poll of a feed, whether it worked or not. A failed poll does not end the feed; it is
+    /// retried with the same window on the next interval.
+    /// </summary>
+    event EventHandler<FeedPolledEventArgs>? FeedPolled;
+
+    /// <summary>
     /// Raised when a new order is detected during observer polling.
     /// Subscribe to trigger alerts or overlay updates when a referral converts.
     /// </summary>

@@ -45,7 +45,7 @@ namespace GoAffPro.Client;
 /// }
 /// </code>
 /// </remarks>
-public sealed class GoAffProClient : IGoAffProClient
+public sealed partial class GoAffProClient : IGoAffProClient
 {
     // All known order fields — requested in time-window observer polling.
     private static readonly GetOrderFieldsQueryParameterType[] _orderObserverFields =
@@ -84,17 +84,20 @@ public sealed class GoAffProClient : IGoAffProClient
     private readonly HttpClient _httpClient;
     private readonly IRequestAdapter _requestAdapter;
     private readonly GoAffProClientOptions _options;
+    private readonly TimeProvider _time;
 
     /// <summary>
     /// Initializes a new client instance with an internally managed
     /// <see cref="HttpClient"/> built from <paramref name="options"/>.
     /// </summary>
     /// <param name="options">Runtime client options.</param>
-    public GoAffProClient(GoAffProClientOptions options)
+    /// <param name="timeProvider">The clock for polling; the system clock when null.</param>
+    public GoAffProClient(GoAffProClientOptions options, TimeProvider? timeProvider = null)
         : this(
             CreateHttpClient(ValidateOptions(options)),
             ValidateOptions(options),
-            disposeHttpClient: true
+            disposeHttpClient: true,
+            timeProvider ?? TimeProvider.System
         ) { }
 
     /// <summary>
@@ -103,19 +106,31 @@ public sealed class GoAffProClient : IGoAffProClient
     /// </summary>
     /// <param name="httpClient">Pre-configured HTTP client instance.</param>
     /// <param name="options">Runtime client options.</param>
-    public GoAffProClient(HttpClient httpClient, GoAffProClientOptions options)
-        : this(httpClient, ValidateOptions(options), disposeHttpClient: false) { }
+    /// <param name="timeProvider">The clock for polling; the system clock when null.</param>
+    public GoAffProClient(
+        HttpClient httpClient,
+        GoAffProClientOptions options,
+        TimeProvider? timeProvider = null
+    )
+        : this(
+            httpClient,
+            ValidateOptions(options),
+            disposeHttpClient: false,
+            timeProvider ?? TimeProvider.System
+        ) { }
 
     private GoAffProClient(
         HttpClient httpClient,
         GoAffProClientOptions options,
-        bool disposeHttpClient
+        bool disposeHttpClient,
+        TimeProvider timeProvider
     )
     {
         ArgumentNullException.ThrowIfNull(httpClient);
         ArgumentNullException.ThrowIfNull(options);
 
         _options = options;
+        _time = timeProvider;
         _httpClient = httpClient;
         _disposeHttpClient = disposeHttpClient;
 
@@ -364,253 +379,6 @@ public sealed class GoAffProClient : IGoAffProClient
                     .ConfigureAwait(false)
             )
             .ConfigureAwait(false);
-    }
-
-    // =========================================================================
-    // Observer loop
-    // =========================================================================
-
-    /// <inheritdoc />
-    public async Task StartEventObserverAsync(
-        TimeSpan? pollingInterval = null,
-        int pageSize = 100,
-        CancellationToken cancellationToken = default
-    )
-    {
-        int validatedPageSize = ValidatePageSize(pageSize);
-        TimeSpan interval = pollingInterval ?? _options.DefaultPollingInterval;
-
-        _ = RewardDetected; // keep obsolete member in compiled output
-
-        DateTimeOffset lastOrderPoll = OrderObserverStartTime ?? DateTimeOffset.UtcNow;
-        DateTimeOffset lastTrafficPoll = TrafficObserverStartTime ?? DateTimeOffset.UtcNow;
-        DateTimeOffset lastPayoutPoll = PayoutObserverStartTime ?? DateTimeOffset.UtcNow;
-
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            DateTimeOffset orderTo = DateTimeOffset.UtcNow;
-            foreach (
-                UserOrderFeedItem order in await PollOrdersAsync(
-                        lastOrderPoll,
-                        orderTo,
-                        validatedPageSize,
-                        cancellationToken
-                    )
-                    .ConfigureAwait(false)
-            )
-            {
-                OrderDetected?.Invoke(this, new OrderDetectedEventArgs(order));
-            }
-
-            lastOrderPoll = orderTo;
-
-            DateTimeOffset trafficTo = DateTimeOffset.UtcNow;
-            foreach (
-                UserTrafficFeedItem item in await PollTrafficAsync(
-                        lastTrafficPoll,
-                        trafficTo,
-                        validatedPageSize,
-                        cancellationToken
-                    )
-                    .ConfigureAwait(false)
-            )
-            {
-                TrafficDetected?.Invoke(this, new TrafficDetectedEventArgs(item));
-            }
-
-            lastTrafficPoll = trafficTo;
-
-            DateTimeOffset payoutTo = DateTimeOffset.UtcNow;
-            foreach (
-                UserPayoutFeedItem payout in await PollPayoutsAsync(
-                        lastPayoutPoll,
-                        payoutTo,
-                        validatedPageSize,
-                        cancellationToken
-                    )
-                    .ConfigureAwait(false)
-            )
-            {
-                PayoutDetected?.Invoke(this, new PayoutDetectedEventArgs(payout));
-            }
-
-            lastPayoutPoll = payoutTo;
-
-            await Task.Delay(interval, cancellationToken).ConfigureAwait(false);
-        }
-    }
-
-    // =========================================================================
-    // Streaming async enumerables
-    // =========================================================================
-
-    /// <inheritdoc />
-    public async IAsyncEnumerable<UserOrderFeedItem> NewOrdersAsync(
-        TimeSpan? pollingInterval = null,
-        int pageSize = 100,
-        [System.Runtime.CompilerServices.EnumeratorCancellation]
-            CancellationToken cancellationToken = default
-    )
-    {
-        int size = ValidatePageSize(pageSize);
-        TimeSpan interval = pollingInterval ?? _options.DefaultPollingInterval;
-        DateTimeOffset lastPoll = OrderObserverStartTime ?? DateTimeOffset.UtcNow;
-
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            DateTimeOffset to = DateTimeOffset.UtcNow;
-            foreach (
-                UserOrderFeedItem order in await PollOrdersAsync(
-                        lastPoll,
-                        to,
-                        size,
-                        cancellationToken
-                    )
-                    .ConfigureAwait(false)
-            )
-            {
-                yield return order;
-            }
-
-            lastPoll = to;
-            await Task.Delay(interval, cancellationToken).ConfigureAwait(false);
-        }
-    }
-
-    /// <inheritdoc />
-    public async IAsyncEnumerable<UserTrafficFeedItem> NewTrafficAsync(
-        TimeSpan? pollingInterval = null,
-        int pageSize = 100,
-        [System.Runtime.CompilerServices.EnumeratorCancellation]
-            CancellationToken cancellationToken = default
-    )
-    {
-        int size = ValidatePageSize(pageSize);
-        TimeSpan interval = pollingInterval ?? _options.DefaultPollingInterval;
-        DateTimeOffset lastPoll = TrafficObserverStartTime ?? DateTimeOffset.UtcNow;
-
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            DateTimeOffset to = DateTimeOffset.UtcNow;
-            foreach (
-                UserTrafficFeedItem item in await PollTrafficAsync(
-                        lastPoll,
-                        to,
-                        size,
-                        cancellationToken
-                    )
-                    .ConfigureAwait(false)
-            )
-            {
-                yield return item;
-            }
-
-            lastPoll = to;
-            await Task.Delay(interval, cancellationToken).ConfigureAwait(false);
-        }
-    }
-
-    /// <inheritdoc />
-    public async IAsyncEnumerable<UserPayoutFeedItem> NewPayoutsAsync(
-        TimeSpan? pollingInterval = null,
-        int pageSize = 100,
-        [System.Runtime.CompilerServices.EnumeratorCancellation]
-            CancellationToken cancellationToken = default
-    )
-    {
-        int size = ValidatePageSize(pageSize);
-        TimeSpan interval = pollingInterval ?? _options.DefaultPollingInterval;
-        DateTimeOffset lastPoll = PayoutObserverStartTime ?? DateTimeOffset.UtcNow;
-
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            DateTimeOffset to = DateTimeOffset.UtcNow;
-            foreach (
-                UserPayoutFeedItem payout in await PollPayoutsAsync(
-                        lastPoll,
-                        to,
-                        size,
-                        cancellationToken
-                    )
-                    .ConfigureAwait(false)
-            )
-            {
-                yield return payout;
-            }
-
-            lastPoll = to;
-            await Task.Delay(interval, cancellationToken).ConfigureAwait(false);
-        }
-    }
-
-    /// <inheritdoc />
-    public async IAsyncEnumerable<UserProductFeedItem> NewProductsAsync(
-        TimeSpan? pollingInterval = null,
-        int pageSize = 100,
-        [System.Runtime.CompilerServices.EnumeratorCancellation]
-            CancellationToken cancellationToken = default
-    )
-    {
-        int size = ValidatePageSize(pageSize);
-        TimeSpan interval = pollingInterval ?? _options.DefaultPollingInterval;
-        int? lastId = null;
-
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            (IReadOnlyList<UserProductFeedItem> products, int? nextId) = await PollProductsAsync(
-                    lastId,
-                    size,
-                    cancellationToken
-                )
-                .ConfigureAwait(false);
-            lastId = nextId;
-            foreach (UserProductFeedItem product in products)
-            {
-                yield return product;
-            }
-
-            await Task.Delay(interval, cancellationToken).ConfigureAwait(false);
-        }
-    }
-
-    /// <inheritdoc />
-    public async IAsyncEnumerable<UserTransactionItem> NewTransactionsAsync(
-        TimeSpan? pollingInterval = null,
-        int pageSize = 100,
-        [System.Runtime.CompilerServices.EnumeratorCancellation]
-            CancellationToken cancellationToken = default
-    )
-    {
-        int size = ValidatePageSize(pageSize);
-        TimeSpan interval = pollingInterval ?? _options.DefaultPollingInterval;
-        int? lastId = null;
-
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            (IReadOnlyList<UserTransactionItem> transactions, int? nextId) =
-                await PollTransactionsAsync(lastId, size, cancellationToken).ConfigureAwait(false);
-            lastId = nextId;
-            foreach (UserTransactionItem tx in transactions)
-            {
-                yield return tx;
-            }
-
-            await Task.Delay(interval, cancellationToken).ConfigureAwait(false);
-        }
-    }
-
-    /// <inheritdoc />
-    [Obsolete(
-        "Disabled because /user/feed/rewards currently returns HTTP 404 (observed on 2026-02-18)."
-    )]
-    public async IAsyncEnumerable<UserRewardFeedItem> NewRewardsAsync(
-        [System.Runtime.CompilerServices.EnumeratorCancellation]
-            CancellationToken cancellationToken = default
-    )
-    {
-        _ = cancellationToken;
-        await Task.CompletedTask.ConfigureAwait(false);
-        yield break;
     }
 
     // =========================================================================
